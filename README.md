@@ -32,7 +32,7 @@ Materials:
 
 Wiring Diagram:
 ---------------
-[Wiring Diagram](https://github.com/shellster/ShopVacRatTrap/raw/refs/heads/main/Pictures/RatTrapCircuitDiagram.png)
+![Wiring Diagram](https://github.com/shellster/ShopVacRatTrap/raw/refs/heads/main/Pictures/RatTrapCircuitDiagram.png)
 
 ### High Voltage Side:
 
