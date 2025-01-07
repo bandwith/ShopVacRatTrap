@@ -1,6 +1,8 @@
 ShopVac Rat Trap
 ================
 
+![Rat Trap](https://github.com/shellster/ShopVacRatTrap/raw/refs/heads/main/Pictures/finished.jpg)
+
 Details and rough instructions here:
 
 <link here>
