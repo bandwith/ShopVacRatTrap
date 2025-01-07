@@ -1,11 +1,16 @@
 ShopVac Rat Trap
 ================
 
+Details and rough instructions here:
+
+<link here>
+
 Materials:
 ----------
 
 * 2 ft. length of 4 in. black ABS sewer pipe
 * Roll of Plumber's Tape
+* 3/4in. wide-head wood screws
 * Wire loom
 * Wire loom tape
 * WAGO or equivalent wire fasteners, some 2 and 3 wire variants
@@ -24,6 +29,32 @@ Materials:
 * Polyimide (Kapton) Tape
 * Thick CA Glue
 * CA Glue Fixer
+
+Wiring Diagram:
+---------------
+[Wiring Diagram](https://github.com/shellster/ShopVacRatTrap/tree/main/Pictures/RatTrapCircuitDiagram.png)
+
+### High Voltage Side:
+
+* Ground (Typically Green or Unsheathed) on Power Cord -> Ground on Outlet
+* Neutral (Typically White) on Power Cord -> Neutral on USB Wall Wart
+* Neutral (Typically White) on Power Cord -> Neutral on Outlet
+* Line (Typically Black) on Power Cord -> Line on USB Wall Wart
+* Line (Typically Black) on Power Cord -> COM on Relay Board
+* NO (Normally Open) on Relay Board -> Line on Outlet
+
+### Low Voltage Side:
+
+* DC Ground on USB side of wall wart -> GND on NodeMCU
+* DC Ground on USB side of wall wart -> GND on Relay Board
+* DC Ground on USB side of wall wart -> GND on APDS9930 board
+* 5V VCC on USB side of wall wart -> Vin on NodeMCU
+* 3V3 on NodeMCU goes to VCC on Relay Board
+* 3V3 on NodeMCU goes to VCC on APDS9930
+* D1 on NodeMCU -> SDA on APDS9930
+* D2 on NodeMCU -> SCL on APDS9930
+* D5 on NodeMCU -> IN on Relay Board
+* Two small solder pads on back of APDS9930 get jumpered with solder
 
 
 Credits
