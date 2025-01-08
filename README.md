@@ -5,7 +5,7 @@ ShopVac Rat Trap
 
 Details and rough instructions here:
 
-<link here>
+https://theshellster.medium.com/homemade-rat-mouse-vacuum-trap-f5f465cbf3a0
 
 Materials:
 ----------
