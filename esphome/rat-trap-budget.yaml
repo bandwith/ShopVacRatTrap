@@ -1,0 +1,655 @@
+esphome:
+  name: rat-trap-budget
+  friendly_name: "ShopVac Rat Trap Budget Enhanced 2025"
+  platform: ESP32
+  board: esp32dev
+  comment: "Cost-optimized ESP32-based rat trap with essential safety features and VL53L0X sensor"
+
+# Enhanced budget configuration with optimized components
+substitutions:
+  # 🇺🇸 North America (120V AC, 60Hz, NEC compliant) - Cost Optimized
+  line_voltage: "120V AC"
+  line_frequency: "60Hz"
+  max_current: "15A"
+  safety_standard: "NEC/UL"
+  build_variant: "BUDGET_ENHANCED"
+  
+  # 🇪🇺 Europe (230V AC, 50Hz, IEC/CE compliant) - Cost Optimized
+  # line_voltage: "230V AC"
+  # line_frequency: "50Hz"
+  # max_current: "10A"
+  # safety_standard: "IEC/CE"
+
+# Enable logging
+logger:
+  level: INFO
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: !secret api_encryption_key
+
+ota:
+  - platform: esphome
+    password: !secret ota_password
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "RatTrap-Budget Fallback"
+    password: !secret ap_password
+
+captive_portal:
+
+# Note: This configuration was for an ultra-budget PSU. It is deprecated to comply with the
+# no-SMD/through-hole assembly requirement and to improve reliability. Use the main 2025 config instead.
+# I2C bus configuration for VL53L1X and BME280 with EMI protection
+i2c:
+  sda: 21
+  scl: 22
+  scan: true
+  frequency: 100kHz  # Reduced from 400kHz for better EMI immunity in high-voltage environment
+
+# Time-of-Flight sensor (VL53L1X - improved range and accuracy)
+sensor:
+  - platform: vl53l1x
+    name: "Trap Distance"
+    id: trap_distance
+    address: 0x29
+    update_interval: 50ms
+    
+  # Added BME280 environmental sensor
+  - platform: bme280
+    address: 0x76
+    update_interval: 60s
+    temperature:
+      name: "Environmental Temperature"
+      id: env_temperature
+      accuracy_decimals: 1
+      filters:
+        - sliding_window_moving_average:
+            window_size: 5
+            send_every: 5
+      unit_of_measurement: "°C"
+      device_class: temperature
+      state_class: measurement
+    pressure:
+      name: "Barometric Pressure"
+      id: env_pressure
+      accuracy_decimals: 1
+      unit_of_measurement: "hPa"
+      device_class: pressure
+      state_class: measurement
+    humidity:
+      name: "Environmental Humidity"
+      id: env_humidity
+      accuracy_decimals: 0
+      unit_of_measurement: "%"
+      device_class: humidity
+      state_class: measurement
+    timeout: 200ms
+    filters:
+      - sliding_window_moving_average:
+          window_size: 20
+          send_every: 5
+      - lambda: |-
+          // Reject obviously bad readings
+          if (x > 4000 || x < 10) return {};
+          return x;
+    on_value_range:
+      - below: 150.0  # 15cm threshold for rodent detection
+        then:
+          - if:
+              condition:
+                and:
+                  - binary_sensor.is_off: trap_triggered
+                  - binary_sensor.is_on: emergency_disable_switch
+                  - lambda: 'return (millis() - id(last_trigger_time) > (id(cooldown_period).state * 1000));' # Configurable cooldown
+              then:
+                - logger.log: "Rodent detected! Triggering vacuum sequence."
+                - binary_sensor.template.publish:
+                    id: rodent_detected
+                    state: ON
+                - binary_sensor.template.publish:
+                    id: trap_triggered
+                    state: ON
+                - switch.turn_on: vacuum_relay
+                - lambda: 'id(last_trigger_time) = millis();'
+                - delay: !lambda 'return id(vacuum_runtime).state * 1000;'  # Configurable runtime
+                - switch.turn_off: vacuum_relay
+                - lambda: |-
+                    // Update capture count
+                    id(capture_count) += 1;
+                    id(capture_count_sensor).publish_state(id(capture_count));
+                    
+                    // Update vacuum runtime tracking
+                    float runtime_minutes = id(vacuum_runtime).state / 60.0;
+                    id(total_vacuum_runtime) += runtime_minutes;
+                    id(vacuum_runtime_sensor).publish_state(id(total_vacuum_runtime));
+                - delay: 2s
+                - binary_sensor.template.publish:
+                    id: trap_triggered
+                    state: OFF
+                - delay: !lambda 'return id(cooldown_period).state * 1000;'  # Configurable cooldown
+                - binary_sensor.template.publish:
+                    id: rodent_detected
+                    state: OFF
+      - above: 200.0  # Clear detection threshold
+        then:
+          - if:
+              condition:
+                and:
+                  - binary_sensor.is_off: trap_triggered
+              then:
+                - binary_sensor.template.publish:
+                    id: rodent_detected
+                    state: OFF
+
+  # Capture count tracker with persistence
+  - platform: template
+    name: "Capture Count"
+    id: capture_count_sensor
+    icon: "mdi:counter"
+    accuracy_decimals: 0
+    state_class: total_increasing
+
+  # Vacuum runtime tracking for maintenance scheduling
+  - platform: template
+    name: "Total Vacuum Runtime"
+    id: vacuum_runtime_sensor
+    icon: "mdi:vacuum"
+    unit_of_measurement: "minutes"
+    accuracy_decimals: 1
+    device_class: duration
+    state_class: total_increasing
+    lambda: |-
+      return id(total_vacuum_runtime);
+
+  # System fault monitoring
+  - platform: template
+    name: "Fault Count"
+    id: fault_count_sensor
+    icon: "mdi:alert"
+    accuracy_decimals: 0
+    state_class: total_increasing
+    lambda: |-
+      return id(fault_count);
+
+  # System monitoring sensors
+  - platform: wifi_signal
+    name: "WiFi Signal Strength"
+    id: wifi_signal
+    update_interval: 60s
+    
+  - platform: uptime
+    name: "System Uptime"
+    id: uptime_sensor
+
+  # ESP32 internal temperature monitoring with enhanced thermal management
+  - platform: template
+    name: "ESP32 Temperature"
+    id: esp32_temp
+    icon: "mdi:thermometer"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    state_class: measurement
+    lambda: |-
+      return temperatureRead();
+    update_interval: 15s  # More frequent monitoring for better thermal tracking
+    filters:
+      - sliding_window_moving_average:  # Smooth out temperature readings
+          window_size: 4
+          send_every: 2
+      - lambda: |-
+          // Enhanced thermal protection with tiered warnings
+          static int high_temp_count = 0;
+          static unsigned long last_warning_time = 0;
+          
+          // Critical overheating - immediate shutdown
+          if (x > 85.0) {
+            ESP_LOGW("thermal", "CRITICAL: ESP32 overheating: %.1f°C - initiating emergency shutdown", x);
+            id(last_fault_type) = "THERMAL_CRITICAL";
+            id(fault_count)++;
+            id(thermal_shutdown).execute();
+            return x;
+          }
+          
+          // High temperature warning - multiple stages
+          if (x > 75.0) {
+            high_temp_count++;
+            
+            // Persistent high temperature
+            if (high_temp_count > 12) { // ~3 minutes of elevated temperature
+              ESP_LOGW("thermal", "WARNING: ESP32 persistent high temperature: %.1f°C - preventive shutdown", x);
+              id(last_fault_type) = "THERMAL_PERSISTENT";
+              id(fault_count)++;
+              id(thermal_shutdown).execute();
+              return x;
+            }
+            
+            // Repeated warnings at 1 minute intervals
+            if (millis() - last_warning_time > 60000) {
+              ESP_LOGW("thermal", "WARNING: ESP32 temperature elevated: %.1f°C - monitoring", x);
+              last_warning_time = millis();
+            }
+          } else {
+            // Temperature normal - reset counter
+            high_temp_count = 0;
+          }
+          
+          return x;
+
+# Power supply monitoring (generic)
+  - platform: adc
+    pin: GPIO35
+    name: "5V Supply Voltage"
+    id: supply_voltage
+    update_interval: 5s
+    accuracy_decimals: 2
+    unit_of_measurement: "V"
+    device_class: voltage
+    filters:
+      - multiply: 3.3  # ADC reference voltage
+    - calibrate_linear:
+      - 0.0 -> 0.0
+      - 1.0 -> 5.0  # Scale to actual voltage (adjust per divider)
+      - sliding_window_moving_average:
+          window_size: 10
+          send_every: 5
+    on_value_range:
+      - below: 4.75
+        then:
+          - logger.log:
+              format: "WARNING: Budget PSU voltage low: %.2fV - check loading"
+              args: ["id(supply_voltage).state"]
+          - if:
+              condition:
+                lambda: "return id(supply_voltage).state < 4.5;"
+              then:
+                - logger.log: "CRITICAL: PSU voltage too low - entering protective mode"
+                - lambda: |-
+                    id(last_fault_type) = "POWER_SUPPLY_UNDERVOLTAGE";
+                    id(fault_count)++;
+
+# Binary sensors for detection and control
+binary_sensor:
+  # Rodent detection state
+  - platform: template
+    name: "Rodent Detected"
+    id: rodent_detected
+    icon: "mdi:rat"
+    device_class: motion
+    
+  # Trap triggered state
+  - platform: template
+    name: "Trap Triggered"
+    id: trap_triggered
+    icon: "mdi:power"
+    
+  # Physical reset button (GPIO18)
+  - platform: gpio
+    pin: 
+      number: 18
+      mode: INPUT_PULLUP
+      inverted: true
+    name: "Reset Button"
+    id: reset_button
+    filters:
+      - delayed_on: 100ms
+      - delayed_off: 100ms
+    on_press:
+      - logger.log: "Reset button pressed - restarting system"
+      - delay: 1s
+      - button.press: restart_button
+      
+  # Physical emergency stop button (GPIO4) - SAFETY CRITICAL
+  - platform: gpio
+    pin:
+      number: 4
+      mode: INPUT_PULLUP
+      inverted: true
+    name: "Emergency Stop Button"
+    id: emergency_disable_switch
+    device_class: safety
+    filters:
+      - delayed_on: 50ms
+      - delayed_off: 50ms
+    on_state:
+      - if:
+          condition:
+            binary_sensor.is_on: emergency_disable_switch
+          then:
+            - logger.log: "E-STOP RELEASED - system armed"
+          else:
+            - logger.log: "EMERGENCY STOP ACTIVATED - immediate shutdown"
+            - switch.turn_off: vacuum_relay
+
+# Physical switches and controls
+switch:
+  # Main vacuum relay control (GPIO5) - NEC/IEC compliant switching
+  - platform: gpio
+    pin: 5
+    name: "Vacuum Relay"
+    id: vacuum_relay
+    icon: "mdi:vacuum"
+    restore_mode: ALWAYS_OFF
+    on_turn_on:
+      - logger.log: 
+          format: "SSR activated - switching %s load (%s compliant)"
+          args: ['id(line_voltage).c_str()', 'id(safety_standard).c_str()']
+    on_turn_off:
+      - logger.log: "SSR deactivated - load disconnected"
+    
+  # Software manual trigger
+  - platform: template
+    name: "Manual Trigger"
+    id: manual_trigger
+    icon: "mdi:play-circle"
+    turn_on_action:
+      - if:
+          condition:
+            and:
+              - binary_sensor.is_on: emergency_disable_switch
+              - binary_sensor.is_off: trap_triggered
+          then:
+            - logger.log: "Software manual trigger activated"
+            - switch.turn_on: vacuum_relay
+            - delay: 3s
+            - switch.turn_off: vacuum_relay
+            # Update vacuum runtime for manual activations too
+            - lambda: |-
+                float runtime_minutes = 3.0 / 60.0;
+                id(total_vacuum_runtime) += runtime_minutes;
+                id(vacuum_runtime_sensor).publish_state(id(total_vacuum_runtime));
+          else:
+            - logger.log: "Manual trigger ignored - system disabled or busy"
+
+# Restart button
+button:
+  - platform: restart
+    name: "Restart ESP32"
+    id: restart_button
+    
+  # Enhanced thermal shutdown protection
+  - platform: template
+    name: "Thermal Shutdown"
+    id: thermal_shutdown
+    on_press:
+      - logger.log: "THERMAL SHUTDOWN INITIATED - ESP32 overheating detected"
+      - switch.turn_off: vacuum_relay
+      # Record fault occurrence to persistent storage
+      - lambda: |-
+          if (id(last_fault_type) == "") {
+            id(last_fault_type) = "THERMAL_EMERGENCY";
+          }
+          id(fault_count_sensor).publish_state(id(fault_count));
+          id(last_fault_type_sensor).publish_state(id(last_fault_type));
+      - deep_sleep.enter: emergency_sleep
+      
+  # System diagnostic tool  
+  - platform: template
+    name: "Run Diagnostics"
+    id: run_diagnostics
+    on_press:
+      - logger.log: "Running system diagnostics..."
+      # Basic system checks
+      - lambda: |-
+          bool system_ok = true;
+          std::string diagnostic_results = "";
+          
+          // Check I2C devices
+          if (i2c::global_i2c_bus->scan_device(0x29) == false) {
+            system_ok = false;
+            diagnostic_results += "VL53L1X sensor not detected. ";
+          }
+          if (i2c::global_i2c_bus->scan_device(0x3C) == false) {
+            system_ok = false;
+            diagnostic_results += "OLED display not detected. ";
+          }
+          if (i2c::global_i2c_bus->scan_device(0x76) == false) {
+            system_ok = false;
+            diagnostic_results += "BME280 sensor not detected. ";
+          }
+          
+          // Check WiFi
+          if (!wifi::global_wifi_component->is_connected()) {
+            diagnostic_results += "WiFi not connected. ";
+          }
+          
+          // Check thermal status
+          if (id(esp32_temp).state > 70.0) {
+            system_ok = false;
+            diagnostic_results += "Temperature high: " + to_string(id(esp32_temp).state) + "C. ";
+          }
+          
+          // Check power supply voltage
+          if (id(supply_voltage).state < 4.8) {
+            system_ok = false;
+            diagnostic_results += "Power supply voltage low: " + to_string(id(supply_voltage).state) + "V. ";
+          }
+          
+          // Log results
+          if (system_ok) {
+            ESP_LOGI("diagnostics", "System diagnostics passed");
+          } else {
+            ESP_LOGW("diagnostics", "System diagnostics failed: %s", diagnostic_results.c_str());
+            id(last_fault_type) = "DIAGNOSTICS: " + diagnostic_results;
+            id(fault_count)++;
+            id(fault_count_sensor).publish_state(id(fault_count));
+            id(last_fault_type_sensor).publish_state(id(last_fault_type));
+          }
+      - logger.log: "Diagnostics complete"
+
+# Enhanced OLED Display with Budget PSU Monitoring
+display:
+  - platform: ssd1306_i2c
+    model: "SSD1306 128x64"
+    address: 0x3C
+    update_interval: 1s
+    lambda: |-
+      // Header with voltage-specific system status
+      it.printf(0, 0, id(font_small), "Rat Trap %s %s", id(line_voltage).c_str(), id(safety_standard).c_str());
+      
+      // WiFi status indicator
+      if (id(wifi_component).is_connected()) {
+        it.printf(105, 0, id(font_small), "WiFi");
+      } else {
+        it.printf(100, 0, id(font_small), "No Net");
+      }
+      
+      // Current distance reading
+      it.printf(0, 12, id(font_medium), "Distance: %.0fmm", id(trap_distance).state);
+      
+      // System status with visual highlighting (replaces LEDs)
+      if (id(trap_triggered).state) {
+        // Vacuum running - equivalent to red LED strobe
+        it.filled_rectangle(0, 26, 128, 16, COLOR_ON);
+        it.print(2, 30, id(font_medium), COLOR_OFF, ">> VACUUM ON <<");
+      } else if (id(rodent_detected).state) {
+        // Rodent detected - equivalent to red LED alert
+        it.rectangle(0, 26, 128, 16, COLOR_ON);
+        it.print(2, 30, id(font_medium), "* RODENT ALERT *");
+      } else if (id(emergency_disable_switch).state) {
+        // System armed - equivalent to green LED on
+        it.print(0, 28, id(font_small), "Armed & Monitoring");
+        it.print(120, 28, id(font_small), "●");  // Status dot
+      } else {
+        // System disabled - equivalent to all LEDs off
+        it.print(0, 28, id(font_small), "SYSTEM DISABLED");
+        it.print(120, 28, id(font_small), "○");  // Empty status dot
+      }
+      
+      // Capture statistics
+      it.printf(0, 42, id(font_small), "Captures: %.0f", id(capture_count_sensor).state);
+      
+      // Environmental data from BME280
+      if (id(env_temperature).has_state()) {
+        it.printf(0, 47, id(font_small), "Env: %.1f°C  %.0f%%RH", 
+                 id(env_temperature).state, id(env_humidity).state);
+      }
+      
+  // System monitoring - PSU voltage and CPU temp
+  if (id(supply_voltage).has_state()) {
+        it.printf(0, 56, id(font_small), "PSU: %.2fV  CPU: %.1f°C", 
+                  id(supply_voltage).state, id(esp32_temp).state);
+        
+  // Power warning indicator
+        if (id(supply_voltage).state < 4.8) {
+          it.print(105, 56, id(font_small), "! PWR");
+        }
+      } else {
+        it.printf(0, 56, id(font_small), "ESP32 Temp: %.1f°C", id(esp32_temp).state);
+      }
+      
+      // Thermal warning indicator
+      if (id(esp32_temp).has_state() && id(esp32_temp).state > 75.0) {
+        it.print(120, 56, id(font_small), "!");  // Temperature warning
+      }
+
+# Fonts for display
+font:
+  - file: "gfonts://Roboto Mono"
+    id: font_small
+    size: 8
+  - file: "gfonts://Roboto Mono" 
+    id: font_medium
+    size: 12
+
+# Global variables for state tracking
+globals:
+  - id: capture_count
+    type: int
+    restore_value: yes
+    initial_value: '0'
+    
+  - id: last_trigger_time
+    type: unsigned long
+    restore_value: no
+    initial_value: '0'
+    
+  - id: total_vacuum_runtime
+    type: float
+    restore_value: yes
+    initial_value: '0'
+    
+  - id: fault_count
+    type: int
+    restore_value: yes
+    initial_value: '0'
+    
+  - id: last_fault_type
+    type: std::string
+    restore_value: yes
+    initial_value: '""'
+
+# Emergency sleep mode for thermal protection
+deep_sleep:
+  id: emergency_sleep
+  sleep_duration: 60s  # Cool down period
+
+# Web server for local configuration
+web_server:
+  port: 80
+  version: 2
+  include_internal: true
+
+# System information with voltage specifications
+text_sensor:
+  - platform: template
+    name: "System Voltage"
+    id: system_voltage
+    lambda: 'return {"${line_voltage}"};'
+    
+  - platform: template  
+    name: "Line Frequency"
+    id: system_frequency
+    lambda: 'return {"${line_frequency}"};'
+    
+  - platform: template
+    name: "Safety Standard"
+    id: system_safety_standard  
+    lambda: 'return {"${safety_standard}"};'
+    
+  - platform: template
+    name: "Max Current Rating"
+    id: max_current_rating
+    lambda: 'return {"${max_current}"};'
+    
+  # Deprecated field removed: power supply type specific to HLK
+
+  - platform: wifi_info
+    ip_address:
+      name: "IP Address"
+      id: ip_address
+    ssid:
+      name: "Connected SSID"
+      id: wifi_ssid
+    mac_address:
+      name: "MAC Address"
+      id: mac_address
+      
+  - platform: version
+    name: "ESPHome Version"
+    
+  # Fault type reporting
+  - platform: template
+    name: "Last Fault Type"
+    id: last_fault_type_sensor
+    icon: "mdi:alert-circle"
+    lambda: |-
+      return id(last_fault_type);
+    
+# Configurable parameters for easy tuning
+number:
+  - platform: template
+    name: "Detection Threshold (mm)"
+    id: detection_threshold
+    min_value: 50
+    max_value: 500
+    step: 10
+    initial_value: 150
+    restore_value: true
+    optimistic: true
+    
+  - platform: template
+    name: "Vacuum Runtime (seconds)"
+    id: vacuum_runtime
+    min_value: 1
+    max_value: 30
+    step: 1
+    initial_value: 8
+    restore_value: true
+    optimistic: true
+    
+  - platform: template
+    name: "Cooldown Period (seconds)"
+    id: cooldown_period
+    min_value: 10
+    max_value: 300
+    step: 5
+    initial_value: 30
+    restore_value: true
+    optimistic: true
+
+# Deprecated power considerations
+interval:
+  - interval: 30s
+    then:
+      - if:
+          condition:
+            lambda: 'return id(supply_voltage).state < 4.6;'
+          then:
+            - logger.log: "ALERT: PSU voltage critically low, reducing functionality"
+            - switch.turn_off: vacuum_relay
+            - deep_sleep.enter: power_saving_mode
+
+# Deprecated power saving sleep mode
+deep_sleep:
+  id: power_saving_mode
+  sleep_duration: 30s
+
+# Deprecated PSU Caution Notice:
+# - Use LRS-35-5 or HDR-30-5 for recommended builds
