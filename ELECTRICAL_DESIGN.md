@@ -149,8 +149,8 @@ This design meets all applicable electrical safety codes including NEC Article 4
 | 1 | OLED Display 128x64 | SSD1306 | $10 | Status display |
 | 1 | **DHT22 Env. Sensor** | **DHT22** | **$4** | **Temperature/humidity sensor (-$4 vs BME280)** |
 | 1 | **Zero-Crossing SSR 25A** | **D2425-10** | **$32** | **AC switching with EMI reduction (-$3)** |
-| 1 | ESP32 Heat Sink Kit | ICK SMD C 10 X 10 | $2 | Thermal management (10x10mm, adhesive mount) |
-| 1 | Thermal Interface Pad | T412-A4-02-10 | $1 | ESP32 heat dissipation |
+| 1 | ESP32 Heat Sink Kit | 507-10ABPB | $3 | Thermal management (10x10mm, adhesive mount) |
+| 1 | Thermal Interface Pad | SP400-0.010-00-1010 | $2 | ESP32 heat dissipation |
 
 ### **🚨 CRITICAL SAFETY ADDITION - Current Monitoring**
 | Qty | Component | Part Number | Est. Cost | Description |
@@ -215,7 +215,7 @@ SAFETY MARGIN:        440mA available (73% headroom)
 |-----|-----------|-------------|----------|----------|---------|---------|-----------|-------------|
 | 1 | Panel Mount Tactile Switch | PV5S640NN | #1505 | #11968 | 611-PV5S640NN | EG4906-ND | $3 | Panel mount reset button |
 | 1 | **Non-Illuminated E-Stop** | **A22E-M-01** | - | - | **653-A22E-M-01** | **563-1745-ND** | **$25** | **22mm latching, 1NC, UL/CE (-$25 vs illuminated)** |
-| 1 | **Status LED (Red)** | **Panel LED 22mm** | - | - | **653-XB6AV64** | **Z8255-ND** | **$5** | **Separate status indication** |
+| 1 | **Status LED (Red)** | **XB4BVB4** | - | - | **653-XB4BVB4** | **539-XB4BVB4-ND** | **$8** | **22mm panel LED with verified part number** |
 | 1 | **Wago Lever Connectors** | **221-412** | - | - | **855-221-412** | **2604-221-412-ND** | **$2** | **4-port lever connector (-$5 vs screw terminals)** |
 
 **Enhanced Design Optimization:**
@@ -255,7 +255,7 @@ SAFETY MARGIN:        440mA available (73% headroom)
 |-----|-----------|-------------|-----------|-------------|
 | 1 | Enhanced IEC Inlet | 4304.6093 | $25 | All-in-one: IEC + EMI + MOV + fuse + switch |
 | 1 | NEMA 5-15R Outlet | 5262 | $3 | 120V AC vacuum output (15A rated) |
-| 2 | **Fast Blow Fuse 12A** | **5x20mm 12A** | **$3** | **Enhanced selective coordination (12A, 250V)** |
+| 2 | **Fast Blow Fuse 12A** | **0218012.MXP** | **$2** | **Enhanced selective coordination (12A, 250V)** |
 | 1 | **Ferrite Core Set** | **Fair-Rite 0443164251** | **$3** | **EMI suppression for I2C cables** |
 | 1 | **RC Snubber Network** | **0.1µF + 47Ω** | **$2** | **SSR switching transient suppression** |
 
@@ -295,7 +295,7 @@ SAFETY MARGIN:        440mA available (73% headroom)
 | **ToF Sensor** | VL53L1X ($15) | **VL53L0X ($8)** | **-$7** | 2m range sufficient for rat detection |
 | **Power Supply** | LRS-35-5 ($21) | **LRS-15-5 ($12)** | **-$9** | Rightsized for actual load requirements |
 | **Env. Sensor** | BME280 ($8) | **DHT22 ($4)** | **-$4** | Temp/humidity sufficient for analytics |
-| **E-Stop System** | ZB5AS844 ($50) | **A22E-M-01 + LED ($30)** | **-$20** | Separate components improve serviceability |
+| **E-Stop System** | ZB5AS844 ($50) | **A22E-M-01 + LED ($33)** | **-$17** | Separate components improve serviceability |
 | **SSR** | D2425 ($35) | **D2425-10 ($32)** | **-$3** | Zero-crossing type reduces EMI |
 | **Terminal Blocks** | Phoenix ($15) | **Wago 221 Series ($8)** | **-$7** | Lever connectors simplify assembly |
 
@@ -308,9 +308,10 @@ SAFETY MARGIN:        440mA available (73% headroom)
 | **GFCI Tester** | +$15 | Installation verification |
 
 ### **Net Project Impact** 🎯
-- **Component Savings**: -$50 total component cost reduction
-- **Safety Investment**: +$30 for enhanced protection systems
-- **Net Savings**: **-$20** (10% cost reduction)
+- **Component Savings**: -$47 total component cost reduction  
+- **Safety Investment**: +$16 for enhanced protection systems
+- **Net Savings**: **-$31** (15% cost reduction with verified components)
+- **Enhanced BOM Total**: ~$167 (was ~$198)
 - **Safety**: ⬆️ **Significantly Enhanced** with current monitoring
 - **Reliability**: ⬆️ **Improved** fault tolerance and EMI immunity
 - **Serviceability**: ⬆️ **Better** with modular component approach

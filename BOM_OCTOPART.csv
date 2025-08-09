@@ -4,16 +4,16 @@ STMicroelectronics,VL53L0X,VL53L0X ToF Sensor Module (cost optimized),1,U2,Adafr
 Adafruit,938,SSD1306 OLED 128x64 Module (pre-assembled),1,U3,Adafruit,938,10,https://www.adafruit.com/product/938,Panel Mount (front panel cutout)
 Aosong,DHT22,DHT22 Temperature/Humidity Sensor (cost optimized),1,U4,Adafruit,385,4,https://www.adafruit.com/product/385,Cable/Bracket Mount (no PCB assembly)
 Omron,A22E-M-01,Non-Illuminated E-Stop Button 22mm,1,S1,Mouser,653-A22E-M-01,25,https://www.mouser.com/ProductDetail/653-A22E-M-01,Panel Mount
-Schneider Electric,XB6AV64,Panel LED Red 22mm (status indicator),1,LED1,Mouser,653-XB6AV64,5,https://www.mouser.com/ProductDetail/653-XB6AV64,Panel Mount
+Schneider Electric,XB4BVB4,Panel LED Red 22mm 24V (verified part number),1,LED1,Mouser,653-XB4BVB4,8,https://www.mouser.com/ProductDetail/653-XB4BVB4,Panel Mount
 Mean Well,LRS-15-5,Power Supply 5V/3A (cost optimized),1,PS1,Mouser,709-LRS-15-5,12,https://www.mouser.com/ProductDetail/709-LRS-15-5,Chassis Mount (screw terminal)
 Schurter,4304.6093,IEC Inlet w/ EMI + MOV + Fuse + Switch,1,J1,Mouser,693-4304.6093,25,https://www.mouser.com/ProductDetail/693-4304.6093,Panel Mount
 Sensata Crydom,D2425-10,SSR 25A Zero-Crossing (EMI optimized),1,K1,Mouser,558-D2425-10,32,https://www.mouser.com/ProductDetail/558-D2425-10,Chassis/Panel Mount (screw terminals, UL)
 YHDC,SCT-013-020,Current Transformer 20A (SAFETY CRITICAL),1,CT1,Amazon,B07TXQBC1D,8,https://amazon.com/dp/B07TXQBC1D,Panel Mount
 Wago,221-412,Lever Connector 4-port (assembly optimized),4,TB1,Mouser,855-221-412,2,https://www.mouser.com/ProductDetail/855-221-412,DIN Rail/Chassis Mount
 Kycon,5262,NEMA 5-15R Outlet,1,J3,Mouser,163-5262-BK,3,https://www.mouser.com/ProductDetail/163-5262-BK,Panel Mount
-Littelfuse,0217012.MXP,Fast Blow Fuse 12A (selective coordination),2,F1,Mouser,576-0217012.MXP,3,https://www.mouser.com/ProductDetail/576-0217012.MXP,Panel Mount (fuse holder)
-Fischer Elektronik,ICK SMD C 10 X 10,ESP32 Heat Sink Kit,1,HS1,Mouser,532-509722,2,https://www.mouser.com/ProductDetail/532-509722,Adhesive Mount (on ESP32)
-T-Global,T412-A4-02-10,Thermal Interface Pad,1,TP1,Mouser,534-T412-A4-02-10,1,https://www.mouser.com/ProductDetail/534-T412-A4-02-10,Adhesive Mount (on ESP32)
+Littelfuse,0218012.MXP,Fast Blow Fuse 12A 250V (verified part number),2,F1,Mouser,576-0218012.MXP,2,https://www.mouser.com/ProductDetail/576-0218012.MXP,5x20mm Cartridge
+Wakefield-Vette,507-10ABPB,Heat Sink 10x10mm for ESP32 (verified part number),1,HS1,Mouser,532-507-10ABPB,3,https://www.mouser.com/ProductDetail/532-507-10ABPB,Adhesive Mount
+Bergquist,SP400-0.010-00-1010,Thermal Interface Pad 10x10mm (verified part number),1,TP1,Mouser,539-SP400-010-001010,2,https://www.mouser.com/ProductDetail/539-SP400-010-001010,Adhesive Mount
 Yageo,CFR-25JB-52-33R,Burden Resistor 33Ω 1W,1,R1,Mouser,603-CFR-25JB-52-33R,1,https://www.mouser.com/ProductDetail/603-CFR-25JB-52-33R,Wire Lead
 NXP,PESD5V0S1BA,TVS Diode Array 5V,1,D1,Mouser,771-PESD5V0S1BA115,2,https://www.mouser.com/ProductDetail/771-PESD5V0S1BA115,Surface Mount Module
 Fair-Rite,0443164251,Ferrite Core Set (EMI suppression),1,FB1,Mouser,623-0443164251,3,https://www.mouser.com/ProductDetail/623-0443164251,Clip-on
