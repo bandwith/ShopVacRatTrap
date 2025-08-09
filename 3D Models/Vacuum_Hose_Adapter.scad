@@ -1,6 +1,6 @@
 //FollyMaker
 //Adapted from: https://www.thingiverse.com/thing:1246651
-//Vacuum Hose Adapter Rev 2 (January 4, 2023) 
+//Vacuum Hose Adapter Rev 2 (January 4, 2023)
 //Gather the parameters
 /* [Parameters] */
 
@@ -25,14 +25,14 @@ LargeEndGripProjection = 3.1;
 
 // Create a ring on the outside of the small end (for your fingers to grip when pulling the adapter out of the hose)  Use 0 projection for no ring.
 SmallEndGripProjection = 3.1;
- 
+
  $fn=120 *1;
- 
+
      WT=WallThickness;
      LL=LargeEndLength;
      SL=SmallEndLength;
      TL=TaperLength;
-     
+
 // Calculate Large End Outside Diamater
      LOD=  LargeEndMeasured =="inside" ? LargeEndDiameter + 2*WT : LargeEndDiameter;
 // Calculate Small End Outside Diameter
@@ -43,11 +43,11 @@ SmallEndGripProjection = 3.1;
      SID = SOD - 2*WT;
 // Calculate Ring Diameter
      DR = LOD + LargeEndGripProjection;
-     
+
 // Calculate Small End Ring Diameter
      SR = SOD + SmallEndGripProjection;
-     
- 
+
+
 module TransCylinder(D1, D2, H, Z)
     {
         translate([0, 0, Z])
@@ -55,18 +55,18 @@ module TransCylinder(D1, D2, H, Z)
             cylinder(d1=D1, d2=D2, h=H, center=false);
         }
     }
-   
+
 difference()
 {
       union()
-        { 
+        {
             TransCylinder(LOD, LOD, LL, 0);
             TransCylinder(LOD, DR, WT, LL);
             TransCylinder(DR, DR, WT, LL + WT);
             TransCylinder(SR, SR, WT, SL + 20 + 2*WT);
             TransCylinder(LOD, SOD, TL, LL + 2*WT);
             TransCylinder(SOD, SOD, SL, LL + TL + 2*WT);
-          } 
+          }
      union()
         {
             TransCylinder(LID, LID, LL, 0);
@@ -75,4 +75,4 @@ difference()
             TransCylinder(LID, SID, TL, LL + 2*WT);
             TransCylinder(SID, SID, SL, LL +TL + 2*WT);
         }
-}   
+}

@@ -1,0 +1,54 @@
+{
+  "preferred_suppliers": {
+    "tier_1": [
+      "DigiKey",
+      "Mouser"
+    ],
+    "tier_2": [
+      "Arrow Electronics",
+      "Avnet",
+      "Newark",
+      "RS Components",
+      "Future Electronics",
+      "Allied Electronics"
+    ],
+    "specialty": [
+      "Adafruit",
+      "SparkFun",
+      "Pololu"
+    ],
+    "avoid": [
+      "Unknown",
+      "Generic Supplier"
+    ]
+  },
+  "moq_requirements": {
+    "max_moq": 1,
+    "allow_higher_moq_if_significant_savings": false,
+    "savings_threshold_percent": 50
+  },
+  "geographic_preferences": {
+    "preferred_regions": ["US"],
+    "avoid_regions": []
+  },
+  "supplier_scoring": {
+    "tier_1_bonus": 100,
+    "tier_2_bonus": 50,
+    "specialty_bonus": 75,
+    "moq_1_bonus": 200,
+    "stock_availability_weight": 0.3,
+    "price_weight": 0.5,
+    "supplier_tier_weight": 0.2
+  },
+  "comments": {
+    "description": "Supplier preferences for ShopVac Rat Trap BOM validation",
+    "updated": "2025-08-09",
+    "notes": [
+      "Tier 1: Major distributors with excellent service and fast shipping",
+      "Tier 2: Good distributors with reliable stock and reasonable shipping",
+      "Specialty: Maker-focused suppliers for prototyping and small quantities",
+      "MOQ=1 strongly preferred for maker/prototype builds",
+      "Geographic preferences optimize for shipping speed and duties"
+    ]
+  }
+}

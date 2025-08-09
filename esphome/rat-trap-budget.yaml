@@ -13,7 +13,7 @@ substitutions:
   max_current: "15A"
   safety_standard: "NEC/UL"
   build_variant: "BUDGET_ENHANCED"
-  
+
   # 🇪🇺 Europe (230V AC, 50Hz, IEC/CE compliant) - Cost Optimized
   # line_voltage: "230V AC"
   # line_frequency: "50Hz"
@@ -36,7 +36,7 @@ ota:
 wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_password
-  
+
   # Enable fallback hotspot (captive portal) in case wifi connection fails
   ap:
     ssid: "RatTrap-Budget Fallback"
@@ -60,7 +60,7 @@ sensor:
     id: trap_distance
     address: 0x29
     update_interval: 50ms
-    
+
   # Added BME280 environmental sensor
   - platform: bme280
     address: 0x76
@@ -124,7 +124,7 @@ sensor:
                     // Update capture count
                     id(capture_count) += 1;
                     id(capture_count_sensor).publish_state(id(capture_count));
-                    
+
                     // Update vacuum runtime tracking
                     float runtime_minutes = id(vacuum_runtime).state / 60.0;
                     id(total_vacuum_runtime) += runtime_minutes;
@@ -183,7 +183,7 @@ sensor:
     name: "WiFi Signal Strength"
     id: wifi_signal
     update_interval: 60s
-    
+
   - platform: uptime
     name: "System Uptime"
     id: uptime_sensor
@@ -207,7 +207,7 @@ sensor:
           // Enhanced thermal protection with tiered warnings
           static int high_temp_count = 0;
           static unsigned long last_warning_time = 0;
-          
+
           // Critical overheating - immediate shutdown
           if (x > 85.0) {
             ESP_LOGW("thermal", "CRITICAL: ESP32 overheating: %.1f°C - initiating emergency shutdown", x);
@@ -216,11 +216,11 @@ sensor:
             id(thermal_shutdown).execute();
             return x;
           }
-          
+
           // High temperature warning - multiple stages
           if (x > 75.0) {
             high_temp_count++;
-            
+
             // Persistent high temperature
             if (high_temp_count > 12) { // ~3 minutes of elevated temperature
               ESP_LOGW("thermal", "WARNING: ESP32 persistent high temperature: %.1f°C - preventive shutdown", x);
@@ -229,7 +229,7 @@ sensor:
               id(thermal_shutdown).execute();
               return x;
             }
-            
+
             // Repeated warnings at 1 minute intervals
             if (millis() - last_warning_time > 60000) {
               ESP_LOGW("thermal", "WARNING: ESP32 temperature elevated: %.1f°C - monitoring", x);
@@ -239,7 +239,7 @@ sensor:
             // Temperature normal - reset counter
             high_temp_count = 0;
           }
-          
+
           return x;
 
 # Power supply monitoring (generic)
@@ -253,9 +253,9 @@ sensor:
     device_class: voltage
     filters:
       - multiply: 3.3  # ADC reference voltage
-    - calibrate_linear:
-      - 0.0 -> 0.0
-      - 1.0 -> 5.0  # Scale to actual voltage (adjust per divider)
+      - calibrate_linear:
+          - 0.0 -> 0.0
+          - 1.0 -> 5.0  # Scale to actual voltage (adjust per divider)
       - sliding_window_moving_average:
           window_size: 10
           send_every: 5
@@ -282,16 +282,16 @@ binary_sensor:
     id: rodent_detected
     icon: "mdi:rat"
     device_class: motion
-    
+
   # Trap triggered state
   - platform: template
     name: "Trap Triggered"
     id: trap_triggered
     icon: "mdi:power"
-    
+
   # Physical reset button (GPIO18)
   - platform: gpio
-    pin: 
+    pin:
       number: 18
       mode: INPUT_PULLUP
       inverted: true
@@ -304,7 +304,7 @@ binary_sensor:
       - logger.log: "Reset button pressed - restarting system"
       - delay: 1s
       - button.press: restart_button
-      
+
   # Physical emergency stop button (GPIO4) - SAFETY CRITICAL
   - platform: gpio
     pin:
@@ -337,12 +337,12 @@ switch:
     icon: "mdi:vacuum"
     restore_mode: ALWAYS_OFF
     on_turn_on:
-      - logger.log: 
+      - logger.log:
           format: "SSR activated - switching %s load (%s compliant)"
           args: ['id(line_voltage).c_str()', 'id(safety_standard).c_str()']
     on_turn_off:
       - logger.log: "SSR deactivated - load disconnected"
-    
+
   # Software manual trigger
   - platform: template
     name: "Manual Trigger"
@@ -372,7 +372,7 @@ button:
   - platform: restart
     name: "Restart ESP32"
     id: restart_button
-    
+
   # Enhanced thermal shutdown protection
   - platform: template
     name: "Thermal Shutdown"
@@ -388,8 +388,8 @@ button:
           id(fault_count_sensor).publish_state(id(fault_count));
           id(last_fault_type_sensor).publish_state(id(last_fault_type));
       - deep_sleep.enter: emergency_sleep
-      
-  # System diagnostic tool  
+
+  # System diagnostic tool
   - platform: template
     name: "Run Diagnostics"
     id: run_diagnostics
@@ -399,7 +399,7 @@ button:
       - lambda: |-
           bool system_ok = true;
           std::string diagnostic_results = "";
-          
+
           // Check I2C devices
           if (i2c::global_i2c_bus->scan_device(0x29) == false) {
             system_ok = false;
@@ -413,24 +413,24 @@ button:
             system_ok = false;
             diagnostic_results += "BME280 sensor not detected. ";
           }
-          
+
           // Check WiFi
           if (!wifi::global_wifi_component->is_connected()) {
             diagnostic_results += "WiFi not connected. ";
           }
-          
+
           // Check thermal status
           if (id(esp32_temp).state > 70.0) {
             system_ok = false;
             diagnostic_results += "Temperature high: " + to_string(id(esp32_temp).state) + "C. ";
           }
-          
+
           // Check power supply voltage
           if (id(supply_voltage).state < 4.8) {
             system_ok = false;
             diagnostic_results += "Power supply voltage low: " + to_string(id(supply_voltage).state) + "V. ";
           }
-          
+
           // Log results
           if (system_ok) {
             ESP_LOGI("diagnostics", "System diagnostics passed");
@@ -452,17 +452,17 @@ display:
     lambda: |-
       // Header with voltage-specific system status
       it.printf(0, 0, id(font_small), "Rat Trap %s %s", id(line_voltage).c_str(), id(safety_standard).c_str());
-      
+
       // WiFi status indicator
       if (id(wifi_component).is_connected()) {
         it.printf(105, 0, id(font_small), "WiFi");
       } else {
         it.printf(100, 0, id(font_small), "No Net");
       }
-      
+
       // Current distance reading
       it.printf(0, 12, id(font_medium), "Distance: %.0fmm", id(trap_distance).state);
-      
+
       // System status with visual highlighting (replaces LEDs)
       if (id(trap_triggered).state) {
         // Vacuum running - equivalent to red LED strobe
@@ -481,21 +481,21 @@ display:
         it.print(0, 28, id(font_small), "SYSTEM DISABLED");
         it.print(120, 28, id(font_small), "○");  // Empty status dot
       }
-      
+
       // Capture statistics
       it.printf(0, 42, id(font_small), "Captures: %.0f", id(capture_count_sensor).state);
-      
+
       // Environmental data from BME280
       if (id(env_temperature).has_state()) {
-        it.printf(0, 47, id(font_small), "Env: %.1f°C  %.0f%%RH", 
+        it.printf(0, 47, id(font_small), "Env: %.1f°C  %.0f%%RH",
                  id(env_temperature).state, id(env_humidity).state);
       }
-      
+
   // System monitoring - PSU voltage and CPU temp
   if (id(supply_voltage).has_state()) {
-        it.printf(0, 56, id(font_small), "PSU: %.2fV  CPU: %.1f°C", 
+        it.printf(0, 56, id(font_small), "PSU: %.2fV  CPU: %.1f°C",
                   id(supply_voltage).state, id(esp32_temp).state);
-        
+
   // Power warning indicator
         if (id(supply_voltage).state < 4.8) {
           it.print(105, 56, id(font_small), "! PWR");
@@ -503,7 +503,7 @@ display:
       } else {
         it.printf(0, 56, id(font_small), "ESP32 Temp: %.1f°C", id(esp32_temp).state);
       }
-      
+
       // Thermal warning indicator
       if (id(esp32_temp).has_state() && id(esp32_temp).state > 75.0) {
         it.print(120, 56, id(font_small), "!");  // Temperature warning
@@ -514,7 +514,7 @@ font:
   - file: "gfonts://Roboto Mono"
     id: font_small
     size: 8
-  - file: "gfonts://Roboto Mono" 
+  - file: "gfonts://Roboto Mono"
     id: font_medium
     size: 12
 
@@ -524,22 +524,22 @@ globals:
     type: int
     restore_value: yes
     initial_value: '0'
-    
+
   - id: last_trigger_time
     type: unsigned long
     restore_value: no
     initial_value: '0'
-    
+
   - id: total_vacuum_runtime
     type: float
     restore_value: yes
     initial_value: '0'
-    
+
   - id: fault_count
     type: int
     restore_value: yes
     initial_value: '0'
-    
+
   - id: last_fault_type
     type: std::string
     restore_value: yes
@@ -562,22 +562,22 @@ text_sensor:
     name: "System Voltage"
     id: system_voltage
     lambda: 'return {"${line_voltage}"};'
-    
-  - platform: template  
+
+  - platform: template
     name: "Line Frequency"
     id: system_frequency
     lambda: 'return {"${line_frequency}"};'
-    
+
   - platform: template
     name: "Safety Standard"
-    id: system_safety_standard  
+    id: system_safety_standard
     lambda: 'return {"${safety_standard}"};'
-    
+
   - platform: template
     name: "Max Current Rating"
     id: max_current_rating
     lambda: 'return {"${max_current}"};'
-    
+
   # Deprecated field removed: power supply type specific to HLK
 
   - platform: wifi_info
@@ -590,10 +590,10 @@ text_sensor:
     mac_address:
       name: "MAC Address"
       id: mac_address
-      
+
   - platform: version
     name: "ESPHome Version"
-    
+
   # Fault type reporting
   - platform: template
     name: "Last Fault Type"
@@ -601,7 +601,7 @@ text_sensor:
     icon: "mdi:alert-circle"
     lambda: |-
       return id(last_fault_type);
-    
+
 # Configurable parameters for easy tuning
 number:
   - platform: template
@@ -613,7 +613,7 @@ number:
     initial_value: 150
     restore_value: true
     optimistic: true
-    
+
   - platform: template
     name: "Vacuum Runtime (seconds)"
     id: vacuum_runtime
@@ -623,7 +623,7 @@ number:
     initial_value: 8
     restore_value: true
     optimistic: true
-    
+
   - platform: template
     name: "Cooldown Period (seconds)"
     id: cooldown_period

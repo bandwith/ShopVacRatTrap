@@ -1,0 +1,192 @@
+name: BOM Pricing Update & Validation
+
+on:
+  schedule:
+    # Run weekly on Mondays at 9 AM UTC
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+    inputs:
+      force_update:
+        description: 'Force update even if prices unchanged'
+        required: false
+        default: false
+        type: boolean
+  push:
+    paths:
+      - 'BOM_*.csv'
+      - '.github/workflows/bom-pricing-update.yml'
+      - 'scripts/nexar_validation.py'
+
+env:
+  NEXAR_CLIENT_ID: ${{ secrets.NEXAR_CLIENT_ID }}
+  NEXAR_CLIENT_SECRET: ${{ secrets.NEXAR_CLIENT_SECRET }}
+
+jobs:
+  validate-bom-pricing:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install requests pandas python-dotenv
+
+    - name: Create backup of current BOMs
+      run: |
+        mkdir -p pricing_backup
+        cp BOM_BUDGET.csv pricing_backup/BOM_BUDGET_$(date +%Y%m%d).csv
+        cp BOM_OCTOPART.csv pricing_backup/BOM_OCTOPART_$(date +%Y%m%d).csv
+
+    - name: Validate BOM pricing with Nexar API
+      id: pricing_validation
+      run: |
+        python scripts/nexar_validation.py --output-format github-actions
+      continue-on-error: true
+
+    - name: Generate pricing report
+      if: always()
+      run: |
+        echo "## 💰 BOM Pricing Validation Report - $(date)" > pricing_report.md
+        echo "" >> pricing_report.md
+
+        if [ -f validation_results.json ]; then
+          python scripts/generate_pricing_report.py
+        else
+          echo "❌ **Validation Failed** - Unable to retrieve pricing data" >> pricing_report.md
+          echo "" >> pricing_report.md
+          echo "**Error Details:**" >> pricing_report.md
+          echo "- Check Nexar API credentials" >> pricing_report.md
+          echo "- Verify API endpoint accessibility" >> pricing_report.md
+          echo "- Review component part numbers" >> pricing_report.md
+        fi
+
+    - name: Check for pricing changes
+      id: pricing_changes
+      run: |
+        if [ -f pricing_changes.json ]; then
+          CHANGES=$(cat pricing_changes.json | jq '.changes_detected')
+          echo "changes_detected=$CHANGES" >> $GITHUB_OUTPUT
+
+          SIGNIFICANT_CHANGES=$(cat pricing_changes.json | jq '.significant_changes')
+          echo "significant_changes=$SIGNIFICANT_CHANGES" >> $GITHUB_OUTPUT
+        else
+          echo "changes_detected=false" >> $GITHUB_OUTPUT
+          echo "significant_changes=false" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Update BOM files with current pricing
+      if: steps.pricing_changes.outputs.changes_detected == 'true' || github.event.inputs.force_update == 'true'
+      run: |
+        python scripts/update_bom_pricing.py
+        echo "BOM files updated with current pricing" >> pricing_report.md
+
+    - name: Commit and push changes
+      if: steps.pricing_changes.outputs.changes_detected == 'true' || github.event.inputs.force_update == 'true'
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+
+        git add BOM_*.csv
+        git add pricing_backup/
+
+        if ! git diff --staged --quiet; then
+          git commit -m "🤖 Auto-update BOM pricing - $(date +%Y-%m-%d)
+
+          - Updated component pricing from Nexar API
+          - Backup created: pricing_backup/BOM_*_$(date +%Y%m%d).csv
+          - Validation report generated
+
+          Co-authored-by: nexar-pricing-bot <nexar-pricing-bot@users.noreply.github.com>"
+
+          git push
+        fi
+
+    - name: Create issue for significant price changes
+      if: steps.pricing_changes.outputs.significant_changes == 'true'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+
+          let reportContent = '';
+          try {
+            reportContent = fs.readFileSync('pricing_report.md', 'utf8');
+          } catch (error) {
+            reportContent = '❌ Unable to generate pricing report';
+          }
+
+          const issueBody = `${reportContent}
+
+          ## 🔍 Action Required
+
+          **Significant price changes have been detected in the BOM components.**
+
+          ### Next Steps:
+          1. Review the pricing changes above
+          2. Update project cost estimates if needed
+          3. Consider alternative components for items with major price increases
+          4. Update ELECTRICAL_DESIGN.md cost analysis if total project cost changed significantly
+          5. Close this issue once changes have been reviewed and addressed
+
+          ### Automation Details:
+          - **Trigger**: Weekly pricing validation
+          - **Threshold**: Changes >10% or total project cost change >5%
+          - **Auto-update**: BOM files automatically updated with current pricing
+          - **Backup**: Previous pricing saved in \`pricing_backup/\` directory
+
+          *This issue was automatically created by the BOM pricing validation workflow.*`;
+
+          const issue = await github.rest.issues.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            title: '⚠️ Significant BOM Price Changes Detected',
+            body: issueBody,
+            labels: ['automation', 'pricing', 'review-needed']
+          });
+
+          console.log(`Created issue #${issue.data.number}`);
+
+    - name: Upload artifacts
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: pricing-validation-${{ github.run_number }}
+        path: |
+          pricing_report.md
+          validation_results.json
+          pricing_changes.json
+          pricing_backup/
+        retention-days: 30
+
+    - name: Post summary to workflow
+      if: always()
+      run: |
+        echo "## 💰 BOM Pricing Validation Summary" >> $GITHUB_STEP_SUMMARY
+
+        if [ -f pricing_report.md ]; then
+          cat pricing_report.md >> $GITHUB_STEP_SUMMARY
+        else
+          echo "❌ Pricing validation failed - check logs for details" >> $GITHUB_STEP_SUMMARY
+        fi
+
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### 📊 Workflow Statistics" >> $GITHUB_STEP_SUMMARY
+        echo "- **Run Date**: $(date)" >> $GITHUB_STEP_SUMMARY
+        echo "- **Trigger**: ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Changes Detected**: ${{ steps.pricing_changes.outputs.changes_detected }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Significant Changes**: ${{ steps.pricing_changes.outputs.significant_changes }}" >> $GITHUB_STEP_SUMMARY

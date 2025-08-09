@@ -38,11 +38,11 @@ number:
     name: "Detection Threshold (mm)"
     id: detection_threshold
     initial_value: 150
-    
+
 # Thermal protection is mandatory
 sensor:
   - platform: template
-    name: "ESP32 Temperature" 
+    name: "ESP32 Temperature"
     lambda: |-
       return temperatureRead();
     filters:
@@ -72,8 +72,8 @@ substitutions:
   line_frequency: "60Hz"
   max_current: "15A"
   safety_standard: "NEC/UL"
-  
-  # 🇪🇺 Europe (230V AC, 50Hz, IEC/CE compliant)  
+
+  # 🇪🇺 Europe (230V AC, 50Hz, IEC/CE compliant)
   # line_voltage: "230V AC"
   # line_frequency: "50Hz"
   # max_current: "10A"
@@ -216,14 +216,14 @@ openscad -o Control_Box_Enclosure.stl Control_Box_Enclosure.scad
 
 ### International Compliance Requirements
 - **🇺🇸 US/North America**: NEC/UL standards, 120V AC, 60Hz, 15A protection
-- **🇪🇺 Europe**: IEC/CE standards, 230V AC, 50Hz, 10A protection 
+- **🇪🇺 Europe**: IEC/CE standards, 230V AC, 50Hz, 10A protection
 - **Wire colors**: US (Black/White/Green), EU (Brown/Blue/Green-Yellow)
 - **Outlets**: NEMA 5-15R (US), CEE 7/7 Schuko (EU)
 
 ### Component Sourcing Strategy
 **Primary vendors**: Major electronic component distributors (power/safety/dev boards), mechanical hardware suppliers
 **Alternate vendors**: Online electronics retailers, maker-focused shops
-**Component requirements**: 
+**Component requirements**:
 - Use only pre-assembled modules (no raw PCB, SMD, or through-hole components)
 - Select chassis/panel-mount components wherever possible
 - Prioritize components with screw terminals over soldered connections
@@ -275,32 +275,32 @@ display:
   lambda: |-
     # Header with system info
     it.printf(0, 0, id(font_small), "Rat Trap %s %s", id(line_voltage).c_str(), id(safety_standard).c_str());
-    
+
     # WiFi status indicator (top right)
     if (id(wifi_component).is_connected()) {
       it.printf(105, 0, id(font_small), "WiFi");
     } else {
       it.printf(100, 0, id(font_small), "No Net");
     }
-    
+
     # Primary sensor reading (large, prominent)
     it.printf(0, 12, id(font_medium), "Distance: %.0fmm", id(trap_distance).state);
-    
+
     # Status section with visual highlighting
     if (id(trap_triggered).state) {
       it.filled_rectangle(0, 26, 128, 16, COLOR_ON);
       it.print(2, 30, id(font_medium), COLOR_OFF, ">> VACUUM ON <<");
-    } 
-    
+    }
+
     # Statistics section (middle-bottom)
     it.printf(0, 42, id(font_small), "Captures: %.0f", id(capture_count_sensor).state);
-    
+
     # Environmental data section (bottom)
-    it.printf(0, 47, id(font_small), "Env: %.1f°C  %.0f%%RH", 
+    it.printf(0, 47, id(font_small), "Env: %.1f°C  %.0f%%RH",
              id(env_temperature).state, id(env_humidity).state);
-    
+
     # System monitoring (very bottom)
-    it.printf(0, 56, id(font_small), "WiFi: %.0fdBm  CPU: %.1f°C", 
+    it.printf(0, 56, id(font_small), "WiFi: %.0fdBm  CPU: %.1f°C",
               id(wifi_signal).state, id(esp32_temp).state);
 ```
 

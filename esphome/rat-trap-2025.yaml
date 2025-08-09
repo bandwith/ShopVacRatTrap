@@ -11,53 +11,37 @@ substitutions:
   line_voltage: "120V AC"
   line_frequency: "60Hz"
   max_current: "15A"
-  safe  # Enhanced power management with NEC/IEC compliance
-  - interval: 100ms
-    then:
-      - if:
-          condition:
-            lambda: 're      } else if (id(emergency_disable_sw      # Current monitoring display (if CT clamp sensor is installed)
-      if (id(vacuum_current).has_state()) {
+  safety_standard: "NEC"  # Enhanced power management with NEC/IEC compliance
+
+esp32:
         it.printf(0, 52, id(font_small), "Current: %.1fA", id(vacuum_current).state);
-      }).state) {
-        # System armed - Status LED is on
-        it.print(0, 28, id(font_small), "Armed & Monitoring");
-        it.print(120, 28, id(font_small), "●");  # Status dot
-      } else {
+      }
         # System disabled - Status LED is off
         it.print(0, 28, id(font_small), "SYSTEM DISABLED");
         it.print(120, 28, id(font_small), "○");  # Empty status dot
       }      # Environmental data from DHT22
       if (id(env_temperature).has_state()) {
-        it.printf(0, 47, id(font_small), "Env: %.1f°C  %.0f%%RH", 
+        it.printf(0, 47, id(font_small), "Env: %.1f°C  %.0f%%RH",
                  id(env_temperature).state, id(env_humidity).state);
       }< 5000;'  # First 5 seconds after boot
           then:
             # NEC 422.31(B): Ensure SSR is OFF during power-up (safety critical)
             - switch.turn_off: vacuum_relay
-            # Set E-stop LED based on emergency stop button state
-            - if:
-                condition:
-                  binary_sensor.is_on: emergency_disable_switch
-                then:
-                  - output.turn_on: estop_led_output  # System armed
-                else:
-                  - output.turn_off: estop_led_output  # Emergency stop activated
-            - logger.log: 
+            - logger.log:
                 format: "Power-on sequencing: SSR disabled during boot (%s compliance)"
                 args: ['id(safety_standard).c_str()']
-                
+
   # NEC/IEC compliance monitoring
   - interval: 60s
     then:
       - lambda: |-
           // Log safety compliance status
-          ESP_LOGI("safety", "System running %s compliant at %s %s", 
-                   id(safety_standard).c_str(), 
-                   id(line_voltage).c_str(), 
+          ESP_LOGI("safety", "System running %s compliant at %s %s",
+                   id(safety_standard).c_str(),
+                   id(line_voltage).c_str(),
                    id(line_frequency).c_str());: "NEC/UL"
-  
-  # 🇪🇺 Europe (230V AC, 50Hz, IEC/CE compliant)  
+
+  # 🇪🇺 Europe (230V AC, 50Hz, IEC/CE compliant)
   # line_voltage: "230V AC"
   # line_frequency: "50Hz"
   # max_current: "10A"
@@ -79,7 +63,7 @@ ota:
 wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_password
-  
+
   # Enable fallback hotspot (captive portal) in case wifi connection fails
   ap:
     ssid: "RatTrap2025 Fallback"
@@ -101,7 +85,7 @@ sensor:
     id: trap_distance
     address: 0x29
     update_interval: 50ms
-    
+
   # Enhanced DHT22 environmental sensor (cost optimized)
   - platform: dht
     pin: 16
@@ -125,7 +109,7 @@ sensor:
       device_class: humidity
       state_class: measurement
     update_interval: 60s
-    
+
   # 🚨 CRITICAL SAFETY: AC Current Monitoring for Overload Protection
   - platform: ct_clamp
     pin: GPIO35
@@ -147,12 +131,12 @@ sensor:
     on_value_range:
       - above: 10.0  # 118% of typical 8.5A vacuum current
         then:
-          - logger.log: 
+          - logger.log:
               format: "⚠️ ALERT: Vacuum current high (%.1fA) - possible blockage or motor wear"
               args: ["id(vacuum_current).state"]
       - above: 12.0  # 141% of typical current - immediate shutdown
         then:
-          - logger.log: 
+          - logger.log:
               format: "🚨 CRITICAL: Vacuum overload (%.1fA) - emergency shutdown for safety"
               args: ["id(vacuum_current).state"]
           - switch.turn_off: vacuum_relay
@@ -189,7 +173,6 @@ sensor:
               condition:
                 and:
                   - binary_sensor.is_off: trap_triggered
-                  - binary_sensor.is_on: emergency_disable_switch
                   - lambda: 'return (millis() - id(last_trigger_time) > (id(cooldown_period).state * 1000));' # Configurable cooldown
               then:
                 - logger.log: "Rodent detected! Triggering vacuum sequence."
@@ -207,7 +190,7 @@ sensor:
                     // Update capture count
                     id(capture_count) += 1;
                     id(capture_count_sensor).publish_state(id(capture_count));
-                    
+
                     // Update vacuum runtime tracking
                     float runtime_minutes = id(vacuum_runtime).state / 60.0;
                     id(total_vacuum_runtime) += runtime_minutes;
@@ -266,7 +249,7 @@ sensor:
     name: "WiFi Signal Strength"
     id: wifi_signal
     update_interval: 60s
-    
+
   - platform: uptime
     name: "System Uptime"
     id: uptime_sensor
@@ -290,7 +273,7 @@ sensor:
           // Enhanced thermal protection with tiered warnings
           static int high_temp_count = 0;
           static unsigned long last_warning_time = 0;
-          
+
           // Critical overheating - immediate shutdown
           if (x > 85.0) {
             ESP_LOGW("thermal", "CRITICAL: ESP32 overheating: %.1f°C - initiating emergency shutdown", x);
@@ -299,11 +282,11 @@ sensor:
             id(thermal_shutdown).execute();
             return x;
           }
-          
+
           // High temperature warning - multiple stages
           if (x > 75.0) {
             high_temp_count++;
-            
+
             // Persistent high temperature
             if (high_temp_count > 12) { // ~3 minutes of elevated temperature
               ESP_LOGW("thermal", "WARNING: ESP32 persistent high temperature: %.1f°C - preventive shutdown", x);
@@ -312,7 +295,7 @@ sensor:
               id(thermal_shutdown).execute();
               return x;
             }
-            
+
             // Repeated warnings at 1 minute intervals
             if (millis() - last_warning_time > 60000) {
               ESP_LOGW("thermal", "WARNING: ESP32 temperature elevated: %.1f°C - monitoring", x);
@@ -322,9 +305,9 @@ sensor:
             // Temperature normal - reset counter
             high_temp_count = 0;
           }
-          
+
           return x;
-          
+
   # ESP32 internal temperature monitoring with enhanced thermal management
 
 # Binary sensors for detection and control
@@ -335,16 +318,16 @@ binary_sensor:
     id: rodent_detected
     icon: "mdi:rat"
     device_class: motion
-    
+
   # Trap triggered state
   - platform: template
     name: "Trap Triggered"
     id: trap_triggered
     icon: "mdi:power"
-    
+
   # Physical reset button (GPIO18)
   - platform: gpio
-    pin: 
+    pin:
       number: 18
       mode: INPUT_PULLUP
       inverted: true
@@ -357,37 +340,13 @@ binary_sensor:
       - logger.log: "Reset button pressed - restarting system"
       - delay: 1s
       - button.press: restart_button
-      
+
   # Test trigger functionality moved to software trigger in Home Assistant
-            
-  # Physical non-illuminated emergency stop button (GPIO4) + separate status LED - SAFETY CRITICAL
-  - platform: gpio
-    pin:
-      number: 4
-      mode: INPUT_PULLUP
-      inverted: true
-    name: "Emergency Stop Button"
-    id: emergency_disable_switch
-    device_class: safety
-    filters:
-      - delayed_on: 50ms
-      - delayed_off: 50ms
-    on_state:
-      - if:
-          condition:
-            binary_sensor.is_on: emergency_disable_switch
-          then:
-            - logger.log: "E-STOP RELEASED - system armed"
-            - output.turn_on: status_led_output  # Turn on status LED to show system is armed
-          else:
-            - logger.log: "🚨 EMERGENCY STOP ACTIVATED - immediate shutdown"
-            - switch.turn_off: vacuum_relay
-            - output.turn_off: status_led_output  # Turn off status LED when emergency stop is activated
-            
+
   # Optional PIR Motion Sensor (HC-SR501) for pre-detection
   # Add this component to provide early detection and power saving
   - platform: gpio
-    pin: 
+    pin:
       number: 13  # Adjust GPIO as needed
       mode: INPUT
     name: "PIR Motion Sensor"
@@ -410,12 +369,12 @@ switch:
     icon: "mdi:vacuum"
     restore_mode: ALWAYS_OFF
     on_turn_on:
-      - logger.log: 
+      - logger.log:
           format: "SSR activated - switching %s load (%s compliant)"
           args: ['id(line_voltage).c_str()', 'id(safety_standard).c_str()']
     on_turn_off:
       - logger.log: "SSR deactivated - load disconnected"
-    
+
   # Software manual trigger
   - platform: template
     name: "Manual Trigger"
@@ -424,9 +383,7 @@ switch:
     turn_on_action:
       - if:
           condition:
-            and:
-              - binary_sensor.is_on: emergency_disable_switch
-              - binary_sensor.is_off: trap_triggered
+            binary_sensor.is_off: trap_triggered
           then:
             - logger.log: "Software manual trigger activated"
             - switch.turn_on: vacuum_relay
@@ -439,7 +396,7 @@ switch:
                 id(vacuum_runtime_sensor).publish_state(id(total_vacuum_runtime));
           else:
             - logger.log: "Manual trigger ignored - system disabled or busy"
-            
+
   # Power-saving mode control
   - platform: template
     name: "Power Saving Mode"
@@ -457,7 +414,7 @@ button:
   - platform: restart
     name: "Restart ESP32"
     id: restart_button
-    
+
   # Enhanced thermal shutdown protection
   - platform: template
     name: "Thermal Shutdown"
@@ -473,8 +430,8 @@ button:
           id(fault_count_sensor).publish_state(id(fault_count));
           id(last_fault_type_sensor).publish_state(id(last_fault_type));
       - deep_sleep.enter: emergency_sleep
-      
-  # System diagnostic tool  
+
+  # System diagnostic tool
   - platform: template
     name: "Run Diagnostics"
     id: run_diagnostics
@@ -484,7 +441,7 @@ button:
       - lambda: |-
           bool system_ok = true;
           std::string diagnostic_results = "";
-          
+
           // Check I2C devices
           if (i2c::global_i2c_bus->scan_device(0x29) == false) {
             system_ok = false;
@@ -498,18 +455,18 @@ button:
             system_ok = false;
             diagnostic_results += "BME280 sensor not detected. ";
           }
-          
+
           // Check WiFi
           if (!wifi::global_wifi_component->is_connected()) {
             diagnostic_results += "WiFi not connected. ";
           }
-          
+
           // Check thermal status
           if (id(esp32_temp).state > 70.0) {
             system_ok = false;
             diagnostic_results += "Temperature high: " + to_string(id(esp32_temp).state) + "C. ";
           }
-          
+
           // Log results
           if (system_ok) {
             ESP_LOGI("diagnostics", "System diagnostics passed");
@@ -522,12 +479,8 @@ button:
           }
       - logger.log: "Diagnostics complete"
 
-# Enhanced status LED control (separate from E-stop for cost optimization)
-output:
-  - platform: gpio
-    pin: 17
-    id: status_led_output
-    
+# REMOVED: LED indicators (functionality integrated into OLED display)
+
 # REMOVED: Separate LED indicators (replaced with integrated OLED status display and illuminated E-stop)
 # Cost savings: -$8 (2x LEDs + 2x resistors + wiring complexity eliminated)
 
@@ -540,17 +493,17 @@ display:
     lambda: |-
       // Header with voltage-specific system status
       it.printf(0, 0, id(font_small), "Rat Trap %s %s", id(line_voltage).c_str(), id(safety_standard).c_str());
-      
+
       // WiFi status indicator
       if (id(wifi_component).is_connected()) {
         it.printf(105, 0, id(font_small), "WiFi");
       } else {
         it.printf(100, 0, id(font_small), "No Net");
       }
-      
+
       // Current distance reading
       it.printf(0, 12, id(font_medium), "Distance: %.0fmm", id(trap_distance).state);
-      
+
       // System status with visual highlighting (replaces LEDs)
       if (id(trap_triggered).state) {
         // Vacuum running - equivalent to red LED strobe
@@ -560,43 +513,39 @@ display:
         // Rodent detected - equivalent to red LED alert
         it.rectangle(0, 26, 128, 16, COLOR_ON);
         it.print(2, 30, id(font_medium), "* RODENT ALERT *");
-      } else if (id(emergency_disable_switch).state) {
-        // System armed - E-stop LED is on
+      } else {
+        // System armed and monitoring
         it.print(0, 28, id(font_small), "Armed & Monitoring");
         it.print(120, 28, id(font_small), "●");  // Status dot
-      } else {
-        // System disabled - E-stop LED is off
-        it.print(0, 28, id(font_small), "SYSTEM DISABLED");
-        it.print(120, 28, id(font_small), "○");  // Empty status dot
       }
-      
+
       // Capture statistics
       it.printf(0, 42, id(font_small), "Captures: %.0f", id(capture_count_sensor).state);
-      
+
       // Environmental data from BME280
       if (id(env_temperature).has_state()) {
-        it.printf(0, 47, id(font_small), "Env: %.1f°C  %.0f%%RH", 
+        it.printf(0, 47, id(font_small), "Env: %.1f°C  %.0f%%RH",
                  id(env_temperature).state, id(env_humidity).state);
       }
-      
+
       // System monitoring
       if (id(wifi_signal).has_state()) {
-        it.printf(0, 56, id(font_small), "WiFi: %.0fdBm  CPU: %.1f°C", 
+        it.printf(0, 56, id(font_small), "WiFi: %.0fdBm  CPU: %.1f°C",
                   id(wifi_signal).state, id(esp32_temp).state);
       } else {
         it.printf(0, 56, id(font_small), "ESP32 Temp: %.1f°C", id(esp32_temp).state);
       }
-      
+
       // Thermal warning indicator
       if (id(esp32_temp).has_state() && id(esp32_temp).state > 75.0) {
         it.print(120, 56, id(font_small), "!");  // Temperature warning
       }
-      
+
       // Current monitoring (if ACS712 sensor is installed)
       if (id(vacuum_current).has_state()) {
         it.printf(0, 56, id(font_small), "Vacuum: %.1fA", id(vacuum_current).state);
       }
-      
+
       // PIR motion indicator (if HC-SR501 sensor is installed)
       if (id(pir_sensor).state) {
         it.print(115, 56, id(font_small), "◯");  // Motion indicator
@@ -607,7 +556,7 @@ font:
   - file: "gfonts://Roboto Mono"
     id: font_small
     size: 8
-  - file: "gfonts://Roboto Mono" 
+  - file: "gfonts://Roboto Mono"
     id: font_medium
     size: 12
 
@@ -617,27 +566,27 @@ globals:
     type: int
     restore_value: yes
     initial_value: '0'
-    
+
   - id: last_trigger_time
     type: unsigned long
     restore_value: no
     initial_value: '0'
-    
+
   - id: total_vacuum_runtime
     type: float
     restore_value: yes
     initial_value: '0'
-    
+
   - id: fault_count
     type: int
     restore_value: yes
     initial_value: '0'
-    
+
   - id: last_fault_type
     type: std::string
     restore_value: yes
     initial_value: '""'
-    
+
   - id: enhanced_monitoring_active
     type: bool
     restore_value: no
@@ -672,13 +621,7 @@ web_server:
   version: 2
   include_internal: true
 
-# Status LED as a light entity (separate from E-stop for cost optimization)
-light:
-  - platform: binary
-    name: "Status Light"
-    output: status_led_output
-    id: status_light
-    restore_mode: ALWAYS_ON  # Light will be on when system starts up (armed state)
+# REMOVED: Status LED (functionality integrated into OLED display for cost optimization)
 
 # System information with voltage specifications
 text_sensor:
@@ -686,17 +629,17 @@ text_sensor:
     name: "System Voltage"
     id: system_voltage
     lambda: 'return {"${line_voltage}"};'
-    
-  - platform: template  
+
+  - platform: template
     name: "Line Frequency"
     id: system_frequency
     lambda: 'return {"${line_frequency}"};'
-    
+
   - platform: template
     name: "Safety Standard"
-    id: system_safety_standard  
+    id: system_safety_standard
     lambda: 'return {"${safety_standard}"};'
-    
+
   - platform: template
     name: "Max Current Rating"
     id: max_current_rating
@@ -712,10 +655,10 @@ text_sensor:
     mac_address:
       name: "MAC Address"
       id: mac_address
-      
+
   - platform: version
     name: "ESPHome Version"
-    
+
   # Fault type reporting
   - platform: template
     name: "Last Fault Type"
@@ -723,7 +666,7 @@ text_sensor:
     icon: "mdi:alert-circle"
     lambda: |-
       return id(last_fault_type);
-    
+
 # Configurable parameters for easy tuning
 number:
   - platform: template
@@ -735,7 +678,7 @@ number:
     initial_value: 150
     restore_value: true
     optimistic: true
-    
+
   - platform: template
     name: "Vacuum Runtime (seconds)"
     id: vacuum_runtime
@@ -745,7 +688,7 @@ number:
     initial_value: 8
     restore_value: true
     optimistic: true
-    
+
   - platform: template
     name: "Cooldown Period (seconds)"
     id: cooldown_period
@@ -757,7 +700,7 @@ number:
     optimistic: true
 
 # Enhanced Cost Optimization & Safety Compliance Summary (August 2025):
-# 
+#
 # COST OPTIMIZATIONS IMPLEMENTED:
 # - VL53L0X sensor instead of VL53L1X: -$7 (2m range sufficient for rat detection)
 # - DHT22 sensor instead of BME280: -$4 (temperature/humidity sufficient for correlation)
@@ -765,7 +708,7 @@ number:
 # - Enhanced current monitoring: +$8 (CRITICAL SAFETY - motor overload protection)
 # - TVS diode protection: +$2 (GPIO surge protection)
 # - Net component savings: -$21 (cost reduction with enhanced safety)
-# 
+#
 # ENHANCED SAFETY FEATURES:
 # - Mandatory AC current monitoring with SCT-013-020 current transformer
 # - Progressive thermal management with multiple warning levels
@@ -773,10 +716,10 @@ number:
 # - TVS diode protection on all GPIO pins
 # - Improved fault detection and logging
 # - Zero-crossing SSR for reduced EMI emissions
-# 
+#
 # COMPLIANCE IMPROVEMENTS:
 # - NEC Article 422 appliance switching compliance
-# - IEC 60204-1 machinery safety standard compliance  
+# - IEC 60204-1 machinery safety standard compliance
 # - Enhanced thermal monitoring with automatic shutdown
 # - Improved selective coordination with 12A fuse protection
 # - Voltage-specific configurations for global deployment

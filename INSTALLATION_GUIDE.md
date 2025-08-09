@@ -117,7 +117,7 @@ esphome:
 wifi:
   ssid: "YourTestNetwork"
   password: "YourPassword"
-  
+
 i2c:
   sda: 21
   scl: 22
@@ -128,7 +128,7 @@ sensor:
   - platform: vl53l1x
     name: "Test Distance"
     update_interval: 1s
-    
+
   - platform: template
     name: "ESP32 Temperature"
     lambda: |-
@@ -143,7 +143,7 @@ display:
       it.print(0, 0, "Optimized Design Test");
       it.printf(0, 16, "3.3V from ESP32: OK");
       it.printf(0, 32, "Temp: %.1f°C", id(esp32_temp).state);
-      
+
 font:
   - file: "gfonts://Roboto"
     id: font_default
@@ -188,7 +188,7 @@ font:
 4. **Optimized Single Power Supply Installation** ⭐
    ```
    - Mount LRS-35-5 with proper ventilation clearance (simplified design)
-   - AC Input Screw Terminals: 
+   - AC Input Screw Terminals:
      * L (Line) ← Connect after 15A circuit breaker and 15A fuse
      * N (Neutral) ← Connect to main neutral bus
    - DC Output Screw Terminals:
@@ -217,13 +217,13 @@ font:
    - GND → Common ground
    - SDA → GPIO21 (ESP32)
    - SCL → GPIO22 (ESP32)
-   
+
    OLED Wiring (Integrated Status Display):
    - VCC → ESP32 3.3V output pin (shared with VL53L1X)
-   - GND → Common ground  
+   - GND → Common ground
    - SDA → GPIO21 (parallel with VL53L1X)
    - SCL → GPIO22 (parallel with VL53L1X)
-   
+
    Power Budget Verification:
    - ESP32 3.3V regulator: 600mA maximum capacity
    - Total 3.3V load: ~142mA typical (76% safety margin)
@@ -235,12 +235,12 @@ font:
    - One side → GPIO18
    - Other side → GND
    - 10kΩ pull-up to ESP32 3.3V output
-   
+
    Test Button (GPIO19):
    - One side → GPIO19
    - Other side → GND
    - 10kΩ pull-up to ESP32 3.3V output
-   
+
    Illuminated Emergency Disable Switch - SAFETY CRITICAL:
    - Switch Contact Side:
      * Common → GPIO4
@@ -249,12 +249,12 @@ font:
    - LED Side:
      * Anode → GPIO17
      * Cathode → GND
-   
+
    ELIMINATED (Cost Optimization):
    - Separate status LEDs → Integrated into OLED display
    - Separate power indicator → Integrated into E-stop button
    - Complex LED wiring → Simplified interface
-   
+
    Benefits:
    - Reduced component count: 10 → 6 items
    - Lower cost: -$8 savings
@@ -267,7 +267,7 @@ font:
    Control Input:
    - + Control → GPIO5 (ESP32)
    - - Control → GND
-   
+
    AC Switching:
    - Input Common → Line from circuit breaker
    - Output NO → Line to NEMA outlet
@@ -320,7 +320,7 @@ api_encryption_key: "GenerateNewKey32Characters"
 # Generate OTA password
 openssl rand -base64 16
 
-# Generate API encryption key  
+# Generate API encryption key
 openssl rand -base64 32
 
 # Update secrets_local.yaml with generated keys
@@ -476,7 +476,7 @@ Check log output for:
 - [ ] Verify vacuum hose connection
 - [ ] Clean display screen
 
-### **Quarterly**  
+### **Quarterly**
 - [ ] Test circuit breaker operation
 - [ ] Inspect fuse condition
 - [ ] Check for signs of overheating
