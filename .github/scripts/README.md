@@ -16,7 +16,7 @@ Main validation script that:
 **Usage:**
 
 ```bash
-python nexar_validation.py --output-format github-actions
+python .github/scripts/nexar_validation.py --output-format github-actions
 ```
 
 ### `generate_pricing_report.py`

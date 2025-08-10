@@ -15,7 +15,7 @@ on:
     paths:
       - 'BOM_*.csv'
       - '.github/workflows/bom-pricing-update.yml'
-      - 'scripts/nexar_validation.py'
+      - '.github/scripts/nexar_validation.py'
 
 env:
   NEXAR_CLIENT_ID: ${{ secrets.NEXAR_CLIENT_ID }}
@@ -55,7 +55,7 @@ jobs:
     - name: Validate BOM pricing with Nexar API
       id: pricing_validation
       run: |
-        python scripts/nexar_validation.py --output-format github-actions
+        python .github/scripts/nexar_validation.py --output-format github-actions
       continue-on-error: true
 
     - name: Generate pricing report
@@ -65,7 +65,7 @@ jobs:
         echo "" >> pricing_report.md
 
         if [ -f validation_results.json ]; then
-          python scripts/generate_pricing_report.py
+          python .github/scripts/generate_pricing_report.py
         else
           echo "❌ **Validation Failed** - Unable to retrieve pricing data" >> pricing_report.md
           echo "" >> pricing_report.md
@@ -92,7 +92,7 @@ jobs:
     - name: Update BOM files with current pricing
       if: steps.pricing_changes.outputs.changes_detected == 'true' || github.event.inputs.force_update == 'true'
       run: |
-        python scripts/update_bom_pricing.py
+        python .github/scripts/update_bom_pricing.py
         echo "BOM files updated with current pricing" >> pricing_report.md
 
     - name: Commit and push changes

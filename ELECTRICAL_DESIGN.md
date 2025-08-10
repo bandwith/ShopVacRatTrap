@@ -2,68 +2,33 @@
 
 > **Note:** For all purchasing details, vendor part numbers, and direct links, see [BOM_OCTOPART.csv](BOM_OCTOPART.csv) and [PURCHASE_LINKS.md](PURCHASE_LINKS.md).
 
-## **⭐ Enhanced Safety & Cost Optimization - August 2025 Update ⭐**
+## **Design Overview**
 
-This updated design further improves safety, reduces costs, and simplifies assembly with:
+This updated design focuses on safety, reliability, and simplified assembly with integrated components and standardized thermal management.
 
-1. **Enhanced All-in-One IEC Inlet:** Integrated EMI filter and MOV protection (-$17)
-2. **Optimized Sensor Selection:** BME280 instead of BME680 (-$10)
-3. **Integrated Terminal System:** Push-in terminal blocks with jumpers (-$3)
-4. **Improved Circuit Protection:** Better selective coordination with 12A/15A protection
-5. **Integrated Illuminated E-Stop:** Combines emergency stop and power/status indication (-$8)
-6. **Standardized Thermal Management:** Heat sink for ESP32 now standard equipment
+## **Design Features**
 
-**Total Additional Cost Savings: -$29.50 (materials + simplified assembly)**
+The following design improvements enhance safety and simplify assembly:
 
-## **2025 Design Optimization Update** ⭐
-
-**The following design improvements have been implemented to enhance safety, reduce cost, and simplify assembly:**
-
-1. **Integrated IEC Inlet with Fuse & Switch** (-$20)
-   - Replaced separate IEC inlet, circuit breaker, and fuse holder with a single integrated component
-   - Simplified assembly with single panel cutout instead of multiple components
+1. **Integrated IEC Inlet with Fuse & Switch**
+   - Single integrated component with IEC C14 + fuse holder + rocker switch
+   - Simplified assembly with single panel cutout
    - UL/CE listed as complete assembly for improved safety compliance
 
-2. **Optimized Terminal Connections** (-$7)
-   - Reduced terminal block count from 5 to 2 screw terminals for DC side only
+2. **Optimized Terminal Connections**
+   - Push-in terminal blocks for simplified wiring
    - Direct wiring for AC side through integrated IEC inlet
    - Improved reliability by reducing connection points
 
-3. **Consolidated Control Interface** (-$12)
-   - Replaced toggle switch with professional E-stop button for improved safety
-   - Eliminated separate test button (testing now via software/Home Assistant)
-   - Streamlined user interface with clearer safety controls
+3. **Professional Control Interface**
+   - Emergency stop button for improved safety
+   - Software-based testing via Home Assistant interface
+   - Streamlined user interface with clear safety controls
 
-4. **Environmental Monitoring Enhancement**
-   - Added BME280 sensor for temperature, humidity, and pressure monitoring
+4. **Environmental Monitoring**
+   - BME280 sensor for temperature, humidity, and pressure monitoring
    - Integrated into existing I2C bus (no additional wiring complexity)
    - Provides valuable environmental data correlation with rodent activity
-
-**2025 Enhanced Optimization Update (August 2025):**
-
-5. **Enhanced IEC Inlet with Complete Protection** (-$17)
-   - Upgraded to Schurter 4304.6093 with integrated EMI filter and MOV protection
-   - Eliminated separate EMI filter (-$12) and MOV suppressor (-$5)
-   - Improved safety with better surge and EMI protection in a single component
-
-6. **Integrated Terminal System** (-$3)
-   - Replaced individual terminal blocks with Phoenix Contact PTFIX integrated system
-   - Simplified wiring with color-coded push-in connections and integrated jumpers
-   - Reduced assembly time and improved reliability
-
-7. **Integrated E-Stop**
-   - Preferred: Illuminated E-stop integrates status indication
-   - Budget: Non-illuminated 22mm E-stop (OLED shows status)
-   - Both variants: Panel-mount, latching, 1NC minimum, UL/CE listed
-
-8. **Optimized Sensor Selection** (-$10)
-   - Standardized on BME280 instead of BME680 for environmental sensing
-   - Maintains temperature, humidity, and pressure monitoring capabilities
-   - Lower power consumption and reduced cost
-
-**Total Cost Reduction: -$39 (additional savings beyond previous -$47 optimization)**
-**Additional 2025 Enhanced Optimization: -$29 (this revision)**
-**Cumulative Cost Reduction: -$103 (-41% vs. original design)**
 
 ## **Electrical Safety & Compliance** ⚠️
 
@@ -71,51 +36,13 @@ This updated design further improves safety, reduces costs, and simplifies assem
 
 This design meets all applicable electrical safety codes including NEC Article 422 (Appliances), Article 430 (Motors), and international standards for IEC/CE compliance.
 
-### **RECOMMENDED: Integrated IEC Appliance Inlet Solution** ⭐ **MAJOR COST SAVINGS**
-
-| Qty | Component | Part Number | Est. Cost | Description |
-|-----|-----------|-------------|-----------|-------------|
-| 1 | **IEC Inlet w/ Fuse & Switch** | **6200.4210** | **$18** | **Integrated: IEC C14 + fuse holder + rocker switch** |
-| 2 | Fast Blow Fuse 15A | 5x20mm 15A | $3 | **UPDATED: Fuse elements (15A, 250V)** |
-
-**Integration Benefits:**
-
-- Single cutout reduces manufacturing complexity
-- UL/CE listed as complete assembly improves safety compliance
-- Reduced wiring complexity increases reliability
-- Professional appearance with industrial-grade component
-- Space savings allows for better component layout
-
-**NET SAVINGS: -$20 compared to separate components**
-
-### **IMPLEMENTED: Integrated IEC Appliance Inlet Solution** (Replaces Separate Components)
+### **IEC Appliance Inlet Solution**
 
 | Qty | Component | Part Number | Description |
 |-----|-----------|-------------|-------------|
-| 1 | **IEC Inlet w/ Fuse & Switch** | **6200.4210** | **Integrated: IEC C14 + fuse holder + rocker switch** |
+| 1 | Enhanced IEC Inlet w/ EMI + MOV | 4304.6093 | Integrated: IEC C14 + EMI filter + MOV + fuse + switch |
 | 1 | NEMA 5-15R Outlet | 5262 | 120V AC vacuum output (15A rated) |
-| 2 | Fast Blow Fuse 15A | 5x20mm 15A | **Fuse elements (15A, 250V)** |
-| 1 | **Enhanced IEC Inlet w/ EMI + MOV** | **4304.6093** | **Integrated: IEC + EMI filter + MOV + fuse + switch** |
-| 1 | Phoenix Contact DIN Terminal Set | PTFIX-L-BOXX | **Integrated DIN terminal system with jumpers** |
-| 2 | DIN Rail Terminal Block 2-pos | NSYTRV42 | **DIN rail power connections** |
-| 4 | **DIN Rail Terminal Block 4-pos** | **NSYTRV44** | **DIN rail sensor connections** |
-
-**Implementation Benefits:**
-
-- **Cost Reduction:** -$20 by eliminating separate IEC inlet, circuit breaker, and fuse holder
-- **Simplified Wiring:** Reduced terminal block count from 5 to 2 (-$7 additional savings)
-- **Improved Safety:** UL/CE listed integrated component with reduced wiring points
-- **Manufacturing Efficiency:** Single cutout instead of multiple component holes
-- **Professional Appearance:** Industrial-grade component with integrated functionality
-
-### **Legacy Components** (For Reference Only)
-
-| Component | Part Number | Description |
-|-----------|-------------|-------------|
-| IEC C14 Power Inlet | IEC-C14 | Separate power inlet |
-| Circuit Breaker 15A | 1410-F110-01A1-15A | Separate circuit breaker |
-| Fuse Holder 5x20mm | 3557-2 | Separate fuse holder |
-| Terminal Block 3-pos | 691322100003 | AC connections (replaced) |
+| 2 | Fast Blow Fuse 15A | 5x20mm 15A | Fuse elements (15A, 250V) |
 
 **Safety Updates:**
 
@@ -126,14 +53,14 @@ This design meets all applicable electrical safety codes including NEC Article 4
 
 ### **🇪🇺 European/CE Components (230V AC, 50Hz)**
 
-| Qty | Component | Part Number | Mouser | Description |
-|-----|-----------|-------------|---------|-------------|
-| 1 | **Enhanced IEC Inlet w/ EMI + MOV** | **4304.6063** | **693-4304.6063** | **230V: IEC C14 + EMI + MOV + fuse + switch** |
-| 2 | Fast Blow Fuse 10A | 5x20mm 10A | 576-0217010.MXP | **230V: 10A fuses (T10A 250V)** |
-| 1 | Mean Well LRS-35-5 | LRS-35-5 | 709-LRS-35-5 | **230V input, 5V/7A output** |
-| 1 | BME280 Env. Sensor | BME280 | 828-1063-1 | **Temperature/humidity/pressure** |
-| 1 | SSR 25A 230V AC | D2425-10 | 558-D2425-10 | **Panel/chassis mount, zero-crossing** |
-| 1 | Illuminated E-Stop Button | ZB5AS844 | 653-ZB5AS844 | **Integrated emergency stop with LED indicator** |
+| Qty | Component | Part Number | Description |
+|-----|-----------|-------------|-------------|
+| 1 | Enhanced IEC Inlet w/ EMI + MOV | 4304.6063 | 230V: IEC C14 + EMI + MOV + fuse + switch |
+| 2 | Fast Blow Fuse 10A | 5x20mm 10A | 230V: 10A fuses (T10A 250V) |
+| 1 | Mean Well LRS-35-5 | LRS-35-5 | 230V input, 5V/7A output |
+| 1 | BME280 Env. Sensor | BME280 | Temperature/humidity/pressure |
+| 1 | SSR 25A 230V AC | D2425-10 | Panel/chassis mount, zero-crossing |
+| 1 | Illuminated E-Stop Button | ZB5AS844 | Integrated emergency stop with LED indicator |
 
 **European Design Notes:**
 
@@ -143,67 +70,46 @@ This design meets all applicable electrical safety codes including NEC Article 4
 - **Low Voltage Directive**: EN 60204-1 machine safety standard
 - **Wire Colors**: Brown=Line, Blue=Neutral, Green/Yellow=Earth (IEC 60446)
 
-## **Primary Electronics Components** ⚡ **ENHANCED SAFETY & COST OPTIMIZED**
+## **Primary Electronics Components**
 
 ### **Core Processing & Control**
 
-| Qty | Component | Part Number | Est. Cost | Description |
-|-----|-----------|-------------|-----------|-------------|
-| 1 | ESP32 DevKit | ESP32-DevKitC-32E | $7 | Main microcontroller |
-| 1 | **VL53L0X ToF Sensor** | **VL53L0X** | **$8** | **2m range sensor (-$7 vs VL53L1X)** |
-| 1 | OLED Display 128x64 | SSD1306 | $10 | Status display |
-| 1 | **DHT22 Env. Sensor** | **DHT22** | **$4** | **Temperature/humidity sensor (-$4 vs BME280)** |
-| 1 | **Zero-Crossing SSR 25A** | **D2425-10** | **$32** | **AC switching with EMI reduction (-$3)** |
-| 1 | ESP32 Heat Sink Kit | 507-10ABPB | $3 | Thermal management (10x10mm, adhesive mount) |
-| 1 | Thermal Interface Pad | SP400-0.010-00-1010 | $2 | ESP32 heat dissipation |
+| Qty | Component | Part Number | Description |
+|-----|-----------|-------------|-------------|
+| 1 | ESP32 DevKit | ESP32-DevKitC-32E | Main microcontroller |
+| 1 | VL53L0X ToF Sensor | VL53L0X | 2m range sensor |
+| 1 | OLED Display 128x64 | SSD1306 | Status display |
+| 1 | BME280 Env. Sensor | BME280 | Temperature/humidity/pressure sensor |
+| 1 | Zero-Crossing SSR 25A | D2425-10 | AC switching with EMI reduction |
+| 1 | ESP32 Heat Sink Kit | 507-10ABPB | Thermal management (10x10mm, adhesive mount) |
+| 1 | Thermal Interface Pad | SP400-0.010-00-1010 | ESP32 heat dissipation |
 
-### **🚨 CRITICAL SAFETY ADDITION - Current Monitoring**
+### **Current Monitoring & Protection**
 
-| Qty | Component | Part Number | Est. Cost | Description |
-|-----|-----------|-------------|-----------|-------------|
-| 1 | **Current Transformer** | **SCT-013-020** | **$8** | **20A AC current monitoring for overload protection** |
-| 1 | **Burden Resistor** | **33Ω 1W** | **$1** | **Current sensing calibration resistor** |
-| 1 | **TVS Diode Array** | **PESD5V0S1BA** | **$2** | **GPIO surge protection** |
+| Qty | Component | Part Number | Description |
+|-----|-----------|-------------|-------------|
+| 1 | Current Transformer | SCT-013-020 | 20A AC current monitoring for overload protection |
+| 1 | Burden Resistor | 33Ω 1W | Current sensing calibration resistor |
+| 1 | TVS Diode Array | PESD5V0S1BA | GPIO surge protection |
 
-**Cost-Effective Environmental Monitoring with BME280:**
+### **Power Supply**
 
-- BME280 sensor shares existing I2C bus (address 0x76, no conflicts)
-- Provides temperature, humidity, and barometric pressure monitoring
-- Helps identify environmental factors correlated with rodent activity
-- Extremely low power consumption (~1μA sleep, 3.6mA active)
-- 40-50% cost savings over BME680 ($10 vs $20)
-- Total 3.3V load minimized for better battery life and thermal performance
-- Simplified integration with readily available libraries and examples
+#### **LRS-15-5 + ESP32 Built-in 3.3V Regulator**
 
-### **Power Supply Options (Choose One)**
-
-### **Optimized Single Power Supply Solution** ⭐ **RECOMMENDED**
+| Qty | Component | Part Number | Description |
+|-----|-----------|-------------|-------------|
+| 1 | Mean Well LRS-15-5 | LRS-15-5 | 15W 5V/3A chassis mount |
 
 > Note: To comply with the “no SMD/through-hole” assembly requirement, only chassis or DIN rail power supplies are specified. PCB-mount AC/DC modules are not used in this design.
 
-#### **Enhanced Cost-Optimized Design: LRS-15-5 + ESP32 Built-in 3.3V** ⭐ **RECOMMENDED (-$9 SAVINGS)**
+**Design Features:**
 
-| Qty | Component | Part Number | Mouser | Digikey | Est. Cost | Description |
-|-----|-----------|-------------|---------|---------|-----------|-------------|
-| 1 | **Mean Well LRS-15-5** | **LRS-15-5** | **709-LRS-15-5** | **1866-5016-ND** | **$12** | **15W 5V/3A chassis mount (-$9 vs LRS-35-5)** |
-
-**Enhanced Design Optimization:**
-
-- **Cost Reduction**: $9 savings by rightsizing power supply capacity
 - Uses ESP32 built-in 3.3V regulator (600mA capacity)
 - No external 3.3V regulator required
 - Simplified assembly with single power supply
 - Better thermal efficiency with lower power dissipation
 
-**Key Benefits:**
-
-- Total cost reduction of $36 by using ESP32 built-in regulator + optimized PSU
-- Simplified assembly with single power supply and fewer connections
-- Proven reliability using ESP32's built-in regulator for all 3.3V loads
-- Adequate capacity: 600mA 3.3V budget vs 134mA actual load (78% headroom)
-- Better thermal performance with no external regulator heat generation
-
-**Optimized 3.3V Load Analysis:**
+**3.3V Load Analysis:**
 
 ```
 VL53L0X ToF Sensor:    15mA typical, 30mA peak (-5mA vs VL53L1X)
@@ -216,68 +122,42 @@ Current Monitor LED:   2mA typical (via GPIO pin)
 **SAFETY MARGIN:       516mA available (86% headroom, +8% improvement)**
 **E-Stop/LED Eliminated**: Status integrated into OLED display (-15mA)
 Screw Terminals:       Negligible (passive components)
-**SIMPLIFIED DESIGN TOTAL**: 54-84mA typical (maximum cost/complexity reduction)
-**FINAL SAFETY MARGIN**: 516mA available (86% headroom)
+**SIMPLIFIED DESIGN TOTAL**: 69-117mA typical
+**FINAL SAFETY MARGIN**: 483mA available (80% headroom)
 ```
 
-### **Control Interface Components** (Simplified Cost-Optimized) 💰
+### **Control Interface Components**
 
-| Qty | Component | Part Number | Adafruit | SparkFun | Mouser | Digikey | Est. Cost | Description |
-|-----|-----------|-------------|----------|----------|---------|---------|-----------|-------------|
-| 1 | Panel Mount Tactile Switch | PV5S640NN | #1505 | #11968 | 611-PV5S640NN | EG4906-ND | $3 | Panel mount reset button |
-| 1 | **Wago Lever Connectors** | **221-412** | - | - | **855-221-412** | **2604-221-412-ND** | **$2** | **4-port lever connector (-$5 vs screw terminals)** |
+| Qty | Component | Part Number | Description |
+|-----|-----------|-------------|-------------|
+| 1 | Panel Mount Tactile Switch | PV5S640NN | Panel mount reset button |
+| 1 | Wago Lever Connectors | 221-412 | 4-port lever connector |
 
-**Simplified Design Optimization:**
+### **Safety Enhancement Components**
 
-- **Maximum Cost Reduction**: Eliminated E-stop and LED components (-$33 total)
-- **Circuit Breaker Protection**: Primary safety protection via 15A circuit breaker
-- **Software Control**: All controls managed via Home Assistant interface
-- **OLED Status Display**: All status information integrated into display
-- **Simplified Assembly**: Minimal panel components and wiring
+| Qty | Component | Part Number | Safety Function |
+|-----|-----------|-------------|-----------------|
+| 1 | Current Transformer | SCT-013-020 | AC current monitoring for overload/fault detection |
+| 1 | Burden Resistor | 33Ω 1W Metal Film | Current sensing calibration |
+| 1 | TVS Diode Array | PESD5V0S1BA | GPIO surge protection |
+| 1 | GFCI Outlet Tester | Klein RT105 | Installation safety verification |
 
-### **🚨 MANDATORY SAFETY ENHANCEMENTS** ⚡
-
-**The following components are REQUIRED for enhanced electrical safety:**
-
-| Qty | Component | Part Number | Est. Cost | Safety Function |
-|-----|-----------|-------------|-----------|-----------------|
-| 1 | **Current Transformer** | **SCT-013-020** | **$8** | **AC current monitoring for overload/fault detection** |
-| 1 | **Burden Resistor** | **33Ω 1W Metal Film** | **$1** | **Current sensing calibration** |
-| 1 | **TVS Diode Array** | **PESD5V0S1BA** | **$2** | **GPIO surge protection** |
-| 1 | **GFCI Outlet Tester** | **Klein RT105** | **$15** | **Installation safety verification** |
-
-**Safety Requirements:**
-
-- **Current Monitoring**: MANDATORY for detecting vacuum motor overload, clogged hoses, bearing failures
-- **Surge Protection**: TVS diodes protect GPIO pins from induced transients
-- **GFCI Testing**: Required for wet location installations per NEC 210.8
-- **Thermal Protection**: Enhanced with progressive thermal management
-
-**Enhanced Protection Features:**
+**Protection Features:**
 
 - Primary: 15A circuit breaker (NA) / 10A MCB (EU)
 - Secondary: 12A fast-blow fuse for selective coordination
 - Tertiary: Current transformer monitoring with software shutdown
 - Quaternary: TVS diode protection on all GPIO pins
-- Emergency Stop: Non-illuminated E-stop + separate status LED
 
-### **Power & Safety Components** ⚡ **ENHANCED PROTECTION**
+### **Power & Safety Components**
 
-| Qty | Component | Part Number | Est. Cost | Description |
-|-----|-----------|-------------|-----------|-------------|
-| 1 | Enhanced IEC Inlet | 4304.6093 | $25 | All-in-one: IEC + EMI + MOV + fuse + switch |
-| 1 | NEMA 5-15R Outlet | 5262 | $3 | 120V AC vacuum output (15A rated) |
-| 2 | **Fast Blow Fuse 12A** | **0218012.MXP** | **$2** | **Enhanced selective coordination (12A, 250V)** |
-| 1 | **Ferrite Core Set** | **Fair-Rite 0443164251** | **$3** | **EMI suppression for I2C cables** |
-| 1 | **RC Snubber Network** | **0.1µF + 47Ω** | **$2** | **SSR switching transient suppression** |
-
-**Integrated Power System Benefits:**
-
-- All AC connections made directly to components (no terminal blocks needed)
-- Single integrated fused inlet eliminates 3 separate components
-- Professional appearance with standardized industrial components
-- Reduced wiring complexity increases reliability and safety
-- NEC/IEC compliant with proper isolation and protection
+| Qty | Component | Part Number | Description |
+|-----|-----------|-------------|-------------|
+| 1 | Enhanced IEC Inlet | 4304.6093 | All-in-one: IEC + EMI + MOV + fuse + switch |
+| 1 | NEMA 5-15R Outlet | 5262 | 120V AC vacuum output (15A rated) |
+| 2 | Fast Blow Fuse 12A | 0218012.MXP | Enhanced selective coordination (12A, 250V) |
+| 1 | Ferrite Core Set | Fair-Rite 0443164251 | EMI suppression for I2C cables |
+| 1 | RC Snubber Network | 0.1µF + 47Ω | SSR switching transient suppression |
 
 ### **Terminal & Connection Components**
 
@@ -299,39 +179,7 @@ Screw Terminals:       Negligible (passive components)
 | 4 | M3 Standoffs 6mm | Board standoffs |
 | 1 | Heat Shrink Tubing | Various sizes |
 
-## **💰 ENHANCED COST OPTIMIZATION SUMMARY**
-
-### **Component Cost Analysis**
-
-| Component | Original | Optimized | Savings | Justification |
-|-----------|----------|-----------|---------|---------------|
-| **ToF Sensor** | VL53L1X ($15) | **VL53L0X ($8)** | **-$7** | 2m range sufficient for rat detection |
-| **Power Supply** | LRS-35-5 ($21) | **LRS-15-5 ($12)** | **-$9** | Rightsized for actual load requirements |
-| **Env. Sensor** | BME280 ($8) | **DHT22 ($4)** | **-$4** | Temp/humidity sufficient for analytics |
-| **E-Stop System** | ZB5AS844 ($50) | **Circuit Breaker Only ($0)** | **-$50** | Circuit breaker provides adequate protection |
-| **Status LED** | Panel LED ($8) | **OLED Integration ($0)** | **-$8** | Status displayed on existing OLED |
-| **SSR** | D2425 ($35) | **D2425-10 ($32)** | **-$3** | Zero-crossing type reduces EMI |
-| **Terminal Blocks** | Phoenix ($15) | **Wago 221 Series ($8)** | **-$7** | Lever connectors simplify assembly |
-
-### **Safety Investment**
-
-| Component | Cost | Safety Benefit |
-|-----------|------|----------------|
-| **Current Transformer** | +$8 | Motor overload protection |
-| **TVS Diodes** | +$2 | GPIO surge protection |
-| **EMI Suppression** | +$5 | Better EMC compliance |
-
-### **Net Project Impact** 🎯
-
-- **Component Savings**: -$88 total component cost reduction (43% reduction)
-- **Safety Investment**: +$15 for enhanced protection systems
-- **Final Net Savings**: **-$73** (36% cost reduction with simplified design)
-- **Final BOM Total**: ~$114 (was ~$187 original design)
-- **Safety**: ⬆️ **Circuit Breaker Primary Protection** + current monitoring
-- **Reliability**: ⬆️ **Improved** with fewer components and better fault tolerance
-- **Serviceability**: ⬆️ **Simplified** assembly with minimal panel components
-
-## Power Specifications Summary ⚡
+## Power Specifications Summary
 
 **Note:** For comprehensive electrical safety details, protection requirements, and wiring standards, please refer to the [SAFETY_REFERENCE.md](SAFETY_REFERENCE.md) document.
 
@@ -354,7 +202,7 @@ Screw Terminals:       Negligible (passive components)
 - Primary: 15A circuit breaker (NA) / 10A MCB (EU)
 - Secondary: Fast-blow fuse backup protection
 - Isolation: >4000V between control and power circuits
-- Emergency Stop: Illuminated E-stop button with direct relay disconnect
+- Emergency Stop: E-stop button with direct relay disconnect
 
 ## Detailed Circuit Connections
 
@@ -432,143 +280,22 @@ Benefits:
 - Better thermal: No external regulator heat generation
 ```
 
-## Mean Well Power Supply Mounting Options ⚙️
+## Circuit Connections Summary
 
-### **Recommended Mounting Styles for This Project:**
+For detailed wiring diagrams and connection standards, refer to the [INSTALLATION_GUIDE.md](INSTALLATION_GUIDE.md) document.
 
-#### **Chassis Mount (IRM Series)** 💰
-
-**Advantages:**
-
-- Simple mounting with 4 corner screws
-- Direct enclosure mounting without additional hardware
-- Integrated screw terminals for easy wiring
-- Cost-effective solution
-- Compact form factor
-
-**Best For:** Budget builds, simple installations
-
-#### **DIN Rail Mount (HDR/DR Series)** ⭐
-
-**Advantages:**
-
-- Professional industrial installation
-- Easy removal/replacement for service
-- Secure mounting with spring clips
-- Standardized 35mm DIN rail mounting
-- Better heat dissipation
-- Cable management friendly
-
-**Best For:** Professional installations, future expansion
-
-### **Avoided Mounting Styles:**
-
-#### **Through-Hole Mount (PCB Style)** ❌
-
-**Why We Don't Use:**
-
-- Requires custom PCB design and fabrication
-- Not suitable for enclosure mounting
-- Difficult to service or replace
-- Not cost-effective for single-unit builds
-- Adds complexity without benefit
-
-## Mean Well Power Supply Options Comparison
-
-### **Option A: LRS-35-5 Chassis Mount + ESP32 Built-in 3.3V** 💰 **Most Budget-Friendly**
-
-**Advantages:**
-
-- Lowest total cost with simplified design
-- Simple 4-screw chassis mounting (no through-hole)
-- Uses ESP32's built-in regulator for 3.3V supply
-- Minimal heat generation from external regulators
-- Easy troubleshooting and replacement
-- Higher current capacity (7A @ 5V)
-- ESP32 built-in regulator provides clean 3.3V up to 600mA
-
-**Disadvantages:**
-
-- Limited 3.3V current (600mA max from ESP32)
-- All 3.3V devices must stay within ESP32's current budget
-
-**Current Consumption Analysis:**
-
-- VL53L1X ToF Sensor: ~20mA typical, 40mA peak
-- SSD1306 OLED Display: ~10mA typical, 20mA peak
-- ESP32 Internal: ~50-80mA typical
-- Pull-up Resistors (4x 10kΩ): ~1.3mA
-- **Total 3.3V Load**: ~82-142mA typical, well within 600mA limit
-- **Safety Margin**: 75% headroom for WiFi transmissions and future expansion
-
-**Specifications:**
-
-- Input: 85-264V AC, 47-63Hz
-- Output: 5V/7A (35W)
-- 3.3V: 600mA via ESP32 internal regulator
-- Efficiency: >83% (PSU), ~85% (ESP32 regulator)
-- Mounting: 4-corner screw chassis mount (non-through-hole)
-
-**Total Cost: $59** (After design optimization, -30%)
-
-### **Option B: HDR-30-5 DIN Rail + Buck Converter** ⭐ **Best Balance**
-
-**Advantages:**
-
-- Professional DIN rail mounting
-- High efficiency switching converter for 3.3V
-- Excellent heat dissipation
-- Easy service access with spring clips
-- Higher current capacity (6A @ 5V)
-- Industry-standard installation
-
-**Specifications:**
-
-- Input: 85-264V AC, 47-63Hz
-- Output: 5V/6A (30W)
-- 3.3V: 3A via switching converter
-- Efficiency: >87% (PSU), >85% (converter)
-- Mounting: Standard 35mm DIN rail
-
-**Total Cost: $96**
-
-### **Option C: DR-4524 DIN Rail Dual + Linear Regulator** � **Premium Solution**
-
-**Advantages:**
-
-- Dual isolated outputs
-- 24V rail available for future expansion
-- Ultra-low noise 3.3V regulation
-- Professional DIN rail mounting
-- Excellent build quality and reliability
-
-**Disadvantages:**
-
-- Higher cost
-- 24V output not utilized in current design
-- Linear regulator still generates some heat
-
-**Specifications:**
-
-- Input: 85-264V AC, 47-63Hz
-- Output 1: 24V/1A (24W)
-- Output 2: 5V/2A (10W)
-- 3.3V: 1.5A via low-noise linear regulator
-- Efficiency: >87%
-- Mounting: Standard 35mm DIN rail
-
-**Total Cost: $99**
+### **GPIO Connections**
 
 ```
-GPIO21 → I2C SDA → VL53L1X SDA + OLED SDA + BME280 SDA (shared I2C bus)
-GPIO22 → I2C SCL → VL53L1X SCL + OLED SCL + BME280 SCL (shared I2C bus)
+GPIO21 → I2C SDA → VL53L0X SDA + OLED SDA + BME280 SDA (shared I2C bus)
+GPIO22 → I2C SCL → VL53L0X SCL + OLED SCL + BME280 SCL (shared I2C bus)
 GPIO5  → SSR Control Input (3.3V logic, SAFETY CRITICAL)
 GPIO34 → Reset Button (Active Low, 10kΩ pull-up to 3.3V)
 GPIO36 → Current Sensor Input for vacuum load monitoring (ADC)
 ```
 
 **Status Display Integration:**
-All status information now consolidated into OLED display with visual highlighting:
+All status information consolidated into OLED display with visual highlighting:
 
 - System Armed/Disarmed state
 - Rodent detection alerts
@@ -579,52 +306,10 @@ All status information now consolidated into OLED display with visual highlighti
 ### **I2C Device Addresses**
 
 ```
-VL53L1X ToF Sensor: 0x29 (default)
+VL53L0X ToF Sensor: 0x29 (default)
 SSD1306 OLED: 0x3C (default)
 BME280 Environmental: 0x76 (default)
 ```
-
-### **Optimized Terminal Connection System** ⚙️
-
-```
-Phoenix Contact PTFIX Integrated System:
-├─ Power Distribution Group:
-│  ├─ 5V Power Rail (with jumper)
-│  ├─ GND Common Rail (with jumper)
-│  ├─ 3.3V Rail from ESP32 (with jumper)
-│  └─ Emergency Stop Signal
-│
-├─ I2C Bus Group:
-│  ├─ 3.3V Power Rail (jumpered from 3.3V rail)
-│  ├─ GND Rail (jumpered from GND rail)
-│  ├─ SDA (GPIO21) (connected to all I2C devices)
-│  └─ SCL (GPIO22) (connected to all I2C devices)
-│
-├─ Control Signals Group:
-│  ├─ Sensor Module Connection
-│  ├─ Reset Button
-│  ├─ SSR Control (GPIO5)
-│  └─ Current Monitor (ADC)
-│
-└─ Expansion Group:
-   ├─ Auxiliary GPIO pins
-   ├─ ADC inputs
-   ├─ Additional control signals
-   └─ Future expansion
-```
-
-**Benefits of Integrated Terminal System:**
-
-- One-piece terminal rail with push-in connections
-- Color-coded terminals for easy identification
-- Integrated jumper system eliminates extra wiring
-- 50% space savings over individual terminal blocks
-- 30% faster assembly time with push-in connections
-- Organized layout with clear labeling
-- Simplified troubleshooting with test points
-- Modular design allows easy reconfiguration
-- Standard DIN rail mounting
-- Cost savings of $3-5 over individual terminal blocks
 
 ## 3D Design Recommendations
 
@@ -851,43 +536,17 @@ Phoenix Contact PTFIX Integrated System:
 
 This enhanced design provides a professional-grade rat trap control system with comprehensive safety features, optimized component selection, and full compliance with international electrical codes and standards.
 
-## **Final Component Selection Summary**
-
-| Component | Original | Intermediate | Enhanced (Aug 2025) | Benefits |
-|-----------|----------|-------------|---------------------|----------|
-| **IEC Inlet** | Separate components | 6200.4210 ($18) | 4304.6093 ($25) | Integrated EMI+MOV protection, single cutout |
-| **EMI Filter** | Separate ($12) | Separate ($12) | Integrated in IEC | Eliminated separate component |
-| **MOV Protection** | Separate ($5) | Separate ($5) | Integrated in IEC | Improved thermal protection, simplified assembly |
-| **Env. Sensor** | None | BME680 ($20) | BME280 ($10) | Cost savings, lower power, sufficient functionality |
-| **Terminal System** | Individual blocks ($8) | Individual blocks ($8) | Integrated system ($5) | Push-in connections, integrated jumpers, simplified assembly |
-| **Power Indicator** | None | None | Integrated in E-stop | Built-in illumination for status indication |
-| **ESP32 Cooling** | Optional | Optional | Standard | Better reliability and thermal performance |
-| **Circuit Protection** | 15A/15A | 15A/15A | 15A/12A | Improved selective coordination |
-
-**Safety Compliance Verification:**
-
-- ✅ NEC 422.11: Properly sized overcurrent protection
-- ✅ NEC 422.31(B): Accessible disconnect means
-- ✅ NEC 110.3(B): Listed components for application
-- ✅ UL 508A: Industrial control panel standards
-- ✅ IEC 60204-1: Machine electrical safety
-- ✅ EN 55011: EMC emissions compliance
-- ✅ EN 61000-6-1: EMC immunity requirements
-
 ## **Environmental Monitoring & Analytics**
 
-The BME280 environmental sensor provides accurate environmental monitoring, enabling correlation between environmental conditions and rodent activity. This helps users understand patterns and optimize trap effectiveness while maintaining excellent power efficiency.
+The BME280 environmental sensor provides accurate environmental monitoring, enabling correlation between environmental conditions and rodent activity.
 
 ### **BME280 Sensor Specifications**
 
 - **Temperature Range**: -40°C to +85°C (±1.0°C accuracy)
 - **Humidity Range**: 0-100% RH (±3% accuracy)
 - **Pressure Range**: 300-1100 hPa (±1 hPa accuracy)
-- **Size**: Compact 2.5 x 2.5 mm² footprint
-- **Response Time**: 1s (temperature), 1s (humidity), 5.5ms (pressure)
-- **Power Consumption**: 1μA sleep mode, 3.6mA active mode (significantly lower than BME680)
+- **Power Consumption**: 1μA sleep mode, 3.6mA active mode
 - **I2C Address**: 0x76 (default)
-- **Cost**: ~$10 (50% savings over BME680)
 
 ### **Environmental Analytics Benefits**
 

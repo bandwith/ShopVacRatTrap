@@ -12,6 +12,11 @@ import requests
 from typing import Dict, List, Tuple, Optional
 import sys
 from datetime import datetime
+from pathlib import Path
+
+# Path configuration
+REPO_ROOT = Path(__file__).parent.parent.parent
+GITHUB_DIR = Path(__file__).parent.parent
 
 # Nexar API Configuration
 NEXAR_ENDPOINT = "https://api.nexar.com/graphql"
@@ -28,12 +33,17 @@ class NexarValidator:
         self,
         client_id: str,
         client_secret: str,
-        supplier_prefs_file: str = "supplier_preferences.json",
+        supplier_prefs_file: str = None,
     ):
         self.client_id = client_id
         self.client_secret = client_secret
         self.access_token = None
         self.session = requests.Session()
+
+        # Set default supplier preferences file path
+        if supplier_prefs_file is None:
+            supplier_prefs_file = str(GITHUB_DIR / "supplier_preferences.json")
+
         self.supplier_preferences = self.load_supplier_preferences(supplier_prefs_file)
 
     def load_supplier_preferences(self, prefs_file: str) -> Dict:
@@ -474,12 +484,15 @@ def main():
     parser.add_argument(
         "--bom-files",
         nargs="*",
-        default=["BOM_BUDGET.csv", "BOM_OCTOPART.csv"],
+        default=[
+            str(REPO_ROOT / "BOM_BUDGET.csv"),
+            str(REPO_ROOT / "BOM_OCTOPART.csv"),
+        ],
         help="BOM files to validate",
     )
     parser.add_argument(
         "--supplier-prefs",
-        default="supplier_preferences.json",
+        default=str(GITHUB_DIR / "supplier_preferences.json"),
         help="Supplier preferences JSON file",
     )
     parser.add_argument(

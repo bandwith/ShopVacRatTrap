@@ -4,13 +4,19 @@ Nexar API Parts Validation Tool
 Validates BOM components against Nexar database for pricing and availability
 """
 
-import os
 import csv
 import json
-import requests
-from typing import Dict, List, Optional, Tuple
+import os
 from dataclasses import dataclass
+from pathlib import Path
+from typing import Dict, List, Optional, Tuple
+
+import requests
 from dotenv import load_dotenv
+
+# Path configuration
+REPO_ROOT = Path(__file__).parent.parent.parent
+GITHUB_DIR = Path(__file__).parent.parent
 
 
 @dataclass
@@ -399,7 +405,9 @@ def main():
     print("=" * 60)
 
     # Load BOM files from environment or use defaults
-    bom_files = os.getenv("BOM_FILES", "BOM_BUDGET.csv,BOM_OCTOPART.csv").split(",")
+    bom_files = os.getenv(
+        "BOM_FILES", f"{REPO_ROOT}/BOM_BUDGET.csv,{REPO_ROOT}/BOM_OCTOPART.csv"
+    ).split(",")
 
     total_parts = 0
     total_found = 0

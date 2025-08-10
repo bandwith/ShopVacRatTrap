@@ -4,13 +4,19 @@ Check component availability using Nexar API
 Focus on safety-critical and lead-time sensitive components
 """
 
-import os
-import json
 import argparse
+import json
+import os
+import sys
+from datetime import datetime
+from pathlib import Path
+
 import pandas as pd
 import requests
-from datetime import datetime
-import sys
+
+# Path configuration
+REPO_ROOT = Path(__file__).parent.parent.parent
+GITHUB_DIR = Path(__file__).parent.parent
 
 # Nexar API Configuration
 NEXAR_ENDPOINT = "https://api.nexar.com/graphql"
@@ -323,7 +329,10 @@ def main():
     parser.add_argument(
         "--bom-files",
         nargs="*",
-        default=["BOM_BUDGET.csv", "BOM_OCTOPART.csv"],
+        default=[
+            str(REPO_ROOT / "BOM_BUDGET.csv"),
+            str(REPO_ROOT / "BOM_OCTOPART.csv"),
+        ],
         help="BOM files to check",
     )
 

@@ -41,7 +41,7 @@ jobs:
     - name: Check component availability
       id: availability_check
       run: |
-        python scripts/check_availability.py --critical-only=${{ github.event.inputs.check_critical_only || 'true' }}
+        python .github/scripts/check_availability.py --critical-only=${{ github.event.inputs.check_critical_only || 'true' }}
       continue-on-error: true
 
     - name: Create alert for unavailable components
