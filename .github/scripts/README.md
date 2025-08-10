@@ -4,60 +4,29 @@ This directory contains scripts for automated BOM validation, pricing updates, a
 
 ## Scripts
 
-### `bom_validator.py`
+### `bom_manager.py`
 
-Main validation script that:
+Consolidated script for BOM management:
 
-- Connects to Mouser API
-- Validates all components in BOM files
-- Retrieves current pricing information
-- Checks stock availability
-- Generates validation reports
-
-**Usage:**
-
-```bash
-python .github/scripts/bom_validator.py --bom-file BOM_CONSOLIDATED.csv
-```
-
-### `mouser_consolidation_analyzer.py`
-
-Analyzes consolidation opportunities:
-
-- Maps Adafruit components to Mouser alternatives
-- Calculates potential cost savings
-- Generates consolidated BOM options
-- Creates detailed analysis reports
+- **Validation**: Connects to Mouser API and validates components
+- **Pricing Updates**: Updates BOM files with current pricing
+- **Availability Checking**: Monitors stock levels for all components
+- **Purchase Files**: Generates guides and distributor upload files
+- **Consolidation Analysis**: Analyzes Mouser-only sourcing opportunities
 
 **Usage:**
 
 ```bash
-python .github/scripts/mouser_consolidation_analyzer.py --bom-file BOM_CONSOLIDATED.csv
+# Full functionality
+python .github/scripts/bom_manager.py --bom-file BOM_CONSOLIDATED.csv --all
+
+# Specific operations
+python .github/scripts/bom_manager.py --bom-file BOM_CONSOLIDATED.csv --validate --check-availability
+python .github/scripts/bom_manager.py --bom-file BOM_CONSOLIDATED.csv --update-pricing
+python .github/scripts/bom_manager.py --bom-file BOM_CONSOLIDATED.csv --generate-purchase-files
+python .github/scripts/bom_manager.py --bom-file BOM_CONSOLIDATED.csv --analyze-consolidation
+python .github/scripts/bom_manager.py --bom-file BOM_CONSOLIDATED.csv --generate-mouser-only
 ```
-
-### `generate_purchase_files.py`
-
-Creates purchase guides and distributor upload files:
-
-- Generates markdown purchase guides with direct links
-- Creates Mouser BOM upload files
-- Organizes components by distributor
-
-### `update_bom_pricing.py`
-
-Updates BOM CSV files with current pricing data:
-
-- Compares current vs. validated prices
-- Updates prices with significant differences
-- Preserves BOM file formatting
-
-### `check_availability.py`
-
-Monitors component availability:
-
-- Focuses on safety-critical components
-- Checks stock levels at Mouser
-- Generates availability alerts
 
 ## GitHub Actions Workflow
 

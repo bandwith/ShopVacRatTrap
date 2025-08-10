@@ -47,14 +47,19 @@ jobs:
         mkdir -p pricing_backup
         cp BOM_CONSOLIDATED.csv pricing_backup/BOM_CONSOLIDATED_$(date +%Y%m%d).csv
 
-    - name: Validate BOM pricing with Mouser API
-      id: pricing_validation
+    - name: Run BOM validation and generate all files
+      id: bom_validation
       run: |
-        echo "🔄 Starting BOM validation with Mouser API..."
-        python .github/scripts/bom_validator.py \
+        echo "🔄 Starting BOM management process..."
+        python .github/scripts/bom_manager.py \
           --bom-file BOM_CONSOLIDATED.csv \
           --output-dir . \
-          --priority-components ESP32-S3-Feather COM-13015 LRS-15-5
+          --priority-components ESP32-S3-Feather COM-13015 LRS-15-5 \
+          --validate \
+          --check-availability \
+          --generate-purchase-files \
+          --analyze-consolidation \
+          --generate-mouser-only
       continue-on-error: true
 
     - name: Check for pricing changes
@@ -71,42 +76,18 @@ jobs:
           echo "significant_changes=false" >> $GITHUB_OUTPUT
         fi
 
-    - name: Generate purchase guide and BOM upload files
-      if: success()
-      run: |
-        echo "🛒 Generating purchase guide and upload files..."
-        python .github/scripts/generate_purchase_files.py \
-          --bom-file BOM_CONSOLIDATED.csv \
-          --output-dir purchasing \
-          --validation-results validation_results.json
-      continue-on-error: true
-
     - name: Update BOM files with current pricing
       if: steps.pricing_changes.outputs.changes_detected == 'true' || github.event.inputs.force_update == 'true'
       run: |
-        python .github/scripts/update_bom_pricing.py
+        echo "📝 Updating BOM files with current pricing..."
+        python .github/scripts/bom_manager.py \
+          --bom-file BOM_CONSOLIDATED.csv \
+          --output-dir . \
+          --update-pricing
         echo "BOM files updated with current pricing"
 
-    - name: Check component availability
-      if: github.event.inputs.check_availability == 'true' || github.event_name == 'schedule'
-      id: availability_check
-      run: |
-        echo "🔍 Checking component availability..."
-        python .github/scripts/check_availability.py \
-          --bom-file BOM_CONSOLIDATED.csv \
-          --output-dir .
-      continue-on-error: true
-
-    - name: Analyze Mouser consolidation opportunities
-      run: |
-        echo "📊 Analyzing Mouser consolidation opportunities..."
-        python .github/scripts/mouser_consolidation_analyzer.py \
-          --bom-file BOM_CONSOLIDATED.csv \
-          --output-dir .
-      continue-on-error: true
-
     - name: Create alert for unavailable components
-      if: steps.availability_check.outputs.unavailable_components == 'true'
+      if: steps.bom_validation.outputs.unavailable_components == 'true'
       uses: actions/github-script@v7
       with:
         script: |

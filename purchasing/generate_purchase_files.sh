@@ -14,14 +14,16 @@ fi
 
 # Generate purchase files
 echo "📋 Processing consolidated BOM..."
-python3 ../.github/scripts/generate_bom_upload_files.py --bom-file ../BOM_CONSOLIDATED.csv --output-dir .
+python3 ../.github/scripts/bom_manager.py --bom-file ../BOM_CONSOLIDATED.csv --output-dir . --generate-purchase-files --generate-mouser-only
 
 echo ""
 echo "✅ Purchase files generated successfully!"
 echo ""
 echo "📁 Generated Files:"
-echo "   - PURCHASE_GUIDE.md (Comprehensive purchase guide with Mouser-only sourcing)"
-echo "   - mouser_upload_consolidated.csv (Mouser bulk upload - single source for all components)"
+echo "   - PURCHASE_GUIDE.md (Comprehensive purchase guide with component links)"
+echo "   - mouser_upload_consolidated.csv (Standard Mouser bulk upload file)"
+echo "   - BOM_MOUSER_ONLY.csv (Mouser-only consolidated BOM)"
+echo "   - mouser_upload_consolidated_only.csv (Mouser-only bulk upload file)"
 echo ""
 echo "🛒 Next Steps:"
 echo "1. Open PURCHASE_GUIDE.md for complete purchasing instructions"
