@@ -11,6 +11,8 @@ import pandas as pd
 import requests
 from typing import Dict, List, Tuple, Optional
 import sys
+import time
+import random
 from datetime import datetime
 from pathlib import Path
 
@@ -26,6 +28,73 @@ class NexarAPIError(Exception):
     """Custom exception for Nexar API errors"""
 
     pass
+
+
+class NexarRateLimitError(NexarAPIError):
+    """Exception for rate limit exceeded errors"""
+
+    pass
+
+
+class NexarQuotaExceededError(NexarAPIError):
+    """Exception for quota exceeded errors"""
+
+    pass
+
+
+def exponential_backoff(
+    attempt: int, base_delay: float = 1.0, max_delay: float = 60.0
+) -> float:
+    """Calculate exponential backoff delay with jitter"""
+    delay = min(base_delay * (2**attempt), max_delay)
+    # Add jitter to prevent thundering herd
+    jitter = random.uniform(0.1, 0.5) * delay
+    return delay + jitter
+
+
+def retry_with_backoff(
+    func,
+    max_retries: int = 3,
+    base_delay: float = 1.0,
+    backoff_exceptions: tuple = (
+        requests.exceptions.RequestException,
+        NexarRateLimitError,
+    ),
+    fatal_exceptions: tuple = (NexarQuotaExceededError,),
+):
+    """Decorator for retrying functions with exponential backoff"""
+
+    def wrapper(*args, **kwargs):
+        last_exception = None
+
+        for attempt in range(max_retries + 1):
+            try:
+                return func(*args, **kwargs)
+            except fatal_exceptions as e:
+                # Don't retry fatal exceptions like quota exceeded
+                print(f"🚫 Fatal error (no retry): {e}")
+                raise
+            except backoff_exceptions as e:
+                last_exception = e
+
+                if attempt < max_retries:
+                    delay = exponential_backoff(attempt, base_delay)
+                    print(
+                        f"⏳ Retry {attempt + 1}/{max_retries} after {delay:.1f}s: {e}"
+                    )
+                    time.sleep(delay)
+                else:
+                    print(f"❌ Max retries ({max_retries}) exceeded for: {e}")
+            except Exception as e:
+                # Unexpected errors - don't retry
+                print(f"💥 Unexpected error (no retry): {e}")
+                raise
+
+        # If we get here, all retries failed
+        if last_exception:
+            raise last_exception
+
+    return wrapper
 
 
 class NexarValidator:
@@ -78,8 +147,9 @@ class NexarValidator:
             },
         }
 
+    @retry_with_backoff(max_retries=3, base_delay=2.0)
     def authenticate(self) -> None:
-        """Obtain access token from Nexar API"""
+        """Obtain access token from Nexar API with retry logic"""
         print("🔐 Authenticating with Nexar API...")
 
         auth_data = {
@@ -93,6 +163,7 @@ class NexarValidator:
                 "https://identity.nexar.com/connect/token",
                 data=auth_data,
                 headers={"Content-Type": "application/x-www-form-urlencoded"},
+                timeout=30,  # Add timeout
             )
             response.raise_for_status()
 
@@ -109,10 +180,14 @@ class NexarValidator:
             print("✅ Authentication successful")
 
         except requests.exceptions.RequestException as e:
-            raise NexarAPIError(f"Authentication failed: {e}")
+            if "401" in str(e) or "403" in str(e):
+                raise NexarAPIError(f"Authentication failed - check credentials: {e}")
+            else:
+                raise NexarAPIError(f"Authentication request failed: {e}")
 
+    @retry_with_backoff(max_retries=5, base_delay=1.0)
     def search_parts(self, mpn: str, manufacturer: str = None) -> List[Dict]:
-        """Search for parts using Nexar API with correct schema from official examples"""
+        """Search for parts using Nexar API with error handling and backoff"""
         # Query pattern from official mpn_pricing_to_csv.py example
         query = """
         query SearchParts($queries: [SupPartMatchQuery!]!) {
@@ -163,14 +238,46 @@ class NexarValidator:
 
         try:
             response = self.session.post(
-                NEXAR_ENDPOINT, json={"query": query, "variables": variables}
+                NEXAR_ENDPOINT,
+                json={"query": query, "variables": variables},
+                timeout=45,  # Longer timeout for complex queries
             )
             response.raise_for_status()
 
             data = response.json()
 
             if "errors" in data:
-                print(f"⚠️  GraphQL errors for {mpn}: {data['errors']}")
+                errors = data["errors"]
+                print(f"⚠️  GraphQL errors for {mpn}: {errors}")
+
+                # Check for specific error types
+                for error in errors:
+                    error_msg = error.get("message", "").lower()
+
+                    # Check for quota exceeded
+                    if (
+                        "exceeded your part limit" in error_msg
+                        or "upgrade your plan" in error_msg
+                    ):
+                        print(f"💳 Quota exceeded for part search: {mpn}")
+                        raise NexarQuotaExceededError(
+                            f"Nexar part limit exceeded: {error.get('message')}"
+                        )
+
+                    # Check for rate limiting
+                    elif "rate limit" in error_msg or "too many requests" in error_msg:
+                        print(f"🐌 Rate limited for part search: {mpn}")
+                        raise NexarRateLimitError(
+                            f"Rate limit exceeded: {error.get('message')}"
+                        )
+
+                    # Check for authentication issues
+                    elif "unauthorized" in error_msg or "forbidden" in error_msg:
+                        print(f"🔒 Authentication error for part search: {mpn}")
+                        raise NexarAPIError(
+                            f"Authentication error: {error.get('message')}"
+                        )
+
                 return []
 
             # Extract parts from supMultiMatch response
@@ -188,9 +295,28 @@ class NexarValidator:
                 return parts
             return []
 
+        except requests.exceptions.Timeout:
+            print(f"⏰ Timeout searching for {mpn}")
+            raise NexarRateLimitError(f"Request timeout for {mpn}")
+        except requests.exceptions.ConnectionError:
+            print(f"🌐 Connection error searching for {mpn}")
+            raise NexarRateLimitError(f"Connection error for {mpn}")
+        except requests.exceptions.HTTPError as e:
+            if e.response.status_code == 429:
+                print(f"🐌 HTTP 429 (Too Many Requests) for {mpn}")
+                raise NexarRateLimitError(f"HTTP 429 for {mpn}")
+            elif e.response.status_code in [401, 403]:
+                print(f"🔒 HTTP {e.response.status_code} (Auth Error) for {mpn}")
+                raise NexarAPIError(f"Authentication error for {mpn}")
+            elif e.response.status_code >= 500:
+                print(f"🔥 HTTP {e.response.status_code} (Server Error) for {mpn}")
+                raise NexarRateLimitError(f"Server error for {mpn}")
+            else:
+                print(f"❌ HTTP {e.response.status_code} error for {mpn}: {e}")
+                raise
         except requests.exceptions.RequestException as e:
-            print(f"❌ API request failed for {mpn}: {e}")
-            return []
+            print(f"❌ Request failed for {mpn}: {e}")
+            raise
 
     def score_supplier(
         self, supplier_name: str, offer: Dict, base_price: float
@@ -325,7 +451,7 @@ class NexarValidator:
         return None
 
     def validate_bom(self, bom_file: str) -> Dict:
-        """Validate entire BOM file"""
+        """Validate entire BOM file with rate limiting and error recovery"""
         print(f"📋 Validating BOM file: {bom_file}")
 
         try:
@@ -356,8 +482,15 @@ class NexarValidator:
             "validated_components": 0,
             "pricing_updates": 0,
             "errors": 0,
+            "quota_exceeded": False,
+            "rate_limited": False,
             "components": [],
         }
+
+        processed_count = 0
+        quota_exceeded = False
+        consecutive_failures = 0
+        max_consecutive_failures = 5
 
         for idx, row in df.iterrows():
             # Skip comment rows
@@ -382,6 +515,24 @@ class NexarValidator:
             if not mpn:
                 continue
 
+            # Check if quota exceeded earlier
+            if quota_exceeded:
+                print(f"⏭️  Skipping {mpn} - quota exceeded")
+                component_result = {
+                    "mpn": mpn,
+                    "manufacturer": manufacturer,
+                    "quantity": quantity,
+                    "current_price": current_price,
+                    "nexar_found": False,
+                    "updated_price": None,
+                    "price_change_percent": 0,
+                    "availability": "Quota Exceeded",
+                    "suppliers": [],
+                    "error": "Nexar API quota exceeded",
+                }
+                validation_results["components"].append(component_result)
+                continue
+
             print(f"🔍 Validating {mpn} ({manufacturer})...")
 
             component_result = {
@@ -397,7 +548,14 @@ class NexarValidator:
             }
 
             try:
+                # Add inter-request delay to be respectful
+                if processed_count > 0:
+                    time.sleep(0.5)  # 500ms between requests
+
                 parts = self.search_parts(mpn, manufacturer)
+
+                # Reset consecutive failures counter on success
+                consecutive_failures = 0
 
                 if parts:
                     component_result["nexar_found"] = True
@@ -469,12 +627,37 @@ class NexarValidator:
                     print(f"⚠️  No results found for {mpn}")
                     component_result["availability"] = "Not Found"
 
+            except NexarQuotaExceededError as e:
+                print(f"💳 Quota exceeded at {mpn}: {e}")
+                validation_results["quota_exceeded"] = True
+                quota_exceeded = True
+                component_result["error"] = str(e)
+                component_result["availability"] = "Quota Exceeded"
+
+            except NexarRateLimitError as e:
+                print(f"🐌 Rate limited at {mpn}: {e}")
+                validation_results["rate_limited"] = True
+                validation_results["errors"] += 1
+                component_result["error"] = str(e)
+                component_result["availability"] = "Rate Limited"
+                consecutive_failures += 1
+
+                # If too many consecutive failures, take a longer break
+                if consecutive_failures >= max_consecutive_failures:
+                    print(
+                        f"😴 Taking extended break after {consecutive_failures} consecutive failures..."
+                    )
+                    time.sleep(30)  # 30 second break
+                    consecutive_failures = 0
+
             except Exception as e:
                 print(f"❌ Error validating {mpn}: {e}")
                 validation_results["errors"] += 1
                 component_result["error"] = str(e)
+                consecutive_failures += 1
 
             validation_results["components"].append(component_result)
+            processed_count += 1
 
         return validation_results
 

@@ -58,6 +58,30 @@ jobs:
         python .github/scripts/nexar_validation.py --output-format github-actions
       continue-on-error: true
 
+    - name: Check validation status and quota
+      id: validation_status
+      run: |
+        if [ -f validation_results.json ]; then
+          # Check if quota was exceeded
+          QUOTA_EXCEEDED=$(cat validation_results.json | jq -r 'to_entries[] | .value.quota_exceeded // false' | grep -q 'true' && echo 'true' || echo 'false')
+          RATE_LIMITED=$(cat validation_results.json | jq -r 'to_entries[] | .value.rate_limited // false' | grep -q 'true' && echo 'true' || echo 'false')
+
+          echo "quota_exceeded=$QUOTA_EXCEEDED" >> $GITHUB_OUTPUT
+          echo "rate_limited=$RATE_LIMITED" >> $GITHUB_OUTPUT
+
+          if [ "$QUOTA_EXCEEDED" = "true" ]; then
+            echo "⚠️ Nexar API quota exceeded - partial validation only"
+            echo "quota_warning=true" >> $GITHUB_OUTPUT
+          elif [ "$RATE_LIMITED" = "true" ]; then
+            echo "⚠️ Nexar API rate limited - some components may be missing"
+            echo "rate_limit_warning=true" >> $GITHUB_OUTPUT
+          else
+            echo "validation_successful=true" >> $GITHUB_OUTPUT
+          fi
+        else
+          echo "validation_failed=true" >> $GITHUB_OUTPUT
+        fi
+
     - name: Generate pricing report
       if: always()
       run: |
@@ -66,6 +90,29 @@ jobs:
 
         if [ -f validation_results.json ]; then
           python .github/scripts/generate_pricing_report.py
+
+          # Add quota/rate limit warnings to report
+          if [ "${{ steps.validation_status.outputs.quota_exceeded }}" = "true" ]; then
+            echo "" >> pricing_report.md
+            echo "⚠️ **IMPORTANT**: Nexar API quota exceeded during validation" >> pricing_report.md
+            echo "" >> pricing_report.md
+            echo "**Impact:**" >> pricing_report.md
+            echo "- Only first ~100 components were validated" >> pricing_report.md
+            echo "- Remaining components show cached/estimated pricing" >> pricing_report.md
+            echo "- Consider upgrading Nexar plan for full validation" >> pricing_report.md
+            echo "" >> pricing_report.md
+            echo "**Recommendation:** Contact api@nexar.com to discuss plan upgrade" >> pricing_report.md
+            echo "" >> pricing_report.md
+          elif [ "${{ steps.validation_status.outputs.rate_limited }}" = "true" ]; then
+            echo "" >> pricing_report.md
+            echo "⚠️ **WARNING**: Nexar API rate limiting encountered" >> pricing_report.md
+            echo "" >> pricing_report.md
+            echo "**Impact:**" >> pricing_report.md
+            echo "- Some component validation may be incomplete" >> pricing_report.md
+            echo "- Retry logic was applied but some requests still failed" >> pricing_report.md
+            echo "- Consider running validation again in 1 hour" >> pricing_report.md
+            echo "" >> pricing_report.md
+          fi
         else
           echo "❌ **Validation Failed** - Unable to retrieve pricing data" >> pricing_report.md
           echo "" >> pricing_report.md
@@ -73,6 +120,7 @@ jobs:
           echo "- Check Nexar API credentials" >> pricing_report.md
           echo "- Verify API endpoint accessibility" >> pricing_report.md
           echo "- Review component part numbers" >> pricing_report.md
+          echo "- Check for quota limits or service outages" >> pricing_report.md
         fi
 
     - name: Check for pricing changes
@@ -116,8 +164,54 @@ jobs:
           git push
         fi
 
+    - name: Create issue for quota exceeded
+      if: steps.validation_status.outputs.quota_exceeded == 'true'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const issueBody = `## 💳 Nexar API Quota Exceeded
+
+          **The BOM pricing validation has hit the Nexar API quota limit.**
+
+          ### Current Situation:
+          - ✅ First ~100 components validated successfully
+          - ⚠️ Remaining components could not be validated
+          - 📊 Partial pricing data available in artifacts
+
+          ### Impact:
+          - **Pricing updates**: Limited to validated components only
+          - **Cost analysis**: May be incomplete for full BOM
+          - **Automation**: Will continue with available data
+
+          ### Recommended Actions:
+          1. **Immediate**: Review validated components in artifacts
+          2. **Short-term**: Prioritize safety-critical components for manual validation
+          3. **Long-term**: Consider upgrading Nexar API plan
+
+          ### Nexar Plan Options:
+          - **Contact**: api@nexar.com
+          - **Mention**: GitHub Actions automation for ${context.repo.owner}/${context.repo.repo}
+          - **Request**: Higher quota limit for BOM validation workflows
+
+          ### Workaround:
+          - Split BOM validation into multiple runs
+          - Focus on critical components first
+          - Use manual validation for non-critical parts
+
+          *This issue was automatically created by the BOM pricing validation workflow.*`;
+
+          const issue = await github.rest.issues.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            title: '💳 Nexar API Quota Exceeded - BOM Validation Incomplete',
+            body: issueBody,
+            labels: ['automation', 'nexar-api', 'quota-exceeded', 'action-required']
+          });
+
+          console.log(`Created quota exceeded issue #${issue.data.number}`);
+
     - name: Create issue for significant price changes
-      if: steps.pricing_changes.outputs.significant_changes == 'true'
+      if: steps.pricing_changes.outputs.significant_changes == 'true' && steps.validation_status.outputs.quota_exceeded != 'true'
       uses: actions/github-script@v7
       with:
         script: |

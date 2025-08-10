@@ -2,7 +2,9 @@
   "preferred_suppliers": {
     "tier_1": [
       "DigiKey",
-      "Mouser"
+      "Digi-Key",
+      "Mouser",
+      "Mouser Electronics"
     ],
     "tier_2": [
       "Arrow Electronics",
@@ -40,15 +42,40 @@
     "price_weight": 0.5,
     "supplier_tier_weight": 0.2
   },
+  "api_limits": {
+    "requests_per_minute": 60,
+    "requests_per_hour": 1000,
+    "parts_per_day": 100,
+    "burst_delay_seconds": 0.5,
+    "backoff_base_delay": 1.0,
+    "max_backoff_delay": 60.0,
+    "max_retries": 5
+  },
+  "validation_preferences": {
+    "skip_components_on_quota_exceeded": true,
+    "prioritize_safety_critical": true,
+    "safety_critical_components": [
+      "D2425-10",
+      "SCT-013-020",
+      "LRS-15-5",
+      "6200.4210",
+      "0218012.MXP",
+      "ESP32-DEVKITC-32E"
+    ],
+    "fallback_to_cached_pricing": true,
+    "max_price_age_days": 30
+  },
   "comments": {
-    "description": "Supplier preferences for ShopVac Rat Trap BOM validation",
+    "description": "Supplier preferences for ShopVac Rat Trap BOM validation with API error handling",
     "updated": "2025-08-09",
     "notes": [
       "Tier 1: Major distributors with excellent service and fast shipping",
       "Tier 2: Good distributors with reliable stock and reasonable shipping",
       "Specialty: Maker-focused suppliers for prototyping and small quantities",
       "MOQ=1 strongly preferred for maker/prototype builds",
-      "Geographic preferences optimize for shipping speed and duties"
+      "Geographic preferences optimize for shipping speed and duties",
+      "API limits configured for Nexar free tier with quota awareness",
+      "Safety-critical components prioritized during quota limits"
     ]
   }
 }

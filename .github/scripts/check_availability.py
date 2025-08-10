@@ -8,6 +8,8 @@ import argparse
 import json
 import os
 import sys
+import time
+import random
 from datetime import datetime
 from pathlib import Path
 
@@ -32,6 +34,79 @@ CRITICAL_COMPONENTS = [
 ]
 
 
+class NexarAPIError(Exception):
+    """Custom exception for Nexar API errors"""
+
+    pass
+
+
+class NexarRateLimitError(NexarAPIError):
+    """Exception for rate limit exceeded errors"""
+
+    pass
+
+
+class NexarQuotaExceededError(NexarAPIError):
+    """Exception for quota exceeded errors"""
+
+    pass
+
+
+def exponential_backoff(
+    attempt: int, base_delay: float = 1.0, max_delay: float = 60.0
+) -> float:
+    """Calculate exponential backoff delay with jitter"""
+    delay = min(base_delay * (2**attempt), max_delay)
+    # Add jitter to prevent thundering herd
+    jitter = random.uniform(0.1, 0.5) * delay
+    return delay + jitter
+
+
+def retry_with_backoff(
+    func,
+    max_retries: int = 3,
+    base_delay: float = 1.0,
+    backoff_exceptions: tuple = (
+        requests.exceptions.RequestException,
+        NexarRateLimitError,
+    ),
+    fatal_exceptions: tuple = (NexarQuotaExceededError,),
+):
+    """Decorator for retrying functions with exponential backoff"""
+
+    def wrapper(*args, **kwargs):
+        last_exception = None
+
+        for attempt in range(max_retries + 1):
+            try:
+                return func(*args, **kwargs)
+            except fatal_exceptions as e:
+                # Don't retry fatal exceptions like quota exceeded
+                print(f"🚫 Fatal error (no retry): {e}")
+                raise
+            except backoff_exceptions as e:
+                last_exception = e
+
+                if attempt < max_retries:
+                    delay = exponential_backoff(attempt, base_delay)
+                    print(
+                        f"⏳ Retry {attempt + 1}/{max_retries} after {delay:.1f}s: {e}"
+                    )
+                    time.sleep(delay)
+                else:
+                    print(f"❌ Max retries ({max_retries}) exceeded for: {e}")
+            except Exception as e:
+                # Unexpected errors - don't retry
+                print(f"💥 Unexpected error (no retry): {e}")
+                raise
+
+        # If we get here, all retries failed
+        if last_exception:
+            raise last_exception
+
+    return wrapper
+
+
 class AvailabilityChecker:
     def __init__(self, client_id: str, client_secret: str):
         self.client_id = client_id
@@ -39,8 +114,9 @@ class AvailabilityChecker:
         self.access_token = None
         self.session = requests.Session()
 
+    @retry_with_backoff(max_retries=3, base_delay=2.0)
     def authenticate(self) -> None:
-        """Obtain access token from Nexar API"""
+        """Obtain access token from Nexar API with retry logic"""
         print("🔐 Authenticating with Nexar API...")
 
         auth_data = {
@@ -54,6 +130,7 @@ class AvailabilityChecker:
                 "https://identity.nexar.com/connect/token",
                 data=auth_data,
                 headers={"Content-Type": "application/x-www-form-urlencoded"},
+                timeout=30,
             )
             response.raise_for_status()
 
@@ -70,11 +147,16 @@ class AvailabilityChecker:
             print("✅ Authentication successful")
 
         except requests.exceptions.RequestException as e:
-            print(f"❌ Authentication failed: {e}")
-            sys.exit(1)
+            if "401" in str(e) or "403" in str(e):
+                print(f"❌ Authentication failed - check credentials: {e}")
+                sys.exit(1)
+            else:
+                print(f"❌ Authentication request failed: {e}")
+                raise
 
+    @retry_with_backoff(max_retries=5, base_delay=1.0)
     def check_availability(self, mpn: str, manufacturer: str = None) -> dict:
-        """Check availability for a specific part"""
+        """Check availability for a specific part with error handling"""
         query = """
         query CheckAvailability($mpn: String!, $manufacturer: String) {
             supSearchMpn(q: $mpn, manufacturer: $manufacturer, limit: 3) {
@@ -113,13 +195,37 @@ class AvailabilityChecker:
 
         try:
             response = self.session.post(
-                NEXAR_ENDPOINT, json={"query": query, "variables": variables}
+                NEXAR_ENDPOINT,
+                json={"query": query, "variables": variables},
+                timeout=45,
             )
             response.raise_for_status()
 
             data = response.json()
 
             if "errors" in data:
+                errors = data["errors"]
+                print(f"⚠️  GraphQL errors for {mpn}: {errors}")
+
+                # Check for specific error types
+                for error in errors:
+                    error_msg = error.get("message", "").lower()
+
+                    # Check for quota exceeded
+                    if (
+                        "exceeded your part limit" in error_msg
+                        or "upgrade your plan" in error_msg
+                    ):
+                        raise NexarQuotaExceededError(
+                            f"Nexar part limit exceeded: {error.get('message')}"
+                        )
+
+                    # Check for rate limiting
+                    elif "rate limit" in error_msg or "too many requests" in error_msg:
+                        raise NexarRateLimitError(
+                            f"Rate limit exceeded: {error.get('message')}"
+                        )
+
                 return {"error": data["errors"]}
 
             results = data.get("data", {}).get("supSearchMpn", {}).get("results", [])
@@ -179,6 +285,21 @@ class AvailabilityChecker:
 
             return availability_summary
 
+        except requests.exceptions.Timeout:
+            print(f"⏰ Timeout checking availability for {mpn}")
+            raise NexarRateLimitError(f"Request timeout for {mpn}")
+        except requests.exceptions.ConnectionError:
+            print(f"🌐 Connection error checking availability for {mpn}")
+            raise NexarRateLimitError(f"Connection error for {mpn}")
+        except requests.exceptions.HTTPError as e:
+            if e.response.status_code == 429:
+                raise NexarRateLimitError(f"HTTP 429 for {mpn}")
+            elif e.response.status_code in [401, 403]:
+                raise NexarAPIError(f"Authentication error for {mpn}")
+            elif e.response.status_code >= 500:
+                raise NexarRateLimitError(f"Server error for {mpn}")
+            else:
+                raise
         except requests.exceptions.RequestException as e:
             return {"error": str(e)}
 

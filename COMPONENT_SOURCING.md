@@ -142,6 +142,90 @@
 
 ---
 
+## Nexar API Error Handling & Rate Limiting
+
+### 🚨 **Quota Management**
+The GitHub Actions workflows now include intelligent quota management:
+
+**Quota Exceeded Handling:**
+- ✅ **Graceful degradation** - continues with partial data
+- 📊 **Prioritizes safety-critical components** first
+- 🏷️ **Auto-creates GitHub issues** when quota limits hit
+- 📈 **Provides upgrade recommendations** in reports
+
+**Rate Limiting Protection:**
+- ⏳ **Exponential backoff** with jitter (1s → 60s max delay)
+- 🔄 **Automatic retries** (up to 5 attempts per component)
+- 🐌 **Inter-request delays** (500ms between API calls)
+- 💤 **Extended breaks** after consecutive failures
+
+### 🔄 **Error Recovery Strategies**
+
+| Error Type | Response | Retry Logic | Fallback |
+|------------|----------|-------------|----------|
+| **Quota Exceeded** | Stop new requests | ❌ No retry | Use cached pricing |
+| **Rate Limited** | Exponential backoff | ✅ 5 retries | Skip component |
+| **Network Timeout** | Wait & retry | ✅ 3 retries | Mark as unavailable |
+| **Auth Failure** | Log & exit | ❌ No retry | Workflow fails safely |
+| **Server Error (5xx)** | Backoff & retry | ✅ 5 retries | Skip component |
+
+### 📊 **API Usage Optimization**
+
+**Current Limits (Nexar Free Tier):**
+- 🏷️ **100 parts per day** quota
+- ⏱️ **60 requests per minute** rate limit
+- 📈 **1000 requests per hour** burst limit
+
+**Optimization Strategies:**
+1. **Priority-based processing** - safety-critical components first
+2. **Batch validation** - group similar components
+3. **Intelligent caching** - avoid re-validating recent data
+4. **Selective updates** - only check changed components
+
+### 🛠️ **Troubleshooting API Issues**
+
+**Common Issues & Solutions:**
+
+```bash
+# Check quota status
+echo "Check remaining quota: Contact api@nexar.com"
+
+# Test API connectivity
+curl -X POST https://api.nexar.com/graphql \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{"query": "{ __schema { types { name } } }"}'
+
+# Validate credentials
+python .github/scripts/nexar_validation.py --bom-files BOM_BUDGET.csv
+```
+
+**Workflow Debugging:**
+1. **Check artifacts** - validation results always saved
+2. **Review logs** - detailed error messages with retry attempts
+3. **Verify credentials** - ensure NEXAR_CLIENT_ID/SECRET are set
+4. **Monitor quotas** - issues auto-created when limits hit
+
+### 💡 **Best Practices for Large BOMs**
+
+**For BOMs >100 components:**
+1. **Split validation** - run separate workflows for critical vs. non-critical
+2. **Staged approach** - validate in component category groups
+3. **Manual fallback** - use alternative pricing sources for overflow
+4. **Consider upgrade** - contact Nexar for higher quotas
+
+**Workflow Modifications:**
+```yaml
+# Example: Critical components only
+inputs:
+  validate_critical_only:
+    description: 'Validate only safety-critical components'
+    default: true
+    type: boolean
+```
+
+---
+
 **Last Updated**: August 9, 2025
 **Verification Status**: All part numbers and prices verified as of update date
+**API Error Handling**: Implemented exponential backoff and quota management
 **Next Review**: September 2025 (quarterly price/availability check)
