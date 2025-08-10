@@ -1483,9 +1483,10 @@ def main():
 
         # Generate purchase files
         if do_all or args.generate_purchase_files:
-            manager.generate_purchase_guide(
-                args.bom_file, validation_results, args.output_dir
-            )
+            # Purchase guide generation removed - see COMPONENT_SOURCING.md instead
+            # manager.generate_purchase_guide(
+            #     args.bom_file, validation_results, args.output_dir
+            # )
             manager.generate_mouser_upload_file(args.bom_file, args.output_dir)
 
         # Analyze Mouser consolidation opportunities
