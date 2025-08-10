@@ -4,6 +4,8 @@
 Modern ESP32-based IoT rat trap with ToF sensor, OLED display, and Home Assistant integration. **Recently optimized (Aug 2025)** for safety compliance, cost reduction (-19%), and simplified assembly.
 
 ## Core Architecture & Data Flow
+
+**Standard Configuration (ToF sensor only):**
 ```
 [120V AC Input] → [15A Protection] → [Single PSU] → [ESP32 + Built-in 3.3V]
                                                          ↓
@@ -12,21 +14,30 @@ Modern ESP32-based IoT rat trap with ToF sensor, OLED display, and Home Assistan
 [OLED Status Display] ← [I2C Bus] → [Integrated Status (No LEDs)]
 ```
 
+**STEMMA QT Camera Configuration:**
+```
+[120V AC Input] → [15A Protection] → [Single PSU] → [ESP32 + Built-in 3.3V]
+                                                         ↓
+[Shop Vacuum] ← [SSR 25A] ← [GPIO5] ← [ESPHome Logic] ← [ToF I2C Sensor]
+                                    ↓                    ↓
+[High-Power IR LED] ← [GPIO6] ← [Camera Trigger] ← [OV5640 5MP Camera]
+                                    ↓                    ↓
+[OLED Status Display] ← [I2C Bus] → [STEMMA QT Hub] → [BME280 Environmental]
+```
+
 **Key Design Decision**: Single power supply + ESP32 built-in 3.3V regulator eliminates external regulators, saving costs, and reducing complexity while avoiding any PCB, SMD, or THT component assembly.
 
 ## Critical File Relationships
 
 ### ESPHome Configurations (Choose Based on Hardware)
-- `esphome/rat-trap-2025.yaml` - **Primary config** with optimized single PSU design
-- `esphome/rat-trap-ttgo-display.yaml` - For integrated ESP32+TFT boards
-- `esphome/rat-trap-budget.yaml` - Budget-friendly configuration with essential features
+- `esphome/rat-trap-2025.yaml` - **Primary config** with optimized single PSU design (ToF sensor only)
+- `esphome/rat-trap-stemma-camera.yaml` - **Camera-enhanced config** with STEMMA QT OV5640 5MP camera system
 
 ### Design Documentation Hierarchy
 1. `ELECTRICAL_DESIGN.md` - **Start here** for BOM and circuit design
 2. `INSTALLATION_GUIDE.md` - Safety procedures and assembly steps
-3. `3D Models/Control_Box_Enclosure.scad` - Parametric enclosure design
+3. `3D Models/Side_Mount_Control_Box.scad` - Parametric side-mount enclosure design
 4. `SAFETY_REFERENCE.md` - Consolidated safety guidelines
-5. `QUICK_START.md` - Quick start guide for installation and setup
 
 ## Project-Specific Development Patterns
 
@@ -81,9 +92,9 @@ substitutions:
 ```
 
 ### Environmental Monitoring Pattern
-The BME280 sensor is used for environmental monitoring and analytics:
+Environmental sensors provide monitoring and analytics capabilities:
 ```yaml
-# Environmental sensor for temperature, humidity, pressure
+# Environmental sensor configuration pattern
 sensor:
   - platform: bme280
     address: 0x76
@@ -98,16 +109,26 @@ sensor:
 
 ### Safety-Critical GPIO Assignments
 ```yaml
-# These pins are standardized - don't change without updating 3D models
+# Standardized pin assignments - changes require 3D model updates
 gpio:
   - pin: 5    # SSR control (120V AC switching) - SAFETY CRITICAL
   - pin: 4    # Emergency disable switch (safety critical)
-  - pin: 21   # I2C SDA (sensor + display)
-  - pin: 22   # I2C SCL (sensor + display)
+  - pin: 6    # IR LED control (camera configurations)
+  - pin: 21   # I2C SDA (sensor + display bus)
+  - pin: 22   # I2C SCL (sensor + display bus)
 
-# SAFETY RULE: GPIO5 must NEVER be used for anything except SSR control
-# SAFETY RULE: GPIO4 emergency disable must remain accessible and functional
-# SAFETY RULE: Pull-ups must be to ESP32 3.3V output, not external supply
+# Camera-specific GPIO assignments (when camera enabled):
+# GPIO15: External clock
+# GPIO25: VSYNC
+# GPIO26: HREF
+# GPIO27: Pixel clock
+# GPIO32: Power down
+
+# SAFETY RULES:
+# - GPIO5 reserved exclusively for SSR control
+# - GPIO4 emergency disable must remain accessible
+# - GPIO6 reserved for IR LED in camera configurations
+# - Pull-ups must use ESP32 3.3V output, not external supply
 ```
 
 ### ⚠️ **Electrical Safety Checklist for Modifications**
@@ -126,7 +147,7 @@ gpio:
 2. **MANDATORY**: Confirm PSU is UL/CE listed for safety compliance
 3. **MANDATORY**: Check thermal dissipation fits enclosure design
 4. **REQUIRED**: Update `ELECTRICAL_DESIGN.md` BOM immediately
-5. **REQUIRED**: Modify `Control_Box_Enclosure.scad` mounting if needed
+5. **REQUIRED**: Modify `Side_Mount_Control_Box.scad` mounting if needed
 
 ## Development Workflow Commands
 
@@ -148,7 +169,7 @@ esphome logs rat-trap-2025.yaml
 ### 3D Model Modification
 ```bash
 # Generate STL from parametric SCAD
-openscad -o Control_Box_Enclosure.stl Control_Box_Enclosure.scad
+openscad -o Side_Mount_Control_Box.stl Side_Mount_Control_Box.scad
 
 # Key parameters to modify:
 # - box_width/depth/height (component fit)
@@ -159,17 +180,29 @@ openscad -o Control_Box_Enclosure.stl Control_Box_Enclosure.scad
 ### Power Budget Validation
 ```yaml
 # SAFETY CRITICAL: Always verify 3.3V load against ESP32 600mA limit
-# Current loads (from ELECTRICAL_DESIGN.md):
-# VL53L0X ToF Sensor: 15mA typical, 30mA peak
+
+# Standard Configuration (ToF sensor only):
+# ToF Sensor: 15mA typical, 30mA peak
 # OLED Display: 15mA typical, 25mA peak
-# BME280 Environmental: 1μA sleep, 3.6mA active
-# ESP32-S3: 45-70mA WiFi active
+# Environmental Sensor: 1μA sleep, 3.6mA active
+# ESP32 Core: 45-70mA WiFi active
 # Total: 61-99mA (84% safety margin)
 
-# SAFETY RULE: Never exceed 400mA total 3.3V load (66% of ESP32 limit)
-# SAFETY RULE: Account for WiFi transmission spikes (+50mA)
-# SAFETY RULE: Include temperature derating for hot environments
-# SAFETY RULE: Only use pre-assembled modules with known power requirements
+# Camera Configuration:
+# ESP32 Core: 70mA WiFi + processing
+# Camera Module: 100mA capturing, 20mA idle
+# ToF Sensor: 15mA typical, 30mA peak
+# Environmental Sensor: 1μA sleep, 3.6mA active
+# OLED Display: 15mA typical, 25mA peak
+# IR LED: 200mA @ 3.3V (pulsed only)
+# Total Peak: 431mA during capture with IR (72% safety margin)
+
+# SAFETY RULES:
+# - Never exceed 400mA total 3.3V load (66% of ESP32 limit)
+# - Account for WiFi transmission spikes (+50mA)
+# - Include temperature derating for hot environments
+# - Only use pre-assembled modules with known power requirements
+# - IR LED pulsed operation only - never continuous
 ```
 
 ### ⚠️ **CRITICAL SAFETY PROCEDURES** ⚠️
@@ -221,9 +254,7 @@ openscad -o Control_Box_Enclosure.stl Control_Box_Enclosure.scad
 - **Outlets**: NEMA 5-15R (US), CEE 7/7 Schuko (EU)
 
 ### Component Sourcing Strategy
-**Primary vendors**: Major electronic component distributors (power/safety/dev boards), mechanical hardware suppliers
-**Alternate vendors**: Online electronics retailers, maker-focused shops
-**Component requirements**:
+**Requirements**:
 - Use only pre-assembled modules (no raw PCB, SMD, or through-hole components)
 - Select chassis/panel-mount components wherever possible
 - Prioritize components with screw terminals over soldered connections
@@ -245,14 +276,14 @@ openscad -o Control_Box_Enclosure.stl Control_Box_Enclosure.scad
 ## Common Modification Patterns
 
 ### Adding New Sensors
-1. Check I2C address conflicts (VL53L0X=0x29, OLED=0x3C, BME280=0x77)
+1. Check I2C address conflicts with existing devices
 2. Verify 3.3V power budget (ESP32 600mA limit)
 3. Update 3D enclosure for mounting points
 4. Add ESPHome configuration with appropriate filters
 
 ### Power Supply Changes
 1. Update `ELECTRICAL_DESIGN.md` BOM section
-2. Modify `Control_Box_Enclosure.scad` mounting brackets
+2. Modify `Side_Mount_Control_Box.scad` mounting brackets
 3. Adjust ESPHome power monitoring if voltage changes
 4. Verify thermal clearances and ventilation
 

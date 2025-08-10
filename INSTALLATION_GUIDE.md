@@ -1,4 +1,21 @@
 # ShopVac Rat Trap 2025 - Installation & Setup Guide
+**STEMMA QT Camera System with Enhanced Capabilities**
+
+## Enhanced System Overview
+
+The 2025 version features a revolutionary **STEMMA QT camera system** that provides:
+
+- 🎥 **5MP OV5640 Camera**: Professional quality with autofocus
+- 🌙 **High-Power IR LED**: 10+ meter night vision range
+- 🔌 **Zero-Solder Assembly**: Complete plug-and-play modularity
+- 📊 **Complete Sensor Suite**: Environmental monitoring and ToF detection
+- 🏠 **Home Assistant Integration**: Automatic image capture and notifications
+
+### **Key Advantages Over Previous Versions:**
+- **2.5x higher resolution** (5MP vs 2MP generic cameras)
+- **3x longer IR range** (10+ meters vs 3-5 meters)
+- **Modular design** enables easy upgrades and maintenance
+- **Professional-grade components** with thermal protection
 
 Installation Guide
 ==================
@@ -49,6 +66,9 @@ If you are not qualified to perform electrical work, **STOP** and hire a license
 - [ ] Insulated screwdrivers (Phillips and flathead)
 - [ ] Insulated wire strippers (12-22 AWG)
 - [ ] Wire nuts (appropriate sizes)
+- [ ] **Precision screwdriver set** (for STEMMA QT connectors)
+- [ ] **Cable management tools** (zip ties, cable management clips)
+- [ ] **Magnifying glass** (for STEMMA connector inspection)
 - [ ] Electrical tape (UL listed)
 - [ ] Heat shrink tubing and heat gun
 - [ ] Soldering iron and lead-free solder
@@ -76,21 +96,15 @@ cd ~/rat_trap_build
 curl -O https://raw.githubusercontent.com/bandwith/ShopVacRatTrap/main/ELECTRICAL_DESIGN.md
 ```
 
-**Optimized Components (Cost Savings: -$62.75):**
+**Required Components:**
 - [ ] ESP32-S3 Feather (test with blink program)
 - [ ] VL53L0X sensor (verify I2C address 0x29)
 - [ ] OLED display (verify I2C address 0x3C) - **Integrated status display**
-- [ ] **Single LRS-35-5 PSU** (5V/7A, eliminates external 3.3V regulator, provides ample capacity)
-- [ ] SSR relay 40A (SparkFun COM-13015, chassis mount, -$10 vs kit)
-- [ ] **15A Circuit Breaker** (upgraded from 5A for safety compliance)
-- [ ] **15A Fuses** (upgraded from 5A for proper protection)
-- [ ] Resistors: 2x 10kΩ only (**LEDs eliminated**, -$8 savings)
-
-**ELIMINATED Components (Cost Optimization):**
-- ❌ External 3.3V regulator (ESP32 built-in used)
-- ❌ Status LEDs (integrated into OLED display)
-- ❌ LED current limiting resistors
-- ❌ Additional wire complexity
+- [ ] **Single LRS-35-5 PSU** (5V/7A, provides ample capacity for all components)
+- [ ] SSR relay 40A (SparkFun COM-13015, chassis mount)
+- [ ] **15A Circuit Breaker** (for safety compliance)
+- [ ] **15A Fuses** (for proper protection)
+- [ ] Resistors: 2x 10kΩ for pull-up circuits
 
 #### **1.2 3D Print Enclosure Components**
 ```bash
@@ -103,63 +117,20 @@ Temperature: PLA 200°C / PETG 240°C
 ```
 
 Print order:
-1. `Control_Box_Enclosure.scad` - Main housing
+1. `Side_Mount_Control_Box.scad` - Side-mount electronics housing
 2. `Control_Box_Lid.scad` - Removable top
 3. `Sensor_Housing_VL53L0X.scad` - Updated sensor mount
 4. Existing files: `Rat_Trap_Mouth.stl`, `Vacuum_Hose_Adapter.stl`
 
-#### **1.3 Pre-Test ESP32 & Sensors (Simplified)**
-```yaml
-# Create optimized test configuration
-# Save as: esp32_component_test.yaml
-esphome:
-  name: component-test-optimized
-  platform: ESP32
-  board: esp32dev
+#### **1.3 Test Basic Components**
 
-wifi:
-  ssid: "YourTestNetwork"
-  password: "YourPassword"
-
-i2c:
-  sda: 21
-  scl: 22
-  scan: true
-
-# Test sensors with ESP32 built-in 3.3V regulator
-sensor:
-  - platform: vl53l0x
-    name: "Test Distance"
-    update_interval: 1s
-
-  - platform: template
-    name: "ESP32 Temperature"
-    lambda: |-
-      return temperatureRead();
-    update_interval: 10s
-
-display:
-  - platform: ssd1306_i2c
-    model: "SSD1306 128x64"
-    address: 0x3C
-    lambda: |-
-      it.print(0, 0, "Optimized Design Test");
-      it.printf(0, 16, "3.3V from ESP32: OK");
-      it.printf(0, 32, "Temp: %.1f°C", id(esp32_temp).state);
-
-font:
-  - file: "gfonts://Roboto"
-    id: font_default
-    size: 10
-```
-
-**Verify Optimized Design:**
-- [ ] I2C scan detects devices at 0x29 (VL53L0X) and 0x3C (OLED)
+Test the ESP32 and sensors before assembly:
+- [ ] I2C scan detects devices at expected addresses
 - [ ] ESP32 3.3V regulator powers all devices successfully
-- [ ] VL53L0X returns stable distance readings
-- [ ] OLED displays integrated status information
+- [ ] Sensors return stable readings
+- [ ] Display shows status information
 - [ ] ESP32 temperature monitoring functional
-- [ ] No external 3.3V regulator needed (cost savings confirmed)
+- [ ] ESP32-S3 3.3V output adequate for sensor load
 
 ### **Phase 2: Electrical Assembly**
 
@@ -213,9 +184,35 @@ font:
    - Route antenna away from switching circuits
    ```
 
-2. **Sensor Connections (STEMMA QT Modular)**
+2. **Sensor Connections (INLET HUB-BASED - OPTIMAL CONFIGURATION)**
    ```
-   STEMMA QT Daisy Chain Assembly:
+   Inlet Hub-Based Assembly (Minimized Cable Runs):
+
+   AT INLET AREA:
+   QWIIC/STEMMA QT 5-Port Hub (Adafruit 5625)
+      ├─ Port 1 → VL53L0X ToF Sensor (50mm cable - co-located)
+      ├─ Port 2 → BME280 Environmental (100mm cable - inlet area)
+      ├─ Port 3 → [Reserved for Camera Module]
+      ├─ Port 4 → [Reserved for Additional Sensors]
+      └─ Port 5 → [Reserved for Future Expansion]
+
+   AT CONTROL BOX:
+   ESP32-S3 Feather STEMMA QT Port
+      ↓ (Single 500mm STEMMA QT cable to inlet hub)
+   QWIIC Hub at Inlet (upstream connection)
+
+   OLED Display (Adafruit 5027)
+      ↓ (Direct 100mm cable to ESP32 in control box)
+
+   MAJOR BENEFITS of Inlet Hub Placement:
+   - ✅ Only 1 cable run between control box and inlet (vs. 3+ separate runs)
+   - ✅ Environmental monitoring at actual rodent entry point
+   - ✅ Simplified installation with single main cable route
+   - ✅ Reduced EMI susceptibility on short sensor cables
+   - ✅ Camera and additional sensors can be added at inlet without new cable runs
+   - ✅ All detection components accessible at inlet for maintenance
+
+   Alternative: STEMMA QT Daisy Chain Assembly (Legacy):
    ESP32-S3 Feather STEMMA QT Port
       ↓ (100mm STEMMA QT cable)
    VL53L0X ToF Sensor (Adafruit 4210)
@@ -223,12 +220,6 @@ font:
    BME280 Environmental Sensor (Adafruit 4816)
       ↓ (200mm STEMMA QT cable)
    OLED Display (Adafruit 5027)
-
-   Benefits:
-   - No soldering required - all JST SH 4-pin connectors
-   - Automatic I2C addressing and pull-ups
-   - Hot-swappable sensor connections
-   - Professional cable management
 
    Power Budget Verification:
    - ESP32-S3 3.3V regulator: 600mA maximum capacity
@@ -255,18 +246,6 @@ font:
    - LED Side:
      * Anode → GPIO17
      * Cathode → GND
-
-   ELIMINATED (Cost Optimization):
-   - Separate status LEDs → Integrated into OLED display
-   - Separate power indicator → Integrated into E-stop button
-   - Complex LED wiring → Simplified interface
-
-   Benefits:
-   - Reduced component count: 10 → 6 items
-   - Lower cost: -$8 savings
-   - Simplified assembly and troubleshooting
-   - Better status display with detailed information
-   ```
 
 4. **SSR Control Circuit (Enhanced with Optocoupler Protection)**
    ```
@@ -384,7 +363,24 @@ Check log output for:
    - Verify no false triggers from air movement
    ```
 
-3. **Environmental Testing**
+2. **Camera & IR Testing**
+   ```
+   - Test camera capture functionality via ESPHome logs
+   - Verify IR LED activation with test object detection
+   - Check image quality and focus at various distances
+   - Test night vision capability with IR illumination
+   - Verify image upload to Home Assistant
+   ```
+
+3. **STEMMA QT System Testing**
+   ```
+   - Verify all STEMMA QT devices detected on I2C bus
+   - Test sensor chain daisy configuration
+   - Check cable connections and strain relief
+   - Verify modular component removal/replacement
+   ```
+
+4. **Environmental Testing**
    ```
    - Test in various lighting conditions
    - Verify operation in temperature range
@@ -433,7 +429,35 @@ Check log output for:
            title: "Rat Trap Alert"
    ```
 
-2. **Mobile Notifications**
+2. **Mobile Notifications with Images**
+   ```yaml
+   # Add to configuration.yaml for camera integration
+   camera:
+     - platform: generic
+       still_image_url: "http://rat-trap-ip/capture"
+       name: "Rat Trap Camera"
+
+   # automation.yaml with image capture
+   - alias: "Rat Trap Detection with Photo"
+     trigger:
+       - platform: state
+         entity_id: binary_sensor.rat_trap_2025_rodent_detected
+         to: 'on'
+     action:
+       - service: camera.snapshot
+         target:
+           entity_id: camera.rat_trap_camera
+         data:
+           filename: "/config/www/rat_trap_capture_{{ now().strftime('%Y%m%d_%H%M%S') }}.jpg"
+       - service: notify.mobile_app
+         data:
+           message: "Rodent detected! See attached image."
+           title: "Rat Trap Alert"
+           data:
+             image: "/local/rat_trap_capture_{{ now().strftime('%Y%m%d_%H%M%S') }}.jpg"
+   ```
+
+3. **STEMMA QT System Monitoring**
    ```yaml
    # Add to configuration.yaml
    notify:

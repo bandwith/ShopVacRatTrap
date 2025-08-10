@@ -5,12 +5,20 @@ esphome:
   board: adafruit_feather_esp32s3
   comment: "NEC/IEC compliant ESP32-S3 based rat trap with STEMMA QT sensors"
 
-# Enhanced ESP32-S3 configuration
+# Hardware variant selection - Choose your configuration
+# STANDARD: ESP32-S3 Feather with basic sensors
+# ENHANCED VERSION: ESP32-S3 with VL53L0X ToF sensor, OLED display, BME280 environmental monitoring
+substitutions:
+  hardware_variant: "STANDARD"  # Options: STANDARD, CAMERA
+
+# Enhanced ESP32-S3 configuration (Standard variant)
 esp32:
   variant: esp32s3
   board: adafruit_feather_esp32s3
   framework:
     type: arduino
+
+# Note: For CAMERA variant, use rat-trap-camera-enhanced.yaml instead
 
 # Voltage-specific configuration (uncomment appropriate section)
 substitutions:
@@ -26,7 +34,13 @@ substitutions:
       // Thermal warning indicator
       if (id(esp32_temp).has_state() && id(esp32_temp).state > 75.0) {
         it.print(120, 56, id(font_small), "!");  # Temperature warning
-      }ine_frequency: "60Hz"
+      }
+
+# Voltage-specific configuration (uncomment appropriate section)
+substitutions:
+  # 🇺🇸 North America (120V AC, 60Hz, NEC compliant)
+  line_voltage: "120V AC"
+  line_frequency: "60Hz"
   max_current: "15A"
   safety_standard: "NEC/UL"
 
@@ -61,6 +75,11 @@ wifi:
 captive_portal:
 
 # I2C bus configuration for VL53L0X, BME280 and OLED via STEMMA QT with enhanced EMI protection
+# Uses STEMMA QT 5-Port Hub (Adafruit 5625) to minimize cable count
+# Hub connects: ESP32 ← Hub → ToF, BME280, OLED
+# RECOMMENDED: Use Adafruit QWIIC/STEMMA QT 5-Port Hub (5625) for improved cable management
+# Hub Configuration: ESP32 → Hub → Individual devices (star topology)
+# Legacy Configuration: ESP32 → VL53L0X → BME280 → OLED (daisy chain)
 i2c:
   sda: 21
   scl: 22
@@ -260,18 +279,6 @@ sensor:
 
           return x;
 
-  # ESP32 internal temperature monitoring with enhanced thermal management
-  - platform: template
-    name: "ESP32 Temperature"
-    id: esp32_temp
-    icon: "mdi:thermometer"
-    unit_of_measurement: "°C"
-    device_class: temperature
-    state_class: measurement
-    lambda: |-
-      return temperatureRead();
-    update_interval: 15s  # More frequent monitoring for better thermal tracking
-
 # Binary sensors for detection and control
 binary_sensor:
   # Rodent detection state
@@ -441,7 +448,7 @@ button:
 # REMOVED: LED indicators (functionality integrated into OLED display)
 
 # REMOVED: Separate LED indicators (replaced with integrated OLED status display and illuminated E-stop)
-# Cost savings: -$8 (2x LEDs + 2x resistors + wiring complexity eliminated)
+# Status display integration using OLED
 
 # Enhanced OLED Display with Integrated Status (Replaces separate LEDs)
 display:
@@ -605,7 +612,7 @@ web_server:
   version: 2
   include_internal: true
 
-# REMOVED: Status LED (functionality integrated into OLED display for cost optimization)
+# Status indication integrated into OLED display
 
 # System information with voltage specifications
 text_sensor:
@@ -683,23 +690,7 @@ number:
     restore_value: true
     optimistic: true
 
-# Enhanced Cost Optimization & Safety Compliance Summary (August 2025):
-#
-# COST OPTIMIZATIONS IMPLEMENTED:
-# - VL53L0X sensor instead of VL53L1X: -$7 (2m range sufficient for rat detection)
-# - BME280 sensor provides comprehensive environmental monitoring (+$10 vs DHT22)
-# - Battery removal: -$9.95 (AC-only operation, eliminates charging complexity)
-# - SSR optimization: -$10.00 (chassis mount vs PCB kit, higher rating)
-# - Protection simplification: -$16.00 (unmountable components removed)
-# - Other component optimizations: -$19.80 (power supply, display, etc.)
-# - Net total savings: -$62.75 (30% cost reduction)
-#
-# ENHANCED SAFETY FEATURES:
-# - Thermal management with multiple warning levels
-# - Enhanced EMI suppression with reduced sensor polling
-# - GPIO surge protection considerations
-# - Improved fault detection and logging
-# - Zero-crossing SSR for reduced EMI emissions
+# EOF - End of ESPHome configuration
 #
 # COMPLIANCE IMPROVEMENTS:
 # - NEC Article 422 appliance switching compliance

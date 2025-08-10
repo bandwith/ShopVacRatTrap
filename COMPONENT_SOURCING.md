@@ -16,7 +16,19 @@
 
 ## Components Previously Not Found in Nexar - Updated Sources
 
-### 1. Time-of-Flight Sensor
+### 1. STEMMA QT Camera System (NEW)
+**Primary**: OV5640 STEMMA Camera with PiCowBell Breakout
+**Adafruit 5949**: $24.95 - https://www.adafruit.com/product/5949
+**Features**: 5MP resolution, autofocus, built-in STEMMA QT connector
+**Alternative**: Generic camera modules for budget builds - lower resolution, requires soldering
+**Note**: Zero-solder assembly, future-proof modular design
+
+**High-Power IR LED System**:
+**Adafruit 5639**: $3.95 - https://www.adafruit.com/product/5639
+**Features**: 10+ meter range, STEMMA JST PH connector, thermal protection
+**Alternative**: Generic IR LEDs ($1-3) - lower range, requires soldering
+
+### 2. Time-of-Flight Sensor
 **Primary**: VL53L0X ToF Sensor Module
 **Adafruit 3317**: $7.95 - https://www.adafruit.com/product/3317
 **SparkFun SEN-14722**: $9.95 - https://www.sparkfun.com/products/14722
@@ -69,7 +81,22 @@
 **Alternative**: Cooper Bussman GMA-12A - $1.50
 **⚠️ SAFETY CRITICAL**: UL/CE listed for safety compliance
 
-### 8. Heat Sink (Optional)
+### 9. STEMMA QT Cables & Accessories
+**Primary**: STEMMA QT Cable - 100mm
+**Adafruit 4397**: $0.95 - https://www.adafruit.com/product/4397
+**Primary**: STEMMA JST PH Cable - 200mm
+**Adafruit 3893**: $1.25 - https://www.adafruit.com/product/3893
+**Alternative**: SparkFun Qwiic cables (compatible) - similar pricing
+**Note**: Zero-solder modular connections throughout system
+
+### 10. Micro SD Card (for camera storage)
+**Primary**: SanDisk Ultra 8GB Class 10
+**Adafruit 1833**: $9.95 - https://www.adafruit.com/product/1833
+**Amazon**: $6-8 for equivalent Class 10 cards
+**Alternative**: Higher capacity (16GB+) for extended storage
+**Note**: Required for local image storage before Home Assistant upload
+
+### 11. Heat Sink (Optional)
 **Primary**: Wakefield-Vette 507-10ABPB (10x10mm)
 **Mouser 532-507-10ABPB**: $3.15
 **Digi-Key HS117-ND**: $3.25
@@ -77,7 +104,7 @@
 **Alternative**: Generic TO-220 heat sinks - $1-2
 **Note**: May not be required for ESP32 in this application
 
-### 9. Thermal Interface Pad (Optional)
+### 12. Thermal Interface Pad (Optional)
 **Primary**: Bergquist SP400-0.010-00-1010 (0.010", 10x10mm)
 **Mouser 539-SP400-010-001010**: $2.45
 **Digi-Key BER157-ND**: $2.65
@@ -86,6 +113,12 @@
 **Note**: Only needed if heat sink is used
 
 ## Sourcing Strategy by Component Type
+
+### STEMMA QT Camera System (NEW)
+**Primary Sources**: Adafruit, SparkFun (Qwiic compatible)
+**Requirements**: STEMMA QT/Qwiic connector compatibility
+**Components**: OV5640 camera, High-power IR LED, STEMMA cables, SD card
+**Budget**: ~20% of total project cost ($40.10 upgrade)
 
 ### Safety-Critical Components (AC Power)
 **Primary Sources**: Mouser, Digi-Key, Newark
@@ -122,13 +155,7 @@
 - **Local**: Digi-Key, local electronics distributors
 - **Alternative**: AliExpress for non-safety components
 
-## Cost Optimization Notes
-
-### Budget Version Substitutions
-1. **VL53L0X**: Use generic modules ($3 vs $8) - verify I2C compatibility
-2. **BME280**: Use DHT22 for budget builds ($5 vs $15) - no pressure sensing
-3. **Power supply**: LRS-35-5 for standard builds ($19) - provides ample capacity
-4. **Heat sink/thermal pad**: Omit for indoor applications - monitor ESP32 temperature
+## Bulk Pricing and Lead Times
 
 ### Bulk Pricing
 - **10+ units**: 15-20% discount on major distributors
@@ -141,18 +168,7 @@
 - **Generic alternatives**: 1-7 days (Amazon Prime)
 - **International shipping**: Add 1-2 weeks
 
-## Verified Alternatives Summary
 
-| Original Component | Alternative 1 | Alternative 2 | Cost Savings |
-|-------------------|---------------|---------------|--------------|
-| VL53L0X Module | Generic module | Sharp GP2Y0A21YK0F | -$4 to -$5 |
-| BME280 STEMMA QT | DHT22 Legacy | SHT30 Alternative | -$10 to +$5 |
-| LRS-35-5 | Generic 5V PSU | Recom RAC03-05SK | +$1 to +$7 |
-| D2425-10 | Omron G3NA | Carlo Gavazzi RM1A | -$3 to +$2 |
-| SCT-013-020 | CR Magnetics | Magnelab | +$24 to +$27 |
-
-**Total potential savings with alternatives**: $10-15 per unit
-**Recommended approach**: Use alternatives for non-safety-critical components only
 
 ---
 
@@ -344,9 +360,3 @@ grep -E "(nexar_calls|mouser_calls)" validation_*.json
 - **Workflow efficiency**: Hybrid approach uses optimal API for each component
 
 ---
-
-**Last Updated**: August 9, 2025
-**Verification Status**: All part numbers and prices verified as of update date
-**API Integration**: Hybrid Nexar + Mouser implementation active
-**Error Handling**: Comprehensive retry logic and fallback systems
-**Next Review**: September 2025 (quarterly price/availability check)

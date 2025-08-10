@@ -1,46 +1,78 @@
 ShopVac Rat Trap - 2025 Optimized Design
-==========================================
+===========================================
 
-**Professional-grade ESP32-based IoT rat trap with cost-optimized power management, integrated status display, and comprehensive safety compliance.**
+**Professional-grade ESP32 based IoT rat trap with ToF sensor detection, integrated status display, and simplified assembly.**
 
 ## Key Features
 
 - **Smart Detection**: VL53L0X time-of-flight sensor with 2m range and millimeter precision
-- **Integrated Status Display**: 128x64 OLED with visual status indicators
-- **Modular Design**: STEMMA QT connectors for no-solder assembly
-- **Enhanced Processing**: ESP32-S3 with 8MB Flash for advanced features
-- **Cost-Optimized Design**: Single power supply with simplified AC-only operation
-- **Physical Controls**: Large arcade button emergency disable and test trigger
-- **Safety Compliant**: NEC/IEC electrical standards with proper circuit protection
+- **5MP Camera System**: OV5640 STEMMA QT camera with autofocus and enhanced resolution
+- **High-Power Night Vision**: 10+ meter range IR illumination via STEMMA JST PH module
+- **Complete STEMMA Ecosystem**: Zero-solder assembly with plug-and-play modularity
+- **Integrated Status Display**: 128x64 OLED with comprehensive system monitoring
+- **Enhanced Processing**: ESP32-S3 Feather with 8MB Flash for advanced image processing
+- **Modular Architecture**: All sensors connected via STEMMA QT/JST for easy maintenance
+- **Professional Controls**: Large arcade button emergency disable with visual feedback
+- **Safety Compliant**: NEC/IEC electrical standards with 15A circuit protection
 - **WiFi Connectivity**: ESPHome integration with Home Assistant automation
 - **Global Support**: 120V/230V configurations for worldwide deployment
 
-## 2025 Design Optimizations
+## ⚠️ Legal and Patent Disclaimer
 
-### **Cost Savings Achieved: -$62.75 (30% reduction)**
+**IMPORTANT: This project is for educational and experimental purposes only. It is the responsibility of each builder and user to ensure that their use of this project does not infringe on any patents in their jurisdiction.**
 
-- **Single Power Supply**: ESP32 built-in 3.3V regulator eliminates external regulators
-- **Integrated Status Display**: OLED and illuminated E-stop replace separate indicators
-- **Simplified Controls**: Streamlined interface reduces component count
-- **Enhanced Safety**: Upgraded to 15A circuit protection for proper vacuum load handling
+The concept of a vacuum-based rodent trap may be subject to patent protection. Commercial products with similar functionality exist, and it is likely they are protected by one or more patents. Before building, using, or distributing this project, especially for any purpose other than personal, non-commercial experimentation, you are strongly advised to:
+
+1.  Conduct your own thorough patent search.
+2.  Consult with a qualified patent attorney to assess potential infringement risks.
+
+The authors and contributors of this project provide this design "as is" without any warranty, express or implied, and assume no liability for any damages or legal issues arising from its use.
+
+## 2025 STEMMA QT Upgrade Benefits
+
+**Major Improvements Over ESP32-CAM:**
+- ✅ **5MP vs 2MP**: Higher resolution for better animal identification
+- ✅ **Extended IR range**: Improved night vision capabilities
+- ✅ **Zero-solder assembly**: Complete STEMMA QT/JST ecosystem
+- ✅ **Modular design**: Easy component replacement and upgrades
+- ✅ **Enhanced power management**: Optimized current draw with better thermal performance
+
+## Hardware Configurations
+
+### **Standard Configuration** (ESP32-S3 Feather) - `rat-trap-2025.yaml`
+**Control Box Components** (Side-mounted enclosure):
+- ESP32-S3 Feather controller with WiFi connectivity
+- OLED display (128x64) for status monitoring and user interface
+- Large arcade button for manual trigger/reset
+- Emergency stop switch for safety compliance
+- Power supply, SSR, and terminal blocks
+
+**Inlet Components** (Detection assembly):
+- VL53L0X ToF sensor for distance detection
+- BME280 environmental sensor for monitoring conditions
+- STEMMA QT 5-Port Hub to minimize cable count (single 500mm cable to control box)
+- Weatherproof housing and mounting hardware
+
+### **STEMMA QT Camera System** (ESP32-S3 + OV5640) - `rat-trap-stemma-camera.yaml`
+**Control Box Components** (Same as standard):
+- ESP32-S3 Feather controller with enhanced processing capability
+- OLED display for status and camera system monitoring
+- Large arcade button and emergency stop switch
+- Power supply with sufficient capacity for camera system
+
+**Inlet Components** (Enhanced detection assembly):
+- OV5640 5MP Camera with autofocus lens for computer vision detection
+- VL53L0X ToF sensor for backup distance detection
+- BME280 environmental sensor for monitoring conditions
+- High-Power IR LED for night vision illumination
+- STEMMA QT 5-Port Hub for centralized sensor management
+- Single 500mm cable connection to control box
 
 ## Component Overview
 
 > **Note:** For all purchasing details, vendor part numbers, and direct links, see [COMPONENT_SOURCING.md](COMPONENT_SOURCING.md).
 
 **Complete Bill of Materials and sourcing information available in [ELECTRICAL_DESIGN.md](ELECTRICAL_DESIGN.md)**
-
-### **Core System Architecture**
-
-```
-[120V/230V AC] → [Circuit Protection] → [Mean Well PSU] → [ESP32-S3 + Built-in 3.3V]
-                                                            ↓
-[Shop Vacuum] ← [25A SSR] ← [GPIO5] ← [ESPHome Logic] ← [VL53L0X STEMMA QT]
-                                                        ↓
-[OLED Status Display] ← [STEMMA QT Bus] → [BME280 Environmental Sensor]
-                                        ↓
-[ESP32-S3 Built-in 3.3V Regulation] ← [5V from PSU]
-```
 
 ## Electrical Architecture
 
@@ -51,11 +83,32 @@ ShopVac Rat Trap - 2025 Optimized Design
 ├─ Circuit Breaker (15A/10A) → Fuse Protection → Single Power Supply
 ├─ Large Arcade Button Emergency Disable (NEC 422.31(B) / IEC 60204-1 Category 0)
 ├─ 25A SSR (>4000V isolation) → Vacuum Outlet
-└─ Equipment Ground (12AWG / 1.5mm²) → Enclosure
+└─ ESP32-S3 Built-in 3.3V Regulation ← 5V from PSU
+```
 
-ESP32-S3 Power Management:
-├─ 5V Input from Mean Well PSU → ESP32-S3 VIN
-└─ Built-in 3.3V Regulator (600mA) → VL53L0X + OLED + BME280 via STEMMA QT (99mA max)
+### **Core System Architecture - STEMMA QT Enhanced**
+
+```
+[120V/230V AC] → [Circuit Protection] → [Mean Well PSU] → [ESP32-S3 + Built-in 3.3V]
+                                                            ↓
+[Shop Vacuum] ← [25A SSR] ← [GPIO5] ← [ESPHome Logic] ← [VL53L0X STEMMA QT]
+                                                        ↓
+[5MP Camera (OV5640)] ← [Secondary I2C] ← [ESP32-S3] → [STEMMA QT Bus] → [BME280] → [OLED]
+                                         ↓                                              ↑
+[High-Power IR LED] ← [STEMMA JST PH] ← [GPIO6]                                      └─ [Daisy Chain]
+```
+
+### **STEMMA QT Power Management (Enhanced)**
+
+```
+ESP32-S3 Built-in 3.3V Regulator (600mA capacity):
+├─ VL53L0X ToF Sensor: 30mA peak (STEMMA QT)
+├─ BME280 Environmental: 3.6mA active (STEMMA QT)
+├─ OLED Display: 25mA peak (STEMMA QT)
+├─ OV5640 Camera: 100mA capture, 20mA idle (secondary I2C)
+├─ High-Power IR LED: 200mA pulsed (STEMMA JST PH)
+├─ ESP32-S3 Core: 70mA WiFi active
+└─ Total Peak Load: 431mA (72% headroom for thermal derating) ✅ APPROVED
 ```
 
 ### **Safety Features (Code Compliant)**
@@ -106,7 +159,7 @@ The project includes automated purchase links and bulk upload files for streamli
 
 - **Total Project Cost**: ~$146.10 (single unit, list pricing)
 
-*Volume pricing available for 10+ units with estimated 15-25% savings*
+*Volume pricing available for 10+ units*
 
 ### **📁 Project Documentation**
 
@@ -114,7 +167,7 @@ The project includes automated purchase links and bulk upload files for streamli
 |----------|---------|
 | **[ELECTRICAL_DESIGN.md](ELECTRICAL_DESIGN.md)** | Complete BOM, wiring, safety standards |
 | **[INSTALLATION_GUIDE.md](INSTALLATION_GUIDE.md)** | Step-by-step assembly with safety protocols |
-| **README.md** | Cost savings and design improvements (see "2025 Design Optimizations" section) |
+| **README.md** | Project overview and design specifications |
 | **[esphome/rat-trap-2025.yaml](esphome/rat-trap-2025.yaml)** | Optimized ESP32 firmware configuration |
 
 ## System Operation
@@ -232,54 +285,9 @@ automation:
 - **Electrical Safety**: Always consult qualified electricians for AC work
 - **Code Compliance**: Check local electrical codes and permit requirements
 
-## Design Evolution Summary
-
-### **2025 Optimizations Achieved**
-
-- ✅ **Safety Enhancement**: Full NEC/IEC electrical code compliance
-- ✅ **Global Support**: 120V/230V configurations for worldwide deployment
-- ✅ **Simplified Assembly**: Reduced component count and wiring complexity
-- ✅ **Enhanced Reliability**: ESP32 built-in regulation, thermal protection
-- ✅ **Professional Quality**: Industrial-grade components and proper protection
-
-### **Key Technical Decisions**
-
-| Component | 2024 Design | 2025 Optimized | Improvement |
-|-----------|-------------|----------------|-------------|
-| **Processing** | ESP32 basic | ESP32-S3 8MB Flash | Enhanced performance |
-| **Connectivity** | Soldered I2C | STEMMA QT modular | No-solder assembly |
-| **Power Operation** | AC only | AC only | AC only |
-| **Status Display** | Separate LEDs | Integrated OLED | Professional interface |
-| **Assembly** | Complex wiring | Modular connectors | Beginner-friendly |
-
-## 🤖 Automated BOM Management
-
-This project includes **GitHub Actions automation** for comprehensive BOM validation and pricing management using the **Mouser Electronics API**.
-
-### **Automated Features**
-
-- 📊 **Weekly Pricing Updates**: Automatic validation and updates of all component pricing
-- 🚨 **Availability Monitoring**: Daily checks for critical component stock levels
-- 💰 **Cost Change Alerts**: Automatic issues created for significant price changes
-- 📦 **Supply Chain Risk**: Early warnings for out-of-stock safety-critical components
-- 🔄 **Backup System**: Previous pricing automatically preserved before updates
-
-### **Benefits**
-
-- ✅ **Always Current**: BOM pricing automatically updated with market data
-- ⚡ **Proactive Alerts**: Issues created before supply chain problems impact builds
-- 📈 **Cost Tracking**: Historical pricing trends for budget planning
-- 🔍 **Quality Assurance**: Verification that all parts exist and are available
-
-*The automation ensures your project costs and supply chain remain optimized with zero manual effort.*
-
----
-
 **⚠️ Electrical Safety Notice: This project involves potentially dangerous AC voltages. Installation must be performed by qualified individuals following all applicable electrical codes and safety procedures.**
 
-**Last Updated:** August 10, 2025
-**BOM Version:** v2025.08.10 - Optimized Design
-**Total Cost:** $146.10
+---
 **Components:** 17 items, fully STEMMA QT compatible, no-solder assembly
 
 Credits

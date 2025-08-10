@@ -7,20 +7,19 @@ This document outlines the electrical design for the 2025 optimized ShopVac Rat 
 ### Core Design Philosophy
 
 1. **Safety First**: Adherence to NEC/UL (North America) and IEC/CE (Europe) electrical safety standards
-2. **Cost Optimization**: Leveraging integrated components and ESP32-S3 built-in features
-3. **Simplified Assembly**: No-solder design using modular STEMMA QT connectors
-4. **Robustness**: Industrial-grade components for long-term operation
-5. **IoT Integration**: Seamless ESPHome and Home Assistant compatibility
-6. **Global Compatibility**: Support for both 120V AC and 230V AC systems
+2. **Simplified Assembly**: No-solder design using modular STEMMA QT connectors
+3. **Robustness**: Industrial-grade components for long-term operation
+4. **IoT Integration**: Seamless ESPHome and Home Assistant compatibility
+5. **Global Compatibility**: Support for both 120V AC and 230V AC systems
 
 ### Key Design Decisions
 
 #### Single Power Supply Architecture
-The most significant improvement is eliminating external 3.3V regulators by using the ESP32-S3's built-in regulation:
+The design uses a single power supply with ESP32-S3's built-in regulation:
 - **Mean Well LRS-35-5**: Single 5V/7A chassis-mount power supply
 - **ESP32-S3 Built-in Regulator**: 600mA capacity powers all 3.3V components
 - **Total 3.3V Load**: ~99mA (84% safety margin)
-- **Cost Savings**: Eliminates external regulator modules
+- **Benefit**: Eliminates external regulator modules
 
 #### STEMMA QT Modular System
 All sensors use standardized JST SH 4-pin connectors for assembly without soldering:
@@ -43,6 +42,7 @@ All sensors use standardized JST SH 4-pin connectors for assembly without solder
 | 1 | VL53L0X ToF Sensor | 3317 | Time-of-Flight distance sensor | Adafruit | $14.95 |
 | 1 | OLED Display 128x64 | 326 | 0.96" monochrome display | Adafruit | $17.50 |
 | 1 | BME280 Env. Sensor | 2652 | Temperature/Humidity/Pressure | Adafruit | $14.95 |
+| 1 | QWIIC Hub | 5625 | 5-Port STEMMA QT/QWIIC Hub | Adafruit | $7.50 |
 | 1 | Solid State Relay | COM-13015 | 40A chassis mount SSR | SparkFun | $24.95 |
 | 1 | Optocoupler 4N35 | 2515 | Isolation for SSR control | Adafruit | $4.95 |
 
@@ -60,9 +60,16 @@ All sensors use standardized JST SH 4-pin connectors for assembly without solder
 
 | Qty | Component | Part Number | Description | Vendor | Price |
 |-----|-----------|-------------|-------------|--------|-------|
-| 3 | STEMMA QT Cable 100mm | 4397 | Short I2C cables | Adafruit | $2.95 |
-| 1 | STEMMA QT Cable 200mm | 4399 | Long cable for display | Adafruit | $2.95 |
+| 1 | STEMMA QT Cable 500mm | 4401 | Main cable to inlet hub | Adafruit | $1.95 |
+| 1 | STEMMA QT Cable 50mm | 4399 | Hub to VL53L0X (co-located) | Adafruit | $0.75 |
+| 2 | STEMMA QT Cable 100mm | 4397 | Hub to BME280 + ESP32 to OLED | Adafruit | $1.90 |
 | 1 | Wire Kit | 3258/3259 | Red/Black 26AWG silicone wire | Adafruit | $5.90 |
+
+**Cable Configuration - Inlet Hub Optimized:**
+- **ESP32 to Inlet Hub**: 1x 500mm cable (single main run)
+- **Inlet Area Sensors**: 2x short cables (50mm, 100mm)
+- **Control Box OLED**: 1x 100mm cable (direct connection)
+- **Major Benefit**: Only 1 cable run between control box and inlet vs. 3+ separate runs
 
 ### Regional Variants
 
@@ -79,7 +86,7 @@ All sensors use standardized JST SH 4-pin connectors for assembly without solder
 
 ### Power Budget Analysis
 
-**ESP32-S3 3.3V Load:**
+**ESP32-S3 3.3V Load (Standard Configuration):**
 ```
 VL53L0X ToF Sensor:    15mA typical, 30mA peak
 OLED Display:          15mA typical, 25mA peak
@@ -90,10 +97,33 @@ ESP32-S3 Capacity:     600mA (built-in regulator)
 Safety Margin:         501mA available (84% headroom)
 ```
 
+**STEMMA QT Camera Enhanced Configuration:**
+```
+ESP32-S3 Core:         70mA WiFi + processing
+OV5640 Camera Module:  100mA capturing, 20mA idle
+VL53L0X ToF Sensor:    15mA typical, 30mA peak
+BME280 Env. Sensor:    1μA sleep, 3.6mA active
+OLED Display:          15mA typical, 25mA peak
+High-Power IR LEDs:    200mA @ 3.3V (pulsed)
+Camera Processing:     +50mA during image processing
+Total Peak Load:       431mA during capture with IR
+ESP32-S3 Capacity:     600mA (built-in regulator)
+Safety Margin:         169mA available (72% headroom)
+Power Compliance:      ✅ APPROVED - Within ESP32-S3 limits
+```
+
+**Key Advantages of STEMMA QT Upgrade:**
+- ✅ Higher resolution: 5MP OV5640 vs 2MP OV2640
+- ✅ Enhanced IR range: 10+ meters vs 3-5 meters
+- ✅ No-solder assembly: Complete STEMMA ecosystem
+- ✅ Better power management: Optimized current draw
+- ✅ Modular design: Easy component replacement
+
 ## Circuit Design & Connections
 
 ### System Architecture
 
+**Standard Configuration:**
 ```
 [120V AC Input] → [IEC Inlet + Switch] → [Mean Well PSU] → [ESP32-S3]
                                               ↓                ↓
@@ -102,17 +132,52 @@ Safety Margin:         501mA available (84% headroom)
 [STEMMA QT Bus] ← [I2C Sensors: VL53L0X + BME280 + OLED]
 ```
 
+**STEMMA QT Camera Enhanced Configuration:**
+**Standard ESP32-S3 Configuration:**
+```
+[120V AC Input] → [IEC Inlet + Switch] → [Mean Well PSU] → [ESP32-S3 Feather]
+                                              ↓                ↓
+[Shop Vacuum] ← [SSR Output] ← [SSR Control] ← [GPIO5] ← [3.3V Built-in Regulator]
+                                                         ↓
+[STEMMA QT Bus] ← [I2C: VL53L0X + BME280 + OLED] → [Detection Trigger]
+```
+
+**STEMMA QT Camera Enhancement:**
+```
+[120V AC Input] → [IEC Inlet + Switch] → [Mean Well PSU] → [ESP32-S3 Feather]
+                                              ↓                ↓
+[Shop Vacuum] ← [SSR Output] ← [SSR Control] ← [GPIO5] ← [3.3V Built-in Regulator]
+                                                         ↓
+[STEMMA QT Bus] ← [VL53L0X + BME280 + OLED] → [Detection Trigger]
+                                                         ↓
+[SD Card Storage] ← [Image Capture] ← [OV5640 STEMMA Camera] ← [Auto Trigger]
+                                                         ↓
+[High-Power IR] ← [STEMMA JST PH] ← [GPIO6] ← [Night Vision Control]
+```
+
 ### GPIO Pin Assignments
 
 **Critical Safety Rule**: GPIO5 is reserved ONLY for SSR control - never use for other purposes.
 
+**Standard ESP32-S3 Feather Configuration:**
 | GPIO | Function | Connection | Safety Level |
 |------|----------|------------|--------------|
 | GPIO5 | SSR Control | 4N35 Optocoupler → SSR | SAFETY CRITICAL |
-| GPIO0 | Emergency Stop | Arcade Button (Active Low) | SAFETY CRITICAL |
-| GPIO21 | I2C SDA | STEMMA QT Bus | Standard |
-| GPIO22 | I2C SCL | STEMMA QT Bus | Standard |
+| GPIO13 | Emergency Stop | Arcade Button (Active Low) | SAFETY CRITICAL |
+| GPIO3 | I2C SDA | STEMMA QT Bus (Primary) | Standard |
+| GPIO4 | I2C SCL | STEMMA QT Bus (Primary) | Standard |
 | GPIO13 | Status LED | Onboard LED | Standard |
+
+**STEMMA QT Camera Enhanced Configuration:**
+| GPIO | Function | Connection | Safety Level |
+|------|----------|------------|--------------|
+| GPIO5 | SSR Control | 4N35 Optocoupler → SSR | SAFETY CRITICAL |
+| GPIO13 | Emergency Stop | Arcade Button (Active Low) | SAFETY CRITICAL |
+| GPIO3 | I2C SDA | STEMMA QT Bus (Sensors) | Standard |
+| GPIO4 | I2C SCL | STEMMA QT Bus (Sensors) | Standard |
+| GPIO8 | I2C SDA | OV5640 Camera (Secondary Bus) | Standard |
+| GPIO9 | I2C SCL | OV5640 Camera (Secondary Bus) | Standard |
+| GPIO6 | IR LED Control | High-Power IR STEMMA Module | Standard |
 
 ### Power Distribution
 
@@ -140,7 +205,7 @@ Mean Well LRS-35-5 (5V/7A)
 
 ### I2C Bus Configuration
 
-**STEMMA QT Daisy Chain:**
+**Current Implementation: STEMMA QT Daisy Chain**
 ```
 ESP32-S3 STEMMA QT Port
     ↓ (100mm cable)
@@ -151,10 +216,32 @@ BME280 Environmental (0x77)
 OLED Display (0x3C)
 ```
 
+**⚡ RECOMMENDED: Inlet Hub-Based Configuration**
+```
+ESP32-S3 STEMMA QT Port (Control Box)
+    ↓ (500mm cable to inlet area)
+QWIIC/STEMMA QT 5-Port Hub (Adafruit 5625) - Located at Inlet
+    ├─ Port 1 → VL53L0X ToF Sensor (50mm cable - co-located)
+    ├─ Port 2 → BME280 Environmental (100mm cable - inlet area)
+    ├─ Port 3 → [Reserved for Camera Module at inlet]
+    ├─ Port 4 → [Reserved for Additional Inlet Sensors]
+    └─ Port 5 → [Reserved for Future Expansion]
+
+OLED Display (0x3C) → Direct to ESP32 (100mm cable in control box)
+```
+
 **I2C Device Addresses:**
-- `0x29` - VL53L0X Time-of-Flight sensor
-- `0x3C` - SSD1306 OLED display
-- `0x77` - BME280 environmental sensor
+- `0x29` - VL53L0X Time-of-Flight sensor (at inlet)
+- `0x3C` - SSD1306 OLED display (in control box)
+- `0x77` - BME280 environmental sensor (at inlet for accurate readings)
+
+**Inlet Hub Benefits:**
+- ✅ **Massive Cable Reduction**: Only 1 cable run between control box and inlet area
+- ✅ **Accurate Environmental Data**: BME280 at inlet monitors actual entry conditions
+- ✅ **Simplified Installation**: Single cable routing vs. multiple sensor cable runs
+- ✅ **Reduced EMI Susceptibility**: Short sensor cables less vulnerable to interference
+- ✅ **Future Expansion**: Camera and additional sensors can be added at inlet without new cable runs
+- ✅ **Easier Maintenance**: All detection components accessible at inlet location
 
 ### Safety Isolation
 
@@ -332,6 +419,6 @@ The BME280 sensor provides comprehensive environmental data for analytics and co
 - **[BOM_CONSOLIDATED.csv](BOM_CONSOLIDATED.csv)** - Complete parts list with vendor information
 - **[SAFETY_REFERENCE.md](SAFETY_REFERENCE.md)** - Comprehensive safety procedures
 - **[INSTALLATION_GUIDE.md](INSTALLATION_GUIDE.md)** - Step-by-step assembly instructions
-- **[3D Models/Control_Box_Enclosure.scad](3D%20Models/Control_Box_Enclosure.scad)** - Parametric enclosure design
+- **[3D Models/Side_Mount_Control_Box.scad](3D%20Models/Side_Mount_Control_Box.scad)** - Parametric side-mount enclosure design
 
 This electrical design provides a safe, reliable, and cost-effective foundation for the ShopVac Rat Trap while meeting international electrical safety standards.
