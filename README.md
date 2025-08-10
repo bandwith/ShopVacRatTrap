@@ -34,7 +34,7 @@ ShopVac Rat Trap - 2025 Optimized Design
 
 ## Component Overview
 
-> **Note:** For all purchasing details, vendor part numbers, and direct links, see [purchasing/PURCHASE_GUIDE.md](purchasing/PURCHASE_GUIDE.md).
+> **Note:** For all purchasing details, vendor part numbers, and direct links, see [COMPONENT_SOURCING.md](COMPONENT_SOURCING.md).
 
 **Complete Bill of Materials and sourcing information available in [ELECTRICAL_DESIGN.md](ELECTRICAL_DESIGN.md)**
 
@@ -101,7 +101,7 @@ ESP32-S3 Power Management:
 
 The project includes automated purchase links and bulk upload files for streamlined component ordering:
 
-- **[purchasing/PURCHASE_GUIDE.md](purchasing/PURCHASE_GUIDE.md)** - Complete purchase guide with direct links
+- **[COMPONENT_SOURCING.md](COMPONENT_SOURCING.md)** - Complete purchase guide with direct links
 - **`purchasing/mouser_upload_consolidated.csv`** - Upload directly to Mouser BOM tool
 - **`purchasing/adafruit_order_consolidated.csv`** - Adafruit component list with cart URL
 - **`purchasing/sparkfun_order_consolidated.csv`** - SparkFun components with cart URL
@@ -129,7 +129,7 @@ The project includes automated purchase links and bulk upload files for streamli
 |----------|---------|
 | **[ELECTRICAL_DESIGN.md](ELECTRICAL_DESIGN.md)** | Complete BOM, wiring, safety standards |
 | **[INSTALLATION_GUIDE.md](INSTALLATION_GUIDE.md)** | Step-by-step assembly with safety protocols |
-| **[DESIGN_OPTIMIZATION_SUMMARY.md](DESIGN_OPTIMIZATION_SUMMARY.md)** | Cost savings and design improvements |
+| **README.md** | Cost savings and design improvements (see "2025 Design Optimizations" section) |
 | **[esphome/rat-trap-2025.yaml](esphome/rat-trap-2025.yaml)** | Optimized ESP32 firmware configuration |
 
 ## System Operation

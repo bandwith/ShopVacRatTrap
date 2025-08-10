@@ -1,13 +1,12 @@
 Manufacturer,Manufacturer Part Number,Description,Quantity,Reference Designator,Distributor,Distributor Part Number,Unit Price,Extended Price
-Adafruit,5323,ESP32-S3 Feather with 4MB Flash 2MB PSRAM,1,U1,Adafruit,5323,24.95,24.95
+Adafruit,5323,ESP32-S3 Feather with 8MB Flash No PSRAM,1,U1,Adafruit,5323,13.00,13.00
 Adafruit,2830,Feather Stacking Headers - 12-pin and 16-pin female headers,1,CONN1,Adafruit,2830,1.25,1.25
-Adafruit,4210,VL53L0X Time of Flight Distance Sensor - STEMMA QT,1,U2,Adafruit,4210,14.95,14.95
-Adafruit,5027,Monochrome 1.3" 128x64 OLED Display - STEMMA QT,1,U3,Adafruit,5027,17.50,17.50
+Adafruit,3317,VL53L0X Time of Flight Distance Sensor - STEMMA QT,1,U2,Adafruit,3317,14.95,14.95
+Adafruit,326,Monochrome 0.96" 128x64 OLED Display - STEMMA QT,1,U3,Adafruit,326,14.95,14.95
 Adafruit,4816,BME280 Temperature Humidity Pressure Sensor - STEMMA QT,1,U4,Adafruit,4816,14.95,14.95
-SparkFun,COM-14456,SparkFun Solid State Relay Kit - 25A,1,K1,SparkFun,COM-14456,24.95,24.95
+SparkFun,COM-13015,SparkFun Solid State Relay - 40A Chassis Mount,1,K1,SparkFun,COM-13015,14.95,14.95
 Adafruit,4397,STEMMA QT / Qwiic JST SH 4-pin Cable - 100mm Long,3,CABLE1,Adafruit,4397,0.95,2.85
 Adafruit,4399,STEMMA QT / Qwiic JST SH 4-pin Cable - 200mm Long,1,CABLE2,Adafruit,4399,1.25,1.25
-Adafruit,1944,Breadboard-friendly 2.1mm DC barrel jack,1,J3,Adafruit,1944,2.95,2.95
 Adafruit,368,Large Arcade Button 60mm - Red,1,SW1,Adafruit,368,4.95,4.95
 Adafruit,4090,Terminal Block Kit - 2.54mm pitch,1,CONN3,Adafruit,4090,9.95,9.95
 Mean Well,LRS-35-5,Switching Power Supply 5V 7A Chassis Mount,1,PS1,Mouser,709-LRS35-5,18.95,18.95

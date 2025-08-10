@@ -4,9 +4,8 @@
 
 **NEW**: Automated purchase files and links are now available for streamlined ordering:
 
-- **Run**: `./purchasing/generate_purchase_files.sh` to generate current purchase files
+- **Run**: `./bom_manager.py generate-purchase-files` to generate current purchase files
 - **Files Created**:
-  - `PURCHASE_GUIDE.md` - Complete purchase guide with direct links
   - `mouser_upload_consolidated.csv` - Mouser bulk upload file
   - `adafruit_order_consolidated_cart_url.txt` - One-click Adafruit cart
   - `sparkfun_order_consolidated_cart_url.txt` - One-click SparkFun cart
@@ -241,7 +240,7 @@ MOUSER_API_KEY=your_mouser_api_key
 
 ### 🧪 **Local Testing & Development**
 
-All workflow scripts now support **local testing** with automatic `.env` file loading:
+The consolidated BOM manager script supports **local testing** with automatic `.env` file loading:
 
 **Setup for Local Testing:**
 ```bash
@@ -251,20 +250,18 @@ cp .env.example .env
 # 2. Edit .env with your API credentials
 nano .env
 
-# 3. Run any script locally - it will automatically load .env
-python3 .github/scripts/hybrid_bom_validator.py --bom-files BOM_CONSOLIDATED.csv
-python3 .github/scripts/nexar_validation.py --bom-files BOM_CONSOLIDATED.csv
-python3 .github/scripts/check_availability.py --bom-files BOM_CONSOLIDATED.csv
+# 3. Run the consolidated BOM manager locally - it will automatically load .env
+python3 bom_manager.py validate --bom-files BOM_CONSOLIDATED.csv
+python3 bom_manager.py check-availability --bom-files BOM_CONSOLIDATED.csv
+python3 bom_manager.py generate-purchase-files --bom-files BOM_CONSOLIDATED.csv
 ```
 
-**Scripts with .env Support:**
-- ✅ `hybrid_bom_validator.py` - Hybrid Nexar/Mouser validation
-- ✅ `nexar_validation.py` - Pure Nexar API validation
-- ✅ `check_availability.py` - Component availability checking
-- ✅ `validate_parts.py` - Parts validation and pricing
-- ✅ `mouser_api.py` - Mouser API integration
-- ✅ `generate_bom_upload_files.py` - Purchase file generation
-- ✅ `generate_purchase_links.py` - Purchase link generation
+**BOM Manager Script Features:**
+- ✅ `validate` - Hybrid Nexar/Mouser validation
+- ✅ `check-availability` - Component availability checking
+- ✅ `generate-purchase-files` - Generate all purchase files
+- ✅ `update-pricing` - Update BOM with current pricing
+- ✅ `generate-reports` - Create summary reports
 
 **Benefits of Local Testing:**
 - 🔧 **No GitHub Actions consumption** - test scripts locally
@@ -302,16 +299,16 @@ curl -X GET "https://api.mouser.com/api/v1/search/partnumber?apiKey=YOUR_KEY&par
 **Debugging Commands:**
 ```bash
 # Test Nexar connectivity
-python .github/scripts/nexar_validation.py --bom-files BOM_CONSOLIDATED.csv --max-components 5
+python bom_manager.py validate --bom-files BOM_CONSOLIDATED.csv --max-components 5 --api nexar
 
 # Test Mouser connectivity
-python .github/scripts/mouser_api.py --bom-files BOM_CONSOLIDATED.csv
+python bom_manager.py validate --bom-files BOM_CONSOLIDATED.csv --api mouser
 
 # Test hybrid approach
-python .github/scripts/hybrid_bom_validator.py --bom-files BOM_CONSOLIDATED.csv
+python bom_manager.py validate --bom-files BOM_CONSOLIDATED.csv
 
 # Check API usage stats
-grep -E "(nexar_calls|mouser_calls)" hybrid_validation_*.json
+grep -E "(nexar_calls|mouser_calls)" validation_*.json
 ```
 
 **Workflow Debugging:**
@@ -333,7 +330,7 @@ grep -E "(nexar_calls|mouser_calls)" hybrid_validation_*.json
 # Example workflow configuration
 - name: Validate with priority handling
   run: |
-    python .github/scripts/hybrid_bom_validator.py \
+    python bom_manager.py validate \
       --bom-files BOM_CONSOLIDATED.csv \
       --priority-components ESP32-S3-Feather COM-14456 LRS-35-5 \
       --output-dir validation_results

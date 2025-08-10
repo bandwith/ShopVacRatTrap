@@ -3,7 +3,7 @@
 Installation Guide
 ==================
 
-> **Note:** For all purchasing details, vendor part numbers, and direct links, see [purchasing/PURCHASE_GUIDE.md](purchasing/PURCHASE_GUIDE.md).
+> **Note:** For all purchasing details, vendor part numbers, and direct links, see [COMPONENT_SOURCING.md](COMPONENT_SOURCING.md).
 
 ## Pre-Installation Safety Notice
 
