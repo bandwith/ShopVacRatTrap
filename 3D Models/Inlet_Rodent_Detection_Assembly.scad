@@ -46,10 +46,7 @@ funnel_inlet_diameter = 85;  // mm - slightly smaller than pipe ID
 funnel_outlet_diameter = 65; // mm - guides to sensor area
 
 // Sensor mounting parameters - optimized for VL53L0X detection
-sensor_housing_diameter = 35; // mm - for VL53L0X sensor housing with protection
-sensor_housing_depth = 25;    // mm
 sensor_mount_height = 0;      // mm - mounted at pipe centerline for optimal detection
-sensor_angle = 15;            // degrees - angled downward into pipe for better coverage
 sensor_protection_thickness = 3; // mm - rodent-proof sensor guard thickness
 
 // Camera mounting parameters (when camera_variant = true)
@@ -59,9 +56,7 @@ camera_housing_depth = 30;    // mm - depth for camera and lens assembly
 camera_angle = 10;            // degrees - angle for optimal view into pipe
 camera_mount_offset = 45;     // mm - offset from sensor for clear view
 
-// Rodent damage protection parameters
-cable_protection_diameter = 12; // mm - armored cable conduit diameter
-gnaw_guard_thickness = 5;       // mm - anti-gnaw barrier thickness
+// Additional protection parameters
 protective_coating_thickness = 2; // mm - additional protection layer
 
 $fn = 100;  // High resolution for smooth curves
