@@ -10,6 +10,8 @@ repos:
         exclude: ^esphome/.*\.ya?ml$  # Exclude ESPHome YAML files (they have special syntax)
     -   id: check-json
     -   id: check-added-large-files
+        args: ['--maxkb=2048', '--enforce-all']
+        exclude: '\.stl$'  # Allow large STL files for 3D models
     -   id: check-merge-conflict
     -   id: check-case-conflict
     -   id: check-symlinks
