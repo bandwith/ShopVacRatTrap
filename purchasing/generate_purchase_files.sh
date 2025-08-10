@@ -8,7 +8,7 @@ echo ""
 # Check if consolidated BOM exists
 if [ ! -f "../BOM_CONSOLIDATED.csv" ]; then
     echo "❌ Error: BOM_CONSOLIDATED.csv not found"
-    echo "Please ensure BOM_CONSOLIDATED.csv exists in the project root directory"
+    echo "Please ensure you're running this from the purchasing directory and BOM_CONSOLIDATED.csv exists in the project root"
     exit 1
 fi
 
