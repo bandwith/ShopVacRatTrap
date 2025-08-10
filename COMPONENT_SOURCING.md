@@ -239,6 +239,39 @@ NEXAR_CLIENT_SECRET=your_nexar_client_secret
 MOUSER_API_KEY=your_mouser_api_key
 ```
 
+### 🧪 **Local Testing & Development**
+
+All workflow scripts now support **local testing** with automatic `.env` file loading:
+
+**Setup for Local Testing:**
+```bash
+# 1. Copy the example environment file
+cp .env.example .env
+
+# 2. Edit .env with your API credentials
+nano .env
+
+# 3. Run any script locally - it will automatically load .env
+python3 .github/scripts/hybrid_bom_validator.py --bom-files BOM_CONSOLIDATED.csv
+python3 .github/scripts/nexar_validation.py --bom-files BOM_CONSOLIDATED.csv
+python3 .github/scripts/check_availability.py --bom-files BOM_CONSOLIDATED.csv
+```
+
+**Scripts with .env Support:**
+- ✅ `hybrid_bom_validator.py` - Hybrid Nexar/Mouser validation
+- ✅ `nexar_validation.py` - Pure Nexar API validation
+- ✅ `check_availability.py` - Component availability checking
+- ✅ `validate_parts.py` - Parts validation and pricing
+- ✅ `mouser_api.py` - Mouser API integration
+- ✅ `generate_bom_upload_files.py` - Purchase file generation
+- ✅ `generate_purchase_links.py` - Purchase link generation
+
+**Benefits of Local Testing:**
+- 🔧 **No GitHub Actions consumption** - test scripts locally
+- 🚀 **Faster iteration** - immediate feedback without CI/CD
+- 🔍 **Debug mode available** - add print statements and breakpoints
+- 📊 **Real API testing** - verify credentials and quotas before pushing
+
 **Usage Examples:**
 ```bash
 # Validate with hybrid APIs (recommended)

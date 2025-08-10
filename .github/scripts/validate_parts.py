@@ -12,7 +12,18 @@ from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
 import requests
-from dotenv import load_dotenv
+
+# Load environment variables from .env file if it exists (for local development)
+try:
+    from dotenv import load_dotenv
+
+    env_path = Path(__file__).parent.parent.parent / ".env"
+    if env_path.exists():
+        load_dotenv(env_path)
+        print(f"🔧 Loaded environment variables from {env_path}")
+except ImportError:
+    # python-dotenv not available, continue with system environment variables
+    pass
 
 # Path configuration
 REPO_ROOT = Path(__file__).parent.parent.parent
@@ -49,7 +60,6 @@ class NexarAPIClient:
     """Nexar API client for parts validation"""
 
     def __init__(self):
-        load_dotenv()
         self.client_id = os.getenv("NEXAR_CLIENT_ID")
         self.client_secret = os.getenv("NEXAR_CLIENT_SECRET")
         self.api_url = os.getenv("NEXAR_API_URL", "https://api.nexar.com/graphql")
