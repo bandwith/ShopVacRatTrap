@@ -160,11 +160,11 @@ openscad -o Control_Box_Enclosure.stl Control_Box_Enclosure.scad
 ```yaml
 # SAFETY CRITICAL: Always verify 3.3V load against ESP32 600mA limit
 # Current loads (from ELECTRICAL_DESIGN.md):
-# VL53L1X ToF Sensor: 20mA typical, 40mA peak
-# OLED Display: 10mA typical, 20mA peak
-# Environmental Sensor: 1μA sleep, 3.6mA active
-# ESP32: 50-80mA, Pull-ups: 1.3mA
-# Total: 82-142mA (76% safety margin)
+# VL53L0X ToF Sensor: 15mA typical, 30mA peak
+# OLED Display: 15mA typical, 25mA peak
+# BME280 Environmental: 1μA sleep, 3.6mA active
+# ESP32-S3: 45-70mA WiFi active
+# Total: 61-99mA (84% safety margin)
 
 # SAFETY RULE: Never exceed 400mA total 3.3V load (66% of ESP32 limit)
 # SAFETY RULE: Account for WiFi transmission spikes (+50mA)
@@ -245,7 +245,7 @@ openscad -o Control_Box_Enclosure.stl Control_Box_Enclosure.scad
 ## Common Modification Patterns
 
 ### Adding New Sensors
-1. Check I2C address conflicts (VL53L1X=0x29, OLED=0x3C, BME280=0x76)
+1. Check I2C address conflicts (VL53L0X=0x29, OLED=0x3C, BME280=0x77)
 2. Verify 3.3V power budget (ESP32 600mA limit)
 3. Update 3D enclosure for mounting points
 4. Add ESPHome configuration with appropriate filters

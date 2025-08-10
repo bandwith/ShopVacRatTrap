@@ -50,8 +50,7 @@ jobs:
     - name: Create backup of current BOMs
       run: |
         mkdir -p pricing_backup
-        cp BOM_BUDGET.csv pricing_backup/BOM_BUDGET_$(date +%Y%m%d).csv
-        cp BOM_OCTOPART.csv pricing_backup/BOM_OCTOPART_$(date +%Y%m%d).csv
+        cp BOM_CONSOLIDATED.csv pricing_backup/BOM_CONSOLIDATED_$(date +%Y%m%d).csv
 
     - name: Validate BOM pricing with Hybrid API (Nexar + Mouser)
       id: pricing_validation
@@ -78,9 +77,9 @@ jobs:
 
         # Run hybrid validation
         python .github/scripts/hybrid_bom_validator.py \
-          --bom-files BOM_BUDGET.csv BOM_OCTOPART.csv \
+          --bom-files BOM_CONSOLIDATED.csv \
           --output-dir . \
-          --priority-components ESP32-DEVKITC-32E D2425-10 LRS-15-5 SCT-013-020
+          --priority-components ESP32-S3-Feather COM-14456 LRS-35-5
       continue-on-error: true
       env:
         MOUSER_API_KEY: ${{ secrets.MOUSER_API_KEY }}
@@ -88,7 +87,7 @@ jobs:
     - name: Check validation status and API usage
       id: validation_status
       run: |
-        if [ -f hybrid_validation_BOM_BUDGET.json ] || [ -f hybrid_validation_BOM_OCTOPART.json ]; then
+        if [ -f hybrid_validation_BOM_CONSOLIDATED.json ]; then
           # Check results from hybrid validation
           STRATEGY=$(cat hybrid_validation_*.json | jq -r '.validation_strategy' | head -1)
           echo "validation_strategy=$STRATEGY" >> $GITHUB_OUTPUT
@@ -121,13 +120,37 @@ jobs:
           echo "validation_failed=true" >> $GITHUB_OUTPUT
         fi
 
+    - name: Generate purchase links and BOM upload files
+      if: steps.validation_status.outputs.validation_successful == 'true' || steps.validation_status.outputs.quota_exceeded == 'true'
+      run: |
+        echo "🛒 Generating purchase links and upload files..."
+
+        # Generate from validation results (if available)
+        if ls hybrid_validation_*.json >/dev/null 2>&1; then
+          python .github/scripts/generate_purchase_links.py hybrid_validation_*.json > PURCHASE_GUIDE.md
+          echo "✅ Generated purchase guide from validation results"
+        fi
+
+        # Generate upload files directly from consolidated BOM
+        if [ -f BOM_CONSOLIDATED.csv ]; then
+          python .github/scripts/generate_bom_upload_files.py --bom-file BOM_CONSOLIDATED.csv --output-dir purchasing
+          echo "✅ Generated upload files from consolidated BOM"
+        fi
+
+        # List generated files
+        echo "📋 Generated Files:" >> purchase_summary.md
+        ls -la purchasing/PURCHASE_GUIDE.md >> purchase_summary.md 2>/dev/null || echo "No purchase guide generated" >> purchase_summary.md
+        ls -la purchasing/*_upload_*.csv >> purchase_summary.md 2>/dev/null || echo "No upload CSV files generated" >> purchase_summary.md
+        ls -la purchasing/*_order_*.csv >> purchase_summary.md 2>/dev/null || echo "No order CSV files generated" >> purchase_summary.md
+        ls -la purchasing/*_cart_url.txt >> purchase_summary.md 2>/dev/null || echo "No cart URL files generated" >> purchase_summary.md
+
     - name: Generate hybrid pricing report
       if: always()
       run: |
         echo "## 💰 Hybrid BOM Pricing Validation Report - $(date)" > pricing_report.md
         echo "" >> pricing_report.md
 
-        if [ -f hybrid_validation_BOM_BUDGET.json ] || [ -f hybrid_validation_BOM_OCTOPART.json ]; then
+        if [ -f hybrid_validation_BOM_CONSOLIDATED.json ]; then
           echo "### 📊 Validation Strategy: ${{ steps.validation_status.outputs.validation_strategy }}" >> pricing_report.md
           echo "" >> pricing_report.md
 
@@ -147,6 +170,14 @@ jobs:
               python .github/scripts/generate_hybrid_report.py "$validation_file" >> pricing_report.md
             fi
           done
+
+          # Append purchase guide if generated
+          if [ -f PURCHASE_GUIDE.md ]; then
+            echo "" >> pricing_report.md
+            echo "---" >> pricing_report.md
+            echo "" >> pricing_report.md
+            cat PURCHASE_GUIDE.md >> pricing_report.md
+          fi
 
           # Add API usage warnings if needed
           if [ "${{ steps.validation_status.outputs.quota_exceeded }}" = "true" ]; then
@@ -207,11 +238,17 @@ jobs:
 
         git add BOM_*.csv
         git add pricing_backup/
+        git add PURCHASE_GUIDE.md
+        git add *_upload_*.csv
+        git add *_order_*.csv
+        git add *_cart_url.txt
 
         if ! git diff --staged --quiet; then
-          git commit -m "🤖 Auto-update BOM pricing - $(date +%Y-%m-%d)
+          git commit -m "🤖 Auto-update BOM pricing and purchase links - $(date +%Y-%m-%d)
 
-          - Updated component pricing from Nexar API
+          - Updated component pricing from Nexar/Mouser APIs
+          - Generated purchase guide with direct links
+          - Created Mouser/Digi-Key upload files for bulk ordering
           - Backup created: pricing_backup/BOM_*_$(date +%Y%m%d).csv
           - Validation report generated
 
@@ -318,9 +355,13 @@ jobs:
         name: pricing-validation-${{ github.run_number }}
         path: |
           pricing_report.md
+          PURCHASE_GUIDE.md
           validation_results.json
           pricing_changes.json
           pricing_backup/
+          *_upload_*.csv
+          *_order_*.csv
+          *_cart_url.txt
         retention-days: 30
 
     - name: Post summary to workflow

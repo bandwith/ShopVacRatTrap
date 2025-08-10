@@ -8,7 +8,7 @@ This script provides the best of both worlds:
 - Mouser: High quotas and detailed pricing
 
 Usage:
-    python hybrid_bom_validator.py --bom-files BOM_BUDGET.csv BOM_OCTOPART.csv
+    python hybrid_bom_validator.py --bom-files BOM_CONSOLIDATED.csv
 """
 
 import os

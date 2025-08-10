@@ -5,10 +5,13 @@ ShopVac Rat Trap - 2025 Optimized Design
 
 ## Key Features
 
-- **Smart Detection**: VL53L1X time-of-flight sensor with 4m range and millimeter precision
+- **Smart Detection**: VL53L0X time-of-flight sensor with 2m range and millimeter precision
 - **Integrated Status Display**: 128x64 OLED with visual status indicators (eliminates separate LEDs)
-- **Physical Controls**: Illuminated emergency disable switch, test trigger, and reset button
-- **Cost-Optimized Power**: Single power supply with ESP32 built-in 3.3V regulation (-$27 savings)
+- **Modular Design**: STEMMA QT connectors for no-solder assembly
+- **Enhanced Processing**: ESP32-S3 with 4MB Flash + 2MB PSRAM for advanced features
+- **LiPo Battery Backup**: 2500mAh battery provides 25+ hours backup power
+- **Physical Controls**: Large arcade button emergency disable and test trigger
+- **Cost-Optimized Power**: Single power supply with ESP32-S3 built-in 3.3V regulation
 - **Safety Compliant**: NEC/IEC electrical standards with proper circuit protection
 - **WiFi Connectivity**: ESPHome integration with Home Assistant automation
 - **Global Support**: 120V/230V configurations for worldwide deployment
@@ -24,27 +27,29 @@ ShopVac Rat Trap - 2025 Optimized Design
 
 ### **Available Build Options**
 
-| Option | Power Supply | Total Cost | Best For |
+| Option | Processing | Total Cost | Best For |
 |--------|-------------|------------|----------|
-| **Recommended** | LRS-35-5 (7A) | **$61** | Most builders |
-| **Premium** | HDR-30-5 DIN Rail | **$73** | Professional installs |
+| **Recommended** | ESP32-S3 + STEMMA QT | **$149** | Most builders |
+| **Enhanced** | ESP32-S3 + LiPo Battery | **$164** | Portable/backup power |
 
 ## Component Overview
 
-> **Note:** For all purchasing details, vendor part numbers, and direct links, see [BOM_OCTOPART.csv](BOM_OCTOPART.csv) and [PURCHASE_LINKS.md](PURCHASE_LINKS.md).
-
-Budget build: See [BOM_BUDGET.csv](BOM_BUDGET.csv) for the cost-optimized configuration (excludes vacuum). Note: with a UL panel SSR and BME280 kept, current total is above $100; see BOM notes for trade-offs.
+> **Note:** For all purchasing details, vendor part numbers, and direct links, see [purchasing/PURCHASE_GUIDE.md](purchasing/PURCHASE_GUIDE.md).
 
 **Complete Bill of Materials and sourcing information available in [ELECTRICAL_DESIGN.md](ELECTRICAL_DESIGN.md)**
 
 ### **Core System Architecture**
 
 ```
-[120V/230V AC] → [Circuit Protection] → [Single PSU] → [ESP32 + Built-in 3.3V]
-                                                           ↓
-[Shop Vacuum] ← [25A SSR] ← [GPIO5] ← [ESPHome Logic] ← [VL53L1X I2C Sensor]
+[120V/230V AC] → [Circuit Protection] → [Mean Well PSU] → [ESP32-S3 + Built-in 3.3V]
+                                                            ↓
+[Shop Vacuum] ← [25A SSR] ← [GPIO5] ← [ESPHome Logic] ← [VL53L0X STEMMA QT]
                                                         ↓
-[OLED Status Display] ← [I2C Bus] → [Integrated Visual Status (No LEDs)]
+[OLED Status Display] ← [STEMMA QT Bus] → [BME280 Environmental Sensor]
+                                        ↓
+[LiPo Battery Backup] ← [ESP32-S3 Charger] ← [5V from PSU]
+```
+                                   [LiPo Battery Backup]
 ```
 
 ## Electrical Architecture
@@ -54,13 +59,14 @@ Budget build: See [BOM_BUDGET.csv](BOM_BUDGET.csv) for the cost-optimized config
 ```
 🇺🇸 120V AC / 🇪🇺 230V AC Input:
 ├─ Circuit Breaker (15A/10A) → Fuse Protection → Single Power Supply
-├─ Illuminated Emergency Disable Switch (NEC 422.31(B) / IEC 60204-1 Category 0)
+├─ Large Arcade Button Emergency Disable (NEC 422.31(B) / IEC 60204-1 Category 0)
 ├─ 25A SSR (>4000V isolation) → Vacuum Outlet
 └─ Equipment Ground (12AWG / 1.5mm²) → Enclosure
 
-ESP32 Power Management:
-├─ 5V Input from PSU → ESP32 VIN
-└─ Built-in 3.3V Regulator (600mA) → VL53L1X + OLED + E-stop LED + Pull-ups (160mA max)
+ESP32-S3 Power Management:
+├─ 5V Input from Mean Well PSU → ESP32-S3 VIN
+├─ LiPo Battery (2500mAh) → Automatic backup power
+└─ Built-in 3.3V Regulator (600mA) → VL53L0X + OLED + BME280 via STEMMA QT (99mA max)
 ```
 
 ### **Safety Features (Code Compliant)**
@@ -89,6 +95,34 @@ ESP32 Power Management:
 5. **Flash Firmware** - Use [rat-trap-2025.yaml](esphome/rat-trap-2025.yaml) configuration
 6. **Test & Calibrate** - Complete safety and function testing
 7. **Deploy** - Install with proper weatherproofing and electrical inspection
+
+## Purchasing & Component Sourcing
+
+### **📦 Quick Purchase Options**
+
+The project includes automated purchase links and bulk upload files for streamlined component ordering:
+
+- **[purchasing/PURCHASE_GUIDE.md](purchasing/PURCHASE_GUIDE.md)** - Complete purchase guide with direct links
+- **`purchasing/mouser_upload_consolidated.csv`** - Upload directly to Mouser BOM tool
+- **`purchasing/adafruit_order_consolidated.csv`** - Adafruit component list with cart URL
+- **`purchasing/sparkfun_order_consolidated.csv`** - SparkFun components with cart URL
+
+### **🛒 One-Click Ordering**
+
+| Supplier | Components | Upload File | Direct Link |
+|----------|------------|-------------|-------------|
+| **Mouser** | Power supplies, enclosure, AC components | `purchasing/mouser_upload_consolidated.csv` | [BOM Upload Tool](https://www.mouser.com/tools/bom-tool) |
+| **Adafruit** | ESP32, sensors, STEMMA QT modules | See cart URL file | [Shopping Cart](https://www.adafruit.com/shopping_cart) |
+| **SparkFun** | Solid State Relay, Qwiic modules | See cart URL file | [Cart](https://www.sparkfun.com/cart) |
+
+### **💰 Cost Breakdown**
+
+- **Total Project Cost**: ~$213 (single unit, list pricing)
+- **Adafruit Components**: 54.6% - ESP32, sensors, cables
+- **Mouser Components**: 33.6% - Power supply, enclosure, AC parts
+- **SparkFun Components**: 11.7% - Solid state relay
+
+*Volume pricing available for 10+ units with estimated 15-25% savings*
 
 ### **📁 Project Documentation**
 
@@ -161,7 +195,7 @@ ESP32 Power Management:
 
 ### **Maintenance Schedule**
 
-- **Monthly**: Clean VL53L1X sensor lens, inspect all visible connections
+- **Monthly**: Clean VL53L0X sensor lens, inspect all visible connections
 - **Quarterly**: Test emergency disable switch, verify all button functions
 - **Annually**: Professional electrical inspection, fuse replacement, firmware updates
 
@@ -229,11 +263,11 @@ automation:
 
 | Component | 2024 Design | 2025 Optimized | Improvement |
 |-----------|-------------|----------------|-------------|
-| **Power Supply** | Dual rail PSU + regulator | Single PSU + ESP32 regulator | -$27, simplified |
-| **Status Display** | Separate LEDs | Integrated OLED + Illuminated E-stop | -$16, better UX |
-| **Circuit Protection** | 5A undersized | 15A properly sized | Safety compliant |
-| **Control Interface** | Complex multi-switch | Streamlined 3-button | -$12, easier use |
-| **Compliance** | Basic safety | NEC/IEC standards | Professional grade |
+| **Processing** | ESP32 basic | ESP32-S3 + 2MB PSRAM | Enhanced performance |
+| **Connectivity** | Soldered I2C | STEMMA QT modular | No-solder assembly |
+| **Power Backup** | AC only | LiPo battery backup | 25+ hours backup |
+| **Status Display** | Separate LEDs | Integrated OLED | Professional interface |
+| **Assembly** | Complex wiring | Modular connectors | Beginner-friendly |
 
 ## 🤖 Automated BOM Management
 

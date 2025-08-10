@@ -668,8 +668,7 @@ def main():
         "--bom-files",
         nargs="*",
         default=[
-            str(REPO_ROOT / "BOM_BUDGET.csv"),
-            str(REPO_ROOT / "BOM_OCTOPART.csv"),
+            str(REPO_ROOT / "BOM_CONSOLIDATED.csv"),
         ],
         help="BOM files to validate",
     )

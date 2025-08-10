@@ -2,20 +2,24 @@
 
 This guide focuses on the cost-optimized build process using the latest 2025 design improvements.
 
-> **Note:** For all purchasing details, vendor part numbers, and direct links, see [BOM_OCTOPART.csv](BOM_OCTOPART.csv) and [PURCHASE_LINKS.md](PURCHASE_LINKS.md).
+Quick Start Guide
+=================
+
+> **Note:** For all purchasing details, vendor part numbers, and direct links, see [purchasing/PURCHASE_GUIDE.md](purchasing/PURCHASE_GUIDE.md).
 
 ## Essential Components
-- ESP32 DevKit
-- VL53L1X ToF Sensor
-- OLED Display 128x64 SSD1306
-- BME280 Environmental Sensor
-- Solid State Relay 25A
-- Illuminated E-Stop Button
-- Power Supply (LRS-35-5 recommended)
-- Enhanced IEC Inlet w/ Fuse & Switch
-- NEMA 5-15R Outlet
-- DIN terminal blocks
-- Wiring & hardware
+- ESP32-S3 Feather (Adafruit 5323)
+- VL53L0X ToF Sensor STEMMA QT (Adafruit 4210)
+- OLED Display 128x64 STEMMA QT (Adafruit 5027)
+- BME280 Environmental Sensor STEMMA QT (Adafruit 4816)
+- LiPo Battery 2500mAh (Adafruit 1578)
+- STEMMA QT Cables (Adafruit 4397, 4399)
+- Solid State Relay 25A (SparkFun COM-14456)
+- Large Arcade Button (Adafruit 368)
+- 5V Power Supply (Mean Well LRS-35-5)
+- Project Enclosure (Bud Industries PN-1334-C)
+- IEC Inlet & AC Outlet (Schurter & Leviton)
+- Circuit protection & wiring components
 
 ## Assembly Overview
 
@@ -41,12 +45,12 @@ For the complete wiring diagrams and detailed electrical schematics, please refe
 
 ```
 POWER FLOW:
-IEC Inlet → Power Supply → ESP32 → Sensors & Controls
+120V AC → IEC Inlet → Circuit Breaker → Mean Well LRS-35-5 PSU → 5V → ESP32-S3 → 3.3V → Sensors
 
 CONTROL SIGNALS:
-ESP32 → GPIO5 → SSR → Vacuum
-ESP32 → GPIO4/17 → Illuminated E-Stop Button
-ESP32 → GPIO21/22 → I2C Bus (Sensors & Display)
+ESP32-S3 → GPIO5 → SSR → Vacuum Outlet
+ESP32-S3 → GPIO0 → Emergency Stop Button
+ESP32-S3 → GPIO21/22 → STEMMA QT I2C Bus → Sensors & Display
 ```
 
 ## Configuration Quick Reference
@@ -58,8 +62,9 @@ ESP32 → GPIO21/22 → I2C Bus (Sensors & Display)
 - WiFi fallback hotspot: "RatTrap2025 Fallback"
 
 ### Power Budget
-- ESP32 + peripherals: ~160mA @ 5V (0.80W)
-- LRS-35-5 capacity: 7A @ 5V (35W) - ample headroom
+- ESP32-S3 + peripherals: ~99mA @ 3.3V (0.33W)
+- Mean Well LRS-35-5 capacity: 7A @ 5V (35W) - ample headroom
+- LiPo backup: 25+ hours runtime at full load
 
 ### Documentation Resources
 - [README.md](README.md) - Project overview and features

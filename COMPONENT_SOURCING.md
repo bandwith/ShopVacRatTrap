@@ -1,5 +1,20 @@
 # Component Sourcing Guide - ShopVac Rat Trap 2025
 
+## 🚀 Quick Purchase Options
+
+**NEW**: Automated purchase files and links are now available for streamlined ordering:
+
+- **Run**: `./purchasing/generate_purchase_files.sh` to generate current purchase files
+- **Files Created**:
+  - `PURCHASE_GUIDE.md` - Complete purchase guide with direct links
+  - `mouser_upload_consolidated.csv` - Mouser bulk upload file
+  - `adafruit_order_consolidated_cart_url.txt` - One-click Adafruit cart
+  - `sparkfun_order_consolidated_cart_url.txt` - One-click SparkFun cart
+
+**Bulk Ordering**: Upload CSV files to supplier BOM tools for instant pricing and availability.
+
+---
+
 ## Components Previously Not Found in Nexar - Updated Sources
 
 ### 1. Time-of-Flight Sensor
@@ -7,21 +22,21 @@
 **Adafruit 3317**: $7.95 - https://www.adafruit.com/product/3317
 **SparkFun SEN-14722**: $9.95 - https://www.sparkfun.com/products/14722
 **Alternative**: Generic VL53L0X modules on Amazon ($3-5)
-**Note**: 2m range sufficient for rat detection, cost-optimized vs VL53L1X
+**Note**: 4m range sufficient for rat detection, cost-optimized professional sensor
 
 ### 2. Environmental Sensor
-**Primary**: DHT22/AM2302 Temperature/Humidity Sensor
-**Adafruit 385**: $4.95 - https://www.adafruit.com/product/385
-**SparkFun SEN-10167**: $9.95 - https://www.sparkfun.com/products/10167
-**Mouser 485-2302**: $4.50 - Genuine Aosong AM2302
-**Note**: AM2302 is the wired version of DHT22, both work identically
+**Primary**: BME280 Temperature/Humidity/Pressure Sensor - STEMMA QT
+**Adafruit 4816**: $14.95 - https://www.adafruit.com/product/4816
+**SparkFun SEN-15440**: $19.95 - https://www.sparkfun.com/products/15440
+**Alternative**: DHT22/AM2302 (legacy design) - $4.95
+**Note**: BME280 STEMMA QT provides professional no-solder assembly
 
 ### 3. Power Supply
-**Primary**: Mean Well LRS-15-5 (5V/3A)
-**Mouser 709-LRS-15-5**: $12.20 - https://www.mouser.com/ProductDetail/709-LRS-15-5
-**Digi-Key 1866-2035-ND**: $12.58
-**Newark 38AH8968**: $12.95
-**Alternative**: Generic 5V/3A supplies (ensure UL/CE listing)
+**Primary**: Mean Well LRS-35-5 (5V/7A)
+**Mouser 709-LRS35-5**: $18.95 - https://www.mouser.com/ProductDetail/709-LRS35-5
+**Digi-Key 1866-5012-ND**: $18.70
+**Newark 85AC4189**: $19.25
+**Alternative**: LRS-15-5 for budget builds (ensure adequate capacity)
 
 ### 4. Solid State Relay
 **Primary**: Sensata Crydom D2425-10 (25A, Zero-crossing)
@@ -112,8 +127,8 @@
 
 ### Budget Version Substitutions
 1. **VL53L0X**: Use generic modules ($3 vs $8) - verify I2C compatibility
-2. **DHT22**: Use DHT11 for basic applications ($2 vs $5) - reduced accuracy
-3. **Power supply**: Generic 5V supplies ($8 vs $12) - ensure UL/CE listing
+2. **BME280**: Use DHT22 for budget builds ($5 vs $15) - no pressure sensing
+3. **Power supply**: LRS-15-5 for smaller builds ($12 vs $19) - ensure adequate capacity
 4. **Heat sink/thermal pad**: Omit for indoor applications - monitor ESP32 temperature
 
 ### Bulk Pricing
@@ -132,7 +147,7 @@
 | Original Component | Alternative 1 | Alternative 2 | Cost Savings |
 |-------------------|---------------|---------------|--------------|
 | VL53L0X Module | Generic module | Sharp GP2Y0A21YK0F | -$4 to -$5 |
-| DHT22 | DHT11 | SHT30 | -$3 to +$2 |
+| BME280 STEMMA QT | DHT22 Legacy | SHT30 Alternative | -$10 to +$5 |
 | LRS-15-5 | Generic 5V PSU | Recom RAC03-05SK | -$4 to +$3 |
 | D2425-10 | Omron G3NA | Carlo Gavazzi RM1A | -$3 to +$2 |
 | SCT-013-020 | CR Magnetics | Magnelab | +$24 to +$27 |
@@ -228,15 +243,15 @@ MOUSER_API_KEY=your_mouser_api_key
 ```bash
 # Validate with hybrid APIs (recommended)
 python .github/scripts/hybrid_bom_validator.py \
-  --bom-files BOM_BUDGET.csv BOM_OCTOPART.csv \
-  --priority-components ESP32-DEVKITC-32E D2425-10 LRS-15-5
+  --bom-files BOM_CONSOLIDATED.csv \
+  --priority-components ESP32-S3-Feather COM-14456 LRS-35-5
 
 # Mouser-only validation
 NEXAR_CLIENT_ID="" python .github/scripts/hybrid_bom_validator.py \
-  --bom-files BOM_BUDGET.csv
+  --bom-files BOM_CONSOLIDATED.csv
 
 # Check API connectivity
-curl -X GET "https://api.mouser.com/api/v1/search/partnumber?apiKey=YOUR_KEY&partnumber=ESP32-DEVKITC-32E"
+curl -X GET "https://api.mouser.com/api/v1/search/partnumber?apiKey=YOUR_KEY&partnumber=ESP32-S3-Feather"
 ```
 
 ### 🛠️ **Troubleshooting API Issues**
@@ -254,13 +269,13 @@ curl -X GET "https://api.mouser.com/api/v1/search/partnumber?apiKey=YOUR_KEY&par
 **Debugging Commands:**
 ```bash
 # Test Nexar connectivity
-python .github/scripts/nexar_validation.py --bom-files BOM_BUDGET.csv --max-components 5
+python .github/scripts/nexar_validation.py --bom-files BOM_CONSOLIDATED.csv --max-components 5
 
 # Test Mouser connectivity
-python .github/scripts/mouser_api.py --bom-files BOM_BUDGET.csv
+python .github/scripts/mouser_api.py --bom-files BOM_CONSOLIDATED.csv
 
 # Test hybrid approach
-python .github/scripts/hybrid_bom_validator.py --bom-files BOM_BUDGET.csv
+python .github/scripts/hybrid_bom_validator.py --bom-files BOM_CONSOLIDATED.csv
 
 # Check API usage stats
 grep -E "(nexar_calls|mouser_calls)" hybrid_validation_*.json
@@ -286,8 +301,8 @@ grep -E "(nexar_calls|mouser_calls)" hybrid_validation_*.json
 - name: Validate with priority handling
   run: |
     python .github/scripts/hybrid_bom_validator.py \
-      --bom-files BOM_BUDGET.csv BOM_OCTOPART.csv \
-      --priority-components ESP32-DEVKITC-32E D2425-10 LRS-15-5 SCT-013-020 \
+      --bom-files BOM_CONSOLIDATED.csv \
+      --priority-components ESP32-S3-Feather COM-14456 LRS-35-5 \
       --output-dir validation_results
 ```
 

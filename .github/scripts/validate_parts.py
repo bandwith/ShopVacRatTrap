@@ -405,9 +405,7 @@ def main():
     print("=" * 60)
 
     # Load BOM files from environment or use defaults
-    bom_files = os.getenv(
-        "BOM_FILES", f"{REPO_ROOT}/BOM_BUDGET.csv,{REPO_ROOT}/BOM_OCTOPART.csv"
-    ).split(",")
+    bom_files = os.getenv("BOM_FILES", f"{REPO_ROOT}/BOM_CONSOLIDATED.csv").split(",")
 
     total_parts = 0
     total_found = 0

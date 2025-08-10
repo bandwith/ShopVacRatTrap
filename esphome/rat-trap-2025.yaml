@@ -2,8 +2,15 @@ esphome:
   name: rat-trap-2025
   friendly_name: "ShopVac Rat Trap 2025"
   platform: ESP32
-  board: esp32dev
-  comment: "NEC/IEC compliant ESP32-based rat trap with voltage-specific safety features"
+  board: adafruit_feather_esp32s3
+  comment: "NEC/IEC compliant ESP32-S3 based rat trap with STEMMA QT sensors"
+
+# Enhanced ESP32-S3 configuration
+esp32:
+  variant: esp32s3
+  board: adafruit_feather_esp32s3
+  framework:
+    type: arduino
 
 # Voltage-specific configuration (uncomment appropriate section)
 substitutions:
@@ -19,7 +26,7 @@ esp32:
         # System disabled - Status LED is off
         it.print(0, 28, id(font_small), "SYSTEM DISABLED");
         it.print(120, 28, id(font_small), "○");  # Empty status dot
-      }      # Environmental data from DHT22
+      }      # Environmental data from BME280
       if (id(env_temperature).has_state()) {
         it.printf(0, 47, id(font_small), "Env: %.1f°C  %.0f%%RH",
                  id(env_temperature).state, id(env_humidity).state);
@@ -71,7 +78,7 @@ wifi:
 
 captive_portal:
 
-# I2C bus configuration for VL53L0X, DHT22 and OLED with enhanced EMI protection
+# I2C bus configuration for VL53L0X, BME280 and OLED via STEMMA QT with enhanced EMI protection
 i2c:
   sda: 21
   scl: 22
@@ -86,10 +93,9 @@ sensor:
     address: 0x29
     update_interval: 50ms
 
-  # Enhanced DHT22 environmental sensor (cost optimized)
-  - platform: dht
-    pin: 16
-    model: DHT22
+  # BME280 environmental sensor via STEMMA QT (I2C)
+  - platform: bme280
+    address: 0x77  # Adafruit STEMMA QT BME280 default address
     temperature:
       name: "Environmental Temperature"
       id: env_temperature
@@ -106,6 +112,15 @@ sensor:
       id: env_humidity
       accuracy_decimals: 0
       unit_of_measurement: "%"
+      device_class: humidity
+      state_class: measurement
+    pressure:
+      name: "Barometric Pressure"
+      id: env_pressure
+      accuracy_decimals: 1
+      unit_of_measurement: "hPa"
+      device_class: atmospheric_pressure
+      state_class: measurement
       device_class: humidity
       state_class: measurement
     update_interval: 60s
@@ -307,6 +322,43 @@ sensor:
           }
 
           return x;
+
+  # ESP32-S3 Feather LiPo battery voltage monitoring
+  - platform: adc
+    pin: A2  # Battery voltage divider on ESP32-S3 Feather
+    name: "Battery Voltage"
+    id: battery_voltage
+    accuracy_decimals: 2
+    update_interval: 60s
+    attenuation: 11dB
+    filters:
+      - multiply: 2.0  # Account for voltage divider (2:1 ratio)
+    unit_of_measurement: "V"
+    device_class: voltage
+    state_class: measurement
+    on_value:
+      - lambda: |-
+          // Log battery level changes
+          if (x < 3.4) {
+            ESP_LOGW("battery", "Low battery warning: %.2fV - consider charging", x);
+          } else if (x > 4.1) {
+            ESP_LOGI("battery", "Battery fully charged: %.2fV", x);
+          }
+
+  # Battery level percentage (derived from voltage)
+  - platform: template
+    name: "Battery Level"
+    id: battery_level
+    unit_of_measurement: "%"
+    accuracy_decimals: 0
+    device_class: battery
+    state_class: measurement
+    lambda: |-
+      float voltage = id(battery_voltage).state;
+      // LiPo voltage to percentage conversion (3.2V = 0%, 4.2V = 100%)
+      if (voltage >= 4.2) return 100.0;
+      if (voltage <= 3.2) return 0.0;
+      return ((voltage - 3.2) / (4.2 - 3.2)) * 100.0;
 
   # ESP32 internal temperature monitoring with enhanced thermal management
 
@@ -518,7 +570,7 @@ display:
       // Capture statistics
       it.printf(0, 42, id(font_small), "Captures: %.0f", id(capture_count_sensor).state);
 
-      // Environmental data from DHT22
+      // Environmental data from BME280
       if (id(env_temperature).has_state()) {
         it.printf(0, 47, id(font_small), "Env: %.1f°C  %.0f%%RH",
                  id(env_temperature).state, id(env_humidity).state);
@@ -699,7 +751,7 @@ number:
 #
 # COST OPTIMIZATIONS IMPLEMENTED:
 # - VL53L0X sensor instead of VL53L1X: -$7 (2m range sufficient for rat detection)
-# - DHT22 sensor instead of BME280: -$4 (temperature/humidity sufficient for correlation)
+# - BME280 sensor provides comprehensive environmental monitoring (+$10 vs DHT22)
 # - Non-illuminated E-stop + separate LED: -$20 (improved serviceability)
 # - Enhanced current monitoring: +$8 (CRITICAL SAFETY - motor overload protection)
 # - TVS diode protection: +$2 (GPIO surge protection)

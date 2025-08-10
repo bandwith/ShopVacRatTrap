@@ -3,7 +3,7 @@ esphome:
   friendly_name: "ShopVac Rat Trap Budget Enhanced 2025"
   platform: ESP32
   board: esp32dev
-  comment: "Cost-optimized ESP32-based rat trap with essential safety features and VL53L0X sensor"
+  comment: "DEPRECATED: Use rat-trap-2025.yaml for current ESP32-S3 + STEMMA QT design"
 
 # Enhanced budget configuration with optimized components
 substitutions:
@@ -46,16 +46,16 @@ captive_portal:
 
 # Note: This configuration was for an ultra-budget PSU. It is deprecated to comply with the
 # no-SMD/through-hole assembly requirement and to improve reliability. Use the main 2025 config instead.
-# I2C bus configuration for VL53L0X and DHT22 with EMI protection
+# I2C bus configuration for VL53L0X and BME280 with EMI protection
 i2c:
   sda: 21
   scl: 22
   scan: true
   frequency: 100kHz  # Reduced from 400kHz for better EMI immunity in high-voltage environment
 
-# Time-of-Flight sensor (VL53L1X - improved range and accuracy)
+# Time-of-Flight sensor (VL53L0X - sufficient range and accuracy for budget build)
 sensor:
-  - platform: vl53l1x
+  - platform: vl53l0x
     name: "Trap Distance"
     id: trap_distance
     address: 0x29
@@ -403,7 +403,7 @@ button:
           // Check I2C devices
           if (i2c::global_i2c_bus->scan_device(0x29) == false) {
             system_ok = false;
-            diagnostic_results += "VL53L1X sensor not detected. ";
+            diagnostic_results += "VL53L0X sensor not detected. ";
           }
           if (i2c::global_i2c_bus->scan_device(0x3C) == false) {
             system_ok = false;

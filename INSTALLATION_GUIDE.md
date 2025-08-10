@@ -1,6 +1,9 @@
 # ShopVac Rat Trap 2025 - Installation & Setup Guide
 
-> **Note:** For all purchasing details, vendor part numbers, and direct links, see [BOM_OCTOPART.csv](BOM_OCTOPART.csv) and [PURCHASE_LINKS.md](PURCHASE_LINKS.md).
+Installation Guide
+==================
+
+> **Note:** For all purchasing details, vendor part numbers, and direct links, see [purchasing/PURCHASE_GUIDE.md](purchasing/PURCHASE_GUIDE.md).
 
 ## Pre-Installation Safety Notice
 
@@ -74,8 +77,8 @@ curl -O https://raw.githubusercontent.com/bandwith/ShopVacRatTrap/main/ELECTRICA
 ```
 
 **Optimized Components (Cost Savings: -$47):**
-- [ ] ESP32 DevKit (test with blink program)
-- [ ] VL53L1X sensor (verify I2C address 0x29)
+- [ ] ESP32-S3 Feather (test with blink program)
+- [ ] VL53L0X sensor (verify I2C address 0x29)
 - [ ] OLED display (verify I2C address 0x3C) - **Integrated status display**
 - [ ] **Single LRS-35-5 PSU** (5V/7A, eliminates external 3.3V regulator, -$27)
 - [ ] SSR relay 25A (test with low voltage signal)
@@ -102,7 +105,7 @@ Temperature: PLA 200°C / PETG 240°C
 Print order:
 1. `Control_Box_Enclosure.scad` - Main housing
 2. `Control_Box_Lid.scad` - Removable top
-3. `Sensor_Housing_VL53L1X.scad` - Updated sensor mount
+3. `Sensor_Housing_VL53L0X.scad` - Updated sensor mount
 4. Existing files: `Rat_Trap_Mouth.stl`, `Vacuum_Hose_Adapter.stl`
 
 #### **1.3 Pre-Test ESP32 & Sensors (Simplified)**
@@ -125,7 +128,7 @@ i2c:
 
 # Test sensors with ESP32 built-in 3.3V regulator
 sensor:
-  - platform: vl53l1x
+  - platform: vl53l0x
     name: "Test Distance"
     update_interval: 1s
 
@@ -151,9 +154,9 @@ font:
 ```
 
 **Verify Optimized Design:**
-- [ ] I2C scan detects devices at 0x29 (VL53L1X) and 0x3C (OLED)
+- [ ] I2C scan detects devices at 0x29 (VL53L0X) and 0x3C (OLED)
 - [ ] ESP32 3.3V regulator powers all devices successfully
-- [ ] VL53L1X returns stable distance readings
+- [ ] VL53L0X returns stable distance readings
 - [ ] OLED displays integrated status information
 - [ ] ESP32 temperature monitoring functional
 - [ ] No external 3.3V regulator needed (cost savings confirmed)
@@ -195,8 +198,8 @@ font:
      * +5V/7A → ESP32 VIN (single supply solution)
      * GND → Common ground bus
    - ESP32 Built-in 3.3V Regulator:
-     * Powers VL53L1X, OLED, and all 3.3V components
-     * 600mA capacity >> 142mA actual load (76% safety margin)
+     * Powers VL53L0X, OLED, and all 3.3V components
+     * 600mA capacity >> 99mA actual load (84% safety margin)
    - Verify outputs: 5V ±0.25V, ESP32 3.3V stable under load
    - Isolation Test: Verify >1MΩ between AC and DC sides
    ```
@@ -210,23 +213,26 @@ font:
    - Route antenna away from switching circuits
    ```
 
-2. **Sensor Connections (Simplified Power)**
+2. **Sensor Connections (STEMMA QT Modular)**
    ```
-   VL53L1X Wiring:
-   - VCC → ESP32 3.3V output pin (built-in regulator)
-   - GND → Common ground
-   - SDA → GPIO21 (ESP32)
-   - SCL → GPIO22 (ESP32)
+   STEMMA QT Daisy Chain Assembly:
+   ESP32-S3 Feather STEMMA QT Port
+      ↓ (100mm STEMMA QT cable)
+   VL53L0X ToF Sensor (Adafruit 4210)
+      ↓ (100mm STEMMA QT cable)
+   BME280 Environmental Sensor (Adafruit 4816)
+      ↓ (200mm STEMMA QT cable)
+   OLED Display (Adafruit 5027)
 
-   OLED Wiring (Integrated Status Display):
-   - VCC → ESP32 3.3V output pin (shared with VL53L1X)
-   - GND → Common ground
-   - SDA → GPIO21 (parallel with VL53L1X)
-   - SCL → GPIO22 (parallel with VL53L1X)
+   Benefits:
+   - No soldering required - all JST SH 4-pin connectors
+   - Automatic I2C addressing and pull-ups
+   - Hot-swappable sensor connections
+   - Professional cable management
 
    Power Budget Verification:
-   - ESP32 3.3V regulator: 600mA maximum capacity
-   - Total 3.3V load: ~142mA typical (76% safety margin)
+   - ESP32-S3 3.3V regulator: 600mA maximum capacity
+   - Total 3.3V load: ~99mA typical (84% safety margin)
    ```
 
 3. **Simplified Control Interface Wiring**
@@ -342,7 +348,7 @@ esphome logs rat-trap-2025.yaml
 Check log output for:
 - [ ] WiFi connection successful
 - [ ] I2C devices detected
-- [ ] VL53L1X distance readings
+- [ ] VL53L0X distance readings
 - [ ] OLED display functional
 - [ ] All GPIO pins responding
 - [ ] Home Assistant API connected

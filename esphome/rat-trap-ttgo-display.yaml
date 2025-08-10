@@ -3,7 +3,7 @@ esphome:
   friendly_name: "ShopVac Rat Trap TTGO"
   platform: ESP32
   board: esp32dev
-  comment: "Cost-optimized TTGO ESP32+OLED integrated version ($18 savings)"
+  comment: "DEPRECATED: Use rat-trap-2025.yaml for current ESP32-S3 + STEMMA QT design"
 
 # Voltage-specific configuration (uncomment appropriate section)
 substitutions:

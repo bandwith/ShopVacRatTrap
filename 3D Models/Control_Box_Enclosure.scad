@@ -1,24 +1,28 @@
 // ShopVac Rat Trap 2025 - Optimized Control Box Enclosure
-// Cost-optimized design: Integrated IEC inlet, single PSU, no separate LEDs
+// Modular design: ESP32-S3 Feather + STEMMA QT sensors + LiPo battery
 // NEC/IEC compliant: Proper thermal management and safety features
 // Author: Hardware Designer
 // Date: August 2025
-// Total Cost Savings: -$47 (19% reduction) vs original design
+// Features: No-solder STEMMA QT assembly, backup power, enhanced processing
 
 // Customizable parameters
-box_width = 150;        // mm - accommodate ESP32 + single power supply
+box_width = 150;        // mm - accommodate ESP32-S3 Feather + battery
 box_depth = 100;        // mm
-box_height = 60;        // mm
+box_height = 70;        // mm - increased for battery compartment
 wall_thickness = 3;     // mm
 corner_radius = 5;      // mm
 
 // Component mounting parameters
-esp32_width = 55;       // ESP32 DevKit dimensions
-esp32_length = 28;
-esp32_hole_spacing_x = 48;
-esp32_hole_spacing_y = 20;
+esp32_s3_width = 51;    // ESP32-S3 Feather dimensions
+esp32_s3_length = 23;
+esp32_s3_hole_spacing_x = 45.7;
+esp32_s3_hole_spacing_y = 17.8;
 
-oled_width = 27;        // SSD1306 OLED dimensions (integrated status display)
+battery_width = 62;     // LiPo battery 2500mAh dimensions
+battery_length = 36;
+battery_height = 7;
+
+oled_width = 27;        // SSD1306 OLED STEMMA QT dimensions
 oled_height = 27;
 oled_thickness = 4;
 

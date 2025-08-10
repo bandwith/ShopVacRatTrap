@@ -1,6 +1,68 @@
 # ShopVac Rat Trap 2025 - Electrical Design & BOM
 
-> **Note:** For all purchasing details, vendor part numbers, and direct links, see [BOM_OCTOPART.csv](BOM_OCTOPART.csv) and [PURCHASE_LINKS.md](PURCHASE_LINKS.md).
+> **Note:** For all purchasing details, v### **Power Su### **STEMMA QT Connec### **Power Supply**
+
+###### **LRS-35-5 + ESP32-S3 Built-in 3.3V Regulator**
+
+| Qty | Component | Part Number | Description | Mouser PN |
+|-----|-----------|-------------|-------------|-----------|
+| 1 | Mean Well LRS-35-5 | LRS-35-5 | 35W 5V/7A chassis mount | 709-LRS35-5 |
+
+> Note: To comply with the "no SMD/through-hole" assembly requirement, only chassis or DIN rail power supplies are specified. PCB-mount AC/DC modules are not used in this design.an Well LRS-35-5 + ESP32-S3 Built-in 3.3V Regulator**
+
+| Qty | Component | Part Number | Description | Vendor PN |
+|-----|-----------|-------------|-------------|-----------|
+| 1 | Chassis PSU | LRS-35-5 | Mean Well 5V 7A chassis mount | Mouser 709-LRS35-5 |
+
+**Mean Well LRS-35-5 Features:**
+- **Chassis Mount Design**: Designed for permanent installation in control panels
+- **High Efficiency**: >87% efficiency with active power factor correction
+- **Universal Input**: 85-264VAC input range for worldwide compatibility
+- **Safety Certified**: UL/cUL, TÜV, CE marked for professional installations
+- **Compact Size**: 129x97x30mm footprint fits in 8"x6"x4" enclosure
+- **Overload Protection**: 105-150% rated output with hiccup mode recovery
+- **Operating Temperature**: -30°C to +70°C with derating
+
+**ESP32-S3 Power Management Features:**
+- Enhanced power efficiency compared to original ESP32
+- Built-in 3.3V regulator with 600mA capacity
+- Improved deep sleep current consumption (~10μA)
+- Advanced power management unit (PMU) with multiple power domains
+- Direct 5V input from Mean Well PSU eliminates external regulation*
+
+**Note**: All components and current Adafruit/SparkFun part numbers are detailed in [BOM_CONSOLIDATED.csv](BOM_CONSOLIDATED.csv).
+
+| Qty | Component | Part Number | Description | Vendor PN |
+|-----|-----------|-------------|-------------|-----------|
+| 3 | STEMMA QT Cable 100mm | 4397 | Short cables for sensor connections | Adafruit 4397 |
+| 1 | STEMMA QT Cable 200mm | 4399 | Longer cable for display positioning | Adafruit 4399 |
+
+**STEMMA QT System Benefits:**
+- **No Soldering Required**: All sensors connect via standardized JST SH 4-pin connectors
+- **Daisy-Chain Compatible**: Multiple sensors on single I2C bus with built-in connectors
+- **Polarized Connectors**: Impossible to connect incorrectly
+- **Hot-Swappable**: Sensors can be disconnected/reconnected while powered
+- **Universal Standard**: Compatible with Qwiic ecosystem from SparkFun
+- **Strain Relief**: Robust cable connections eliminate wire breakage
+- **Clean Assembly**: Professional appearance with organized cable management*
+
+**Note**: All components and current Mouser part numbers are detailed in [BOM_CONSOLIDATED.csv](BOM_CONSOLIDATED.csv).
+
+#### **Single PSU + ESP32 Built-in 3.3V Regulator**
+
+| Qty | Component | Part Number | Description | Mouser PN |
+|-----|-----------|-------------|-------------|-----------|
+| 1 | Circuit Breaker 15A | QO115 | Single pole circuit protection | QO115 |
+| 2 | Fast-Acting Fuse 5A | 5404.0625.25 | Secondary protection | 576-5404.0625.25 |
+
+> Note: To comply with the "no SMD/through-hole" assembly requirement, we use the ESP32's built-in power regulation eliminating external PSU requirements.
+
+**Design Features:**
+
+- Uses ESP32 built-in 3.3V regulator (600mA capacity)
+- No external power supply required
+- Simplified assembly with direct AC connection through protection
+- Better thermal efficiency with lower power dissipationrs, and direct links, see [BOM_CONSOLIDATED.csv](BOM_CONSOLIDATED.csv) - the single authoritative BOM for this project.
 
 ## **Design Overview**
 
@@ -74,31 +136,31 @@ This design meets all applicable electrical safety codes including NEC Article 4
 
 ### **Core Processing & Control**
 
-| Qty | Component | Part Number | Description |
-|-----|-----------|-------------|-------------|
-| 1 | ESP32 DevKit | ESP32-DevKitC-32E | Main microcontroller |
-| 1 | VL53L0X ToF Sensor | VL53L0X | 2m range sensor |
-| 1 | OLED Display 128x64 | SSD1306 | Status display |
-| 1 | BME280 Env. Sensor | BME280 | Temperature/humidity/pressure sensor |
-| 1 | Zero-Crossing SSR 25A | D2425-10 | AC switching with EMI reduction |
-| 1 | ESP32 Heat Sink Kit | 507-10ABPB | Thermal management (10x10mm, adhesive mount) |
-| 1 | Thermal Interface Pad | SP400-0.010-00-1010 | ESP32 heat dissipation |
+**Note**: All components and current Adafruit/SparkFun part numbers are detailed in [BOM_CONSOLIDATED.csv](BOM_CONSOLIDATED.csv).
+
+| Qty | Component | Part Number | Description | Vendor PN |
+|-----|-----------|-------------|-------------|-----------|
+| 1 | ESP32-S3 Feather | 5323 | Adafruit ESP32-S3 Feather 4MB Flash 2MB PSRAM | Adafruit 5323 |
+| 1 | LiPo Battery | 1578 | Adafruit 3.7V 2500mAh LiPo Battery | Adafruit 1578 |
+| 1 | Feather Headers | 2830 | Adafruit Stacking Headers for Feather | Adafruit 2830 |
+| 1 | VL53L0X ToF Sensor | 4210 | Adafruit VL53L0X STEMMA QT | Adafruit 4210 |
+| 1 | OLED Display 128x64 | 5027 | Adafruit 1.3" OLED STEMMA QT | Adafruit 5027 |
+| 1 | BME280 Env. Sensor | 4816 | Adafruit BME280 STEMMA QT | Adafruit 4816 |
+| 1 | Solid State Relay | COM-14456 | SparkFun SSR Kit - 25A with heatsink | SparkFun COM-14456 |
 
 ### **Current Monitoring & Protection**
 
-| Qty | Component | Part Number | Description |
-|-----|-----------|-------------|-------------|
-| 1 | Current Transformer | SCT-013-020 | 20A AC current monitoring for overload protection |
-| 1 | Burden Resistor | 33Ω 1W | Current sensing calibration resistor |
-| 1 | TVS Diode Array | PESD5V0S1BA | GPIO surge protection |
+**Note**: All components and current Mouser part numbers are detailed in [BOM_CONSOLIDATED.csv](BOM_CONSOLIDATED.csv).
+
+*Current monitoring components removed from design - vacuum load monitoring handled via power supply current sensing*
 
 ### **Power Supply**
 
-#### **LRS-15-5 + ESP32 Built-in 3.3V Regulator**
+#### **LRS-35-5 + ESP32-S3 Built-in 3.3V Regulator**
 
-| Qty | Component | Part Number | Description |
-|-----|-----------|-------------|-------------|
-| 1 | Mean Well LRS-15-5 | LRS-15-5 | 15W 5V/3A chassis mount |
+| Qty | Component | Part Number | Description | Mouser PN |
+|-----|-----------|-------------|-------------|-----------|
+| 1 | Mean Well LRS-35-5 | LRS-35-5 | 35W 5V/7A chassis mount | 709-LRS35-5 |
 
 > Note: To comply with the “no SMD/through-hole” assembly requirement, only chassis or DIN rail power supplies are specified. PCB-mount AC/DC modules are not used in this design.
 
@@ -109,55 +171,68 @@ This design meets all applicable electrical safety codes including NEC Article 4
 - Simplified assembly with single power supply
 - Better thermal efficiency with lower power dissipation
 
-**3.3V Load Analysis:**
+**3.3V Load Analysis (Adafruit ESP32-S3 Feather + STEMMA QT):**
 
 ```
-VL53L0X ToF Sensor:    15mA typical, 30mA peak (-5mA vs VL53L1X)
-SSD1306 OLED Display:  10mA typical, 20mA peak
-DHT22 Env. Sensor:     1mA typical, 2.5mA active (-1.6mA vs BME280)
-ESP32 Internal:        50-80mA WiFi active
-Pull-up Resistors:     1.0mA (3x 10kΩ @ 3.3V, reduced from 4x)
-Current Monitor LED:   2mA typical (via GPIO pin)
-**TOTAL LOAD:          54-84mA typical (-43mA improvement)**
-**SAFETY MARGIN:       516mA available (86% headroom, +8% improvement)**
-**E-Stop/LED Eliminated**: Status integrated into OLED display (-15mA)
-Screw Terminals:       Negligible (passive components)
-**SIMPLIFIED DESIGN TOTAL**: 69-117mA typical
-**FINAL SAFETY MARGIN**: 483mA available (80% headroom)
+VL53L0X ToF Sensor:    15mA typical, 30mA peak (Adafruit 4210 STEMMA QT)
+OLED Display 128x64:   15mA typical, 25mA peak (Adafruit 5027 STEMMA QT)
+BME280 Env. Sensor:    1μA sleep, 3.6mA active (Adafruit 4816 STEMMA QT)
+ESP32-S3 Feather:      45-70mA WiFi active (improved efficiency vs ESP32)
+I2C Pull-ups:          Built-in to STEMMA QT modules (no external resistors needed)
+**TOTAL LOAD:          61-99mA typical**
+**ESP32-S3 3.3V:**     600mA capacity (built-in regulator)
+**SAFETY MARGIN:       501mA available (84% headroom)**
 ```
 
-### **Control Interface Components**
+**LiPo Battery Backup (Adafruit 1578 - 2500mAh 3.7V):**
+- **Backup Runtime**: ~25 hours at 99mA load (2500mAh ÷ 99mA)
+- **Standby Runtime**: ~2500 days in deep sleep mode (2500mAh ÷ 1μA)
+- **Charging**: Automatic via ESP32-S3 Feather built-in charger when 5V present
+- **Power-Loss Transition**: Seamless switchover when main power fails
+- **Battery Monitoring**: Built-in voltage divider for battery level sensing
 
-| Qty | Component | Part Number | Description |
-|-----|-----------|-------------|-------------|
-| 1 | Panel Mount Tactile Switch | PV5S640NN | Panel mount reset button |
-| 1 | Wago Lever Connectors | 221-412 | 4-port lever connector |
+**Mean Well LRS-35-5 System Benefits:**
+- **Professional Grade**: Designed for 24/7 operation in control panels
+- **Ample Capacity**: 7A output >> 1A maximum system load (600% headroom)
+- **Chassis Mounting**: Secure mounting inside larger control enclosure
+- **Universal Input**: Works with 120V/230V AC worldwide
+- **Safety Certified**: UL/CE marking for professional installations
+- **Thermal Management**: Integrated heat sink and convection cooling
+- **Longevity**: >100,000 hour MTBF for continuous operation
+
+### **Power Supply & Interface Components**
+
+**Note**: All components and current Adafruit/SparkFun part numbers are detailed in [BOM_CONSOLIDATED.csv](BOM_CONSOLIDATED.csv).
+
+| Qty | Component | Part Number | Description | Vendor PN |
+|-----|-----------|-------------|-------------|-----------|
+| 1 | Chassis Power Supply | LRS-35-5 | Mean Well 5V 7A chassis mount PSU | Mouser 709-LRS35-5 |
+| 1 | IEC Inlet | 4300.0030 | Schurter IEC C14 inlet with switch | Mouser 693-4300.0030 |
+| 1 | AC Outlet | 5320-W | Leviton NEMA 5-15R outlet | Mouser 546-5320-W |
+| 1 | Circuit Breaker | QO115 | Square D 15A single pole breaker | Mouser QO115 |
+| 1 | Emergency Stop Button | 368 | Adafruit Large Arcade Button 60mm Red | Adafruit 368 |
+| 1 | Project Enclosure | PN-1334-C | Bud Industries ABS 8"x6"x4" | Mouser 563-PN-1334-C |
 
 ### **Safety Enhancement Components**
 
-| Qty | Component | Part Number | Safety Function |
-|-----|-----------|-------------|-----------------|
-| 1 | Current Transformer | SCT-013-020 | AC current monitoring for overload/fault detection |
-| 1 | Burden Resistor | 33Ω 1W Metal Film | Current sensing calibration |
-| 1 | TVS Diode Array | PESD5V0S1BA | GPIO surge protection |
-| 1 | GFCI Outlet Tester | Klein RT105 | Installation safety verification |
+**Note**: All components and current Mouser part numbers are detailed in [BOM_CONSOLIDATED.csv](BOM_CONSOLIDATED.csv).
 
-**Protection Features:**
-
+Protection Features:
 - Primary: 15A circuit breaker (NA) / 10A MCB (EU)
-- Secondary: 12A fast-blow fuse for selective coordination
-- Tertiary: Current transformer monitoring with software shutdown
-- Quaternary: TVS diode protection on all GPIO pins
+- Secondary: 5A fast-blow fuse for selective coordination
+- Emergency Stop: XB4BS8445 mushroom head switch with direct relay disconnect
+- Isolation: Complete galvanic isolation between control and power circuits
 
 ### **Power & Safety Components**
 
+**Note**: All components and current Mouser part numbers are detailed in [BOM_CONSOLIDATED.csv](BOM_CONSOLIDATED.csv).
+
 | Qty | Component | Part Number | Description |
 |-----|-----------|-------------|-------------|
-| 1 | Enhanced IEC Inlet | 4304.6093 | All-in-one: IEC + EMI + MOV + fuse + switch |
-| 1 | NEMA 5-15R Outlet | 5262 | 120V AC vacuum output (15A rated) |
-| 2 | Fast Blow Fuse 12A | 0218012.MXP | Enhanced selective coordination (12A, 250V) |
-| 1 | Ferrite Core Set | Fair-Rite 0443164251 | EMI suppression for I2C cables |
-| 1 | RC Snubber Network | 0.1µF + 47Ω | SSR switching transient suppression |
+| 1 | IEC C14 Inlet | 4300.0030 | IEC inlet with integrated switch |
+| 1 | NEMA 5-15R Outlet | 5320-W | 120V AC vacuum output |
+| 2 | Fast Blow Fuse 5A | 5404.0625.25 | Circuit protection |
+| 1 | Project Box | PN-1334-C | ABS enclosure 8"x6"x4" |
 
 ### **Terminal & Connection Components**
 
@@ -169,15 +244,19 @@ Screw Terminals:       Negligible (passive components)
 
 ### **Wiring & Hardware**
 
-| Qty | Component | Description |
-|-----|-----------|-------------|
-| 20ft | 12 AWG Stranded Wire | AC wiring (15A rated, NEC compliant) |
-| 10ft | 22 AWG Solid Wire | Low voltage wiring |
-| 4 | M3x8mm Screws | ESP32 mounting |
-| 4 | M3x16mm Screws | Enclosure lid |
-| 8 | M3 Threaded Inserts | For 3D printed parts |
-| 4 | M3 Standoffs 6mm | Board standoffs |
-| 1 | Heat Shrink Tubing | Various sizes |
+**Note**: All components and current Adafruit/SparkFun part numbers are detailed in [BOM_CONSOLIDATED.csv](BOM_CONSOLIDATED.csv).
+
+| Qty | Component | Part Number | Description | Vendor |
+|-----|-----------|-------------|-------------|---------|
+| 1 | Red Wire | 3258 | Adafruit Silicone 26AWG Red 2m | Adafruit |
+| 1 | Black Wire | 3259 | Adafruit Silicone 26AWG Black 2m | Adafruit |
+| 1 | Terminal Blocks | 4090 | Adafruit Terminal Block Kit 2.54mm | Adafruit |
+
+**Note**: STEMMA QT system eliminates need for:
+- Jumper wires (replaced by STEMMA QT cables)
+- Break-away headers (sensors have built-in connectors)
+- Standoffs for sensors (STEMMA QT modules mount independently)
+- Individual pull-up resistors (built into STEMMA QT modules)
 
 ## Power Specifications Summary
 
@@ -266,17 +345,17 @@ Mean Well LRS-35-5 Chassis Mount PSU:
 ├─ AC Input: 120V AC (from breaker & fuse)
 ├─ +5V/7A Output → ESP32 VIN
 │                └─ ESP32 Built-in 3.3V Regulator (600mA capacity)
-│                   ├─ VL53L1X VCC (20mA typical)
-│                   ├─ OLED VCC (10mA typical)
-│                   ├─ Pull-up Resistors (1.3mA)
-│                   └─ 458mA Available (76% safety margin)
+│                   ├─ VL53L0X VCC (15mA typical)
+│                   ├─ OLED VCC (15mA typical)
+│                   ├─ BME280 VCC (3.6mA active)
+│                   └─ 501mA Available (84% safety margin)
 └─ GND → Common Ground Bus
 
 Benefits:
 - Simplified design: Single PSU eliminates external regulators
 - Cost savings: -$27 compared to dual-rail solutions
 - Proven reliability: ESP32 regulator handles all 3.3V loads
-- Adequate capacity: 600mA >> 82-142mA actual load
+- Adequate capacity: 600mA >> 61-99mA actual load
 - Better thermal: No external regulator heat generation
 ```
 
@@ -284,15 +363,37 @@ Benefits:
 
 For detailed wiring diagrams and connection standards, refer to the [INSTALLATION_GUIDE.md](INSTALLATION_GUIDE.md) document.
 
-### **GPIO Connections**
+### **GPIO Connections (Adafruit ESP32-S3 Feather + STEMMA QT)**
 
 ```
-GPIO21 → I2C SDA → VL53L0X SDA + OLED SDA + BME280 SDA (shared I2C bus)
-GPIO22 → I2C SCL → VL53L0X SCL + OLED SCL + BME280 SCL (shared I2C bus)
-GPIO5  → SSR Control Input (3.3V logic, SAFETY CRITICAL)
-GPIO34 → Reset Button (Active Low, 10kΩ pull-up to 3.3V)
-GPIO36 → Current Sensor Input for vacuum load monitoring (ADC)
+GPIO21 (SDA) → STEMMA QT SDA → Daisy-chained to all I2C sensors
+GPIO22 (SCL) → STEMMA QT SCL → Daisy-chained to all I2C sensors
+GPIO5        → SSR Control Input (3.3V logic, SAFETY CRITICAL)
+GPIO0        → Emergency Stop Button (Active Low, built-in pull-up)
+GPIO13       → Status LED (onboard red LED for status indication)
+A2 (GPIO2)   → Battery Voltage Monitor (built-in voltage divider)
 ```
+
+**STEMMA QT Connection Topology:**
+```
+ESP32-S3 Feather STEMMA QT Port
+    ↓ (100mm cable)
+VL53L0X ToF Sensor (Adafruit 4210)
+    ↓ (100mm cable)
+BME280 Environmental Sensor (Adafruit 4816)
+    ↓ (200mm cable - longer for display positioning)
+OLED Display (Adafruit 5027)
+```
+
+**ESP32-S3 Feather + STEMMA QT Benefits:**
+- **Zero Soldering**: All I2C connections via STEMMA QT cables
+- **Native USB-C**: No USB-to-serial converter needed for programming
+- **Enhanced Performance**: Faster processing for complex automation logic
+- **Expanded Memory**: 2MB PSRAM enables larger data buffers and caching
+- **Hot-Swappable**: Sensors can be connected/disconnected while powered
+- **Professional Assembly**: Clean cable management with secure connections
+- **Future-Proof**: Latest ESP32 variant with ongoing support
+- **AI-Ready**: Hardware acceleration for future AI/ML features
 
 **Status Display Integration:**
 All status information consolidated into OLED display with visual highlighting:
@@ -303,13 +404,20 @@ All status information consolidated into OLED display with visual highlighting:
 - WiFi connectivity
 - Capture count statistics
 
-### **I2C Device Addresses**
+### **I2C Device Addresses (STEMMA QT/Qwiic Modules)**
 
 ```
-VL53L0X ToF Sensor: 0x29 (default)
-SSD1306 OLED: 0x3C (default)
-BME280 Environmental: 0x76 (default)
+VL53L0X ToF Sensor (Adafruit 4210): 0x29 (default)
+SSD1306 OLED (Adafruit 5027): 0x3C (default)
+BME280 Environmental (Adafruit 4816): 0x77 (default for Adafruit STEMMA QT)
 ```
+
+**STEMMA QT I2C Bus Features:**
+- **Standardized Connectors**: All modules use JST SH 4-pin connectors
+- **Daisy-Chain Design**: Connect multiple sensors in series without hub
+- **Built-in Pull-ups**: Each STEMMA QT module includes proper I2C pull-up resistors
+- **Address Management**: Adafruit modules use consistent default addresses
+- **Bus Protection**: Built-in ESD protection on STEMMA QT modules
 
 ## 3D Design Recommendations
 
@@ -322,12 +430,12 @@ BME280 Environmental: 0x76 (default)
 
 ### **Low Voltage Section (Component Organization)**
 
-- ESP32 DevKit mounted centrally for easy USB access
-- VL53L1X and BME280 sensors positioned at front-facing area
+- ESP32-S3 Feather mounted centrally for easy USB access
+- VL53L0X and BME280 sensors positioned at front-facing area
 - Organize components in logical functional groups:
   - Power section: Power supply, illuminated E-stop
   - Control section: ESP32, buttons, E-stop
-  - Sensor section: VL53L1X, BME280, OLED display
+  - Sensor section: VL53L0X, BME280, OLED display
 - Use cable channels or wire guides between sections
 - Label all connections with permanent markers or labels
 - Maintain minimum 5mm separation between AC and DC components
@@ -437,6 +545,15 @@ BME280 Environmental: 0x76 (default)
 - Sensors with shock absorption mounting
 
 ### **Enhanced Safety Features** 🛑
+
+#### **LiPo Battery Safety**
+
+- **Integrated Protection**: Adafruit ESP32 Feather includes built-in charging and protection circuitry
+- **Temperature Monitoring**: ESP32 temperature sensor monitors for thermal events
+- **Overcharge Protection**: Built-in charging IC prevents overcharging
+- **Under-voltage Protection**: ESP32 will enter deep sleep to prevent battery damage
+- **Physical Protection**: Mount battery securely to prevent damage from vibration
+- **Ventilation**: Ensure adequate airflow around battery compartment
 
 #### **Improved Emergency Stop Labeling**
 
