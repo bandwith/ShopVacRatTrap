@@ -46,7 +46,7 @@ captive_portal:
 
 # Note: This configuration was for an ultra-budget PSU. It is deprecated to comply with the
 # no-SMD/through-hole assembly requirement and to improve reliability. Use the main 2025 config instead.
-# I2C bus configuration for VL53L1X and BME280 with EMI protection
+# I2C bus configuration for VL53L0X and DHT22 with EMI protection
 i2c:
   sda: 21
   scl: 22

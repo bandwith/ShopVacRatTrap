@@ -445,15 +445,11 @@ button:
           // Check I2C devices
           if (i2c::global_i2c_bus->scan_device(0x29) == false) {
             system_ok = false;
-            diagnostic_results += "VL53L1X sensor not detected. ";
+            diagnostic_results += "VL53L0X sensor not detected. ";
           }
           if (i2c::global_i2c_bus->scan_device(0x3C) == false) {
             system_ok = false;
             diagnostic_results += "OLED display not detected. ";
-          }
-          if (i2c::global_i2c_bus->scan_device(0x76) == false) {
-            system_ok = false;
-            diagnostic_results += "BME280 sensor not detected. ";
           }
 
           // Check WiFi
@@ -522,7 +518,7 @@ display:
       // Capture statistics
       it.printf(0, 42, id(font_small), "Captures: %.0f", id(capture_count_sensor).state);
 
-      // Environmental data from BME280
+      // Environmental data from DHT22
       if (id(env_temperature).has_state()) {
         it.printf(0, 47, id(font_small), "Env: %.1f°C  %.0f%%RH",
                  id(env_temperature).state, id(env_humidity).state);
