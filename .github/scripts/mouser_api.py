@@ -28,9 +28,9 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Mouser API Configuration
-MOUSER_API_BASE = "https://api.mouser.com/api/v1"
-MOUSER_SEARCH_ENDPOINT = f"{MOUSER_API_BASE}/search"
-MOUSER_PART_ENDPOINT = f"{MOUSER_API_BASE}/search/partnumber"
+MOUSER_API_BASE = "https://api.mouser.com/api/v1.0"
+MOUSER_SEARCH_ENDPOINT = f"{MOUSER_API_BASE}/search/partnumber"
+MOUSER_PART_ENDPOINT = MOUSER_SEARCH_ENDPOINT
 
 # Rate limiting configuration
 REQUESTS_PER_SECOND = 8  # Conservative limit (10 max)
@@ -171,15 +171,15 @@ class MouserAPIClient:
         self.hourly_request_count += 1
 
     @retry_with_backoff(max_retries=3, base_delay=1.0)
-    def _make_request(self, endpoint: str, params: dict) -> dict:
+    def _make_request(self, endpoint: str, data: dict) -> dict:
         """Make API request with error handling"""
         self._check_rate_limits()
 
-        # Add API key to params
-        params["apiKey"] = self.api_key
+        # Add API key as query parameter for Mouser API
+        url_with_key = f"{endpoint}?apiKey={self.api_key}"
 
         try:
-            response = self.session.get(endpoint, params=params, timeout=30)
+            response = self.session.post(url_with_key, json=data, timeout=30)
 
             # Handle specific HTTP status codes
             if response.status_code == 429:
@@ -215,17 +215,21 @@ class MouserAPIClient:
         self, part_number: str, manufacturer: str = None
     ) -> List[MouserPart]:
         """Search for exact part number match"""
-        params = {
-            "partnumber": part_number,
-            "includeDetail": "true",
+        # Mouser API requires POST with JSON payload
+        payload = {
+            "SearchByPartRequest": {
+                "mouserPartNumber": part_number,
+                "partSearchOptions": "PartNumber",
+            }
         }
 
         logger.info(f"🔍 Searching Mouser for part: {part_number}")
 
         try:
-            data = self._make_request(MOUSER_PART_ENDPOINT, params)
+            data = self._make_request(MOUSER_SEARCH_ENDPOINT, payload)
 
-            if "SearchResults" not in data or not data["SearchResults"]["Parts"]:
+            # Check for results in Mouser API response format
+            if "SearchResults" not in data or not data["SearchResults"].get("Parts"):
                 logger.warning(f"⚠️ No results found for {part_number}")
                 return []
 

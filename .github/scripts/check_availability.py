@@ -114,7 +114,7 @@ class AvailabilityChecker:
         self.access_token = None
         self.session = requests.Session()
 
-    @retry_with_backoff(max_retries=3, base_delay=2.0)
+    @retry_with_backoff
     def authenticate(self) -> None:
         """Obtain access token from Nexar API with retry logic"""
         print("🔐 Authenticating with Nexar API...")
@@ -154,7 +154,7 @@ class AvailabilityChecker:
                 print(f"❌ Authentication request failed: {e}")
                 raise
 
-    @retry_with_backoff(max_retries=5, base_delay=1.0)
+    @retry_with_backoff
     def check_availability(self, mpn: str, manufacturer: str = None) -> dict:
         """Check availability for a specific part with error handling"""
         query = """

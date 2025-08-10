@@ -147,7 +147,7 @@ class NexarValidator:
             },
         }
 
-    @retry_with_backoff(max_retries=3, base_delay=2.0)
+    @retry_with_backoff
     def authenticate(self) -> None:
         """Obtain access token from Nexar API with retry logic"""
         print("🔐 Authenticating with Nexar API...")
@@ -185,7 +185,7 @@ class NexarValidator:
             else:
                 raise NexarAPIError(f"Authentication request failed: {e}")
 
-    @retry_with_backoff(max_retries=5, base_delay=1.0)
+    @retry_with_backoff
     def search_parts(self, mpn: str, manufacturer: str = None) -> List[Dict]:
         """Search for parts using Nexar API with error handling and backoff"""
         # Query pattern from official mpn_pricing_to_csv.py example

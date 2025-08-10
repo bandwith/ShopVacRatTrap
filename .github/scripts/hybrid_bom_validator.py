@@ -17,6 +17,19 @@ import time
 import logging
 from typing import Dict, List, Optional
 from datetime import datetime
+from pathlib import Path
+
+# Load environment variables from .env file if it exists (for local development)
+try:
+    from dotenv import load_dotenv
+
+    env_path = Path(__file__).parent.parent.parent / ".env"
+    if env_path.exists():
+        load_dotenv(env_path)
+        print(f"🔧 Loaded environment variables from {env_path}")
+except ImportError:
+    # python-dotenv not available, continue with system environment variables
+    pass
 
 # Import our custom API clients
 try:
