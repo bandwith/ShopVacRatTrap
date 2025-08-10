@@ -42,10 +42,18 @@ jobs:
         python -m pip install --upgrade pip
         pip install requests pandas
 
-    - name: Create backup of current BOM
+    - name: Create backup of current BOM and manage older backups
       run: |
+        # Create backup directory if it doesn't exist
         mkdir -p pricing_backup
+
+        # Create today's backup with date stamp
         cp BOM_CONSOLIDATED.csv pricing_backup/BOM_CONSOLIDATED_$(date +%Y%m%d).csv
+
+        # Keep only the 5 most recent backups and remove older ones
+        cd pricing_backup
+        ls -t BOM_CONSOLIDATED_*.csv | tail -n +6 | xargs -r rm
+        cd ..
 
     - name: Run BOM validation and generate all files
       id: bom_validation
@@ -178,9 +186,9 @@ jobs:
           git commit -m "🤖 Auto-update BOM pricing and purchase links - $(date +%Y-%m-%d)
 
           - Updated component pricing from Mouser API
-          - Generated purchase guide with direct links
           - Created Mouser upload files for bulk ordering
-          - Backup created: pricing_backup/BOM_*_$(date +%Y%m%d).csv"
+          - Backup created: pricing_backup/BOM_CONSOLIDATED_$(date +%Y%m%d).csv
+          - Only keeping 5 most recent pricing backups for repository cleanliness"
 
           git push
         fi
@@ -195,7 +203,7 @@ jobs:
           pricing_report.md
           availability_report.md
           mouser_consolidation_analysis.md
-          pricing_backup/
+          pricing_backup/ # Contains the 5 most recent BOM pricing backups
           purchasing/
         retention-days: 30
 
