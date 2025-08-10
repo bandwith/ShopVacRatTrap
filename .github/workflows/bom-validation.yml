@@ -172,7 +172,6 @@ jobs:
 
         git add BOM_*.csv
         git add pricing_backup/
-        git add PURCHASE_GUIDE.md
         git add purchasing/
 
         if ! git diff --staged --quiet; then
@@ -196,7 +195,6 @@ jobs:
           pricing_report.md
           availability_report.md
           mouser_consolidation_analysis.md
-          PURCHASE_GUIDE.md
           pricing_backup/
           purchasing/
         retention-days: 30
