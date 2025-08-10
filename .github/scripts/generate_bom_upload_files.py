@@ -97,135 +97,6 @@ def generate_mouser_upload_csv(components, output_file):
     return 0
 
 
-def generate_adafruit_order_list(components, output_file):
-    """Generate Adafruit order list with direct URLs"""
-    adafruit_components = []
-    cart_items = []
-
-    for comp in components:
-        if (
-            comp["distributor"].lower() == "adafruit"
-            or "adafruit" in comp["distributor"].lower()
-        ):
-            adafruit_part = comp["distributor_part"]
-
-            if adafruit_part and adafruit_part.isdigit():
-                product_url = f"https://www.adafruit.com/product/{adafruit_part}"
-                cart_items.append(f"add[]={adafruit_part}&qty[]={comp['quantity']}")
-
-                adafruit_components.append(
-                    {
-                        "Adafruit Product ID": adafruit_part,
-                        "Quantity": comp["quantity"],
-                        "Description": comp["description"],
-                        "Unit Price": f"${comp['unit_price']:.2f}"
-                        if comp["unit_price"] > 0
-                        else "TBD",
-                        "Total Price": f"${comp['extended_price']:.2f}"
-                        if comp["extended_price"] > 0
-                        else "TBD",
-                        "Product URL": product_url,
-                    }
-                )
-
-    if adafruit_components:
-        # Generate CSV
-        with open(output_file, "w", newline="", encoding="utf-8") as csvfile:
-            fieldnames = [
-                "Adafruit Product ID",
-                "Quantity",
-                "Description",
-                "Unit Price",
-                "Total Price",
-                "Product URL",
-            ]
-            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-            writer.writeheader()
-            writer.writerows(adafruit_components)
-
-        # Generate cart URL
-        if cart_items:
-            cart_data = "&".join(cart_items)
-            cart_url = f"https://www.adafruit.com/shopping_cart?{cart_data}"
-
-            # Save cart URL to separate file
-            cart_file = str(output_file).replace(".csv", "_cart_url.txt")
-            with open(cart_file, "w") as f:
-                f.write(f"Adafruit Cart URL:\n{cart_url}\n\n")
-                f.write(
-                    "Click this link to add all Adafruit components to your cart automatically.\n"
-                )
-
-        return len(adafruit_components)
-
-    return 0
-
-
-def generate_sparkfun_order_list(components, output_file):
-    """Generate SparkFun order list with direct URLs"""
-    sparkfun_components = []
-    cart_items = []
-
-    for comp in components:
-        if (
-            comp["distributor"].lower() == "sparkfun"
-            or "sparkfun" in comp["distributor"].lower()
-        ):
-            sparkfun_part = comp["distributor_part"]
-
-            if sparkfun_part and sparkfun_part.startswith("COM-"):
-                sku = sparkfun_part.replace("COM-", "")
-                product_url = f"https://www.sparkfun.com/products/{sku}"
-                cart_items.append(f"products[{sku}]={comp['quantity']}")
-
-                sparkfun_components.append(
-                    {
-                        "SparkFun SKU": sparkfun_part,
-                        "Quantity": comp["quantity"],
-                        "Description": comp["description"],
-                        "Unit Price": f"${comp['unit_price']:.2f}"
-                        if comp["unit_price"] > 0
-                        else "TBD",
-                        "Total Price": f"${comp['extended_price']:.2f}"
-                        if comp["extended_price"] > 0
-                        else "TBD",
-                        "Product URL": product_url,
-                    }
-                )
-
-    if sparkfun_components:
-        # Generate CSV
-        with open(output_file, "w", newline="", encoding="utf-8") as csvfile:
-            fieldnames = [
-                "SparkFun SKU",
-                "Quantity",
-                "Description",
-                "Unit Price",
-                "Total Price",
-                "Product URL",
-            ]
-            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-            writer.writeheader()
-            writer.writerows(sparkfun_components)
-
-        # Generate cart URL
-        if cart_items:
-            cart_data = "&".join(cart_items)
-            cart_url = f"https://www.sparkfun.com/cart?{cart_data}"
-
-            # Save cart URL to separate file
-            cart_file = str(output_file).replace(".csv", "_cart_url.txt")
-            with open(cart_file, "w") as f:
-                f.write(f"SparkFun Cart URL:\n{cart_url}\n\n")
-                f.write(
-                    "Click this link to add all SparkFun components to your cart automatically.\n"
-                )
-
-        return len(sparkfun_components)
-
-    return 0
-
-
 def generate_purchase_summary(components, output_file):
     """Generate comprehensive purchase summary with links and instructions"""
 
@@ -283,53 +154,6 @@ def generate_purchase_summary(components, output_file):
                 part_num = comp["distributor_part"]
                 if part_num:
                     url = f"https://www.mouser.com/ProductDetail/{part_num}"
-                    f.write(
-                        f"- [{comp['mpn']}]({url}) - {comp['description']} (Qty: {comp['quantity']})\n"
-                    )
-            f.write("\n")
-
-        # Adafruit section
-        adafruit_parts = [
-            c for c in components if "adafruit" in c["distributor"].lower()
-        ]
-        if adafruit_parts:
-            f.write("### Adafruit\n")
-            f.write("- **Maker-friendly modules and sensors**\n")
-            f.write("- **STEMMA QT ecosystem components**\n")
-            f.write("- **Excellent documentation and tutorials**\n\n")
-            f.write("**Order File:** `adafruit_order_consolidated.csv`\n")
-            f.write("**Cart URL File:** `adafruit_order_consolidated_cart_url.txt`\n\n")
-
-            # Generate individual part links
-            f.write("**Individual Part Links:**\n")
-            for comp in adafruit_parts:
-                part_num = comp["distributor_part"]
-                if part_num and part_num.isdigit():
-                    url = f"https://www.adafruit.com/product/{part_num}"
-                    f.write(
-                        f"- [{comp['mpn']}]({url}) - {comp['description']} (Qty: {comp['quantity']})\n"
-                    )
-            f.write("\n")
-
-        # SparkFun section
-        sparkfun_parts = [
-            c for c in components if "sparkfun" in c["distributor"].lower()
-        ]
-        if sparkfun_parts:
-            f.write("### SparkFun\n")
-            f.write("- **Open-source hardware designs**\n")
-            f.write("- **Qwiic-compatible modules**\n")
-            f.write("- **Comprehensive project tutorials**\n\n")
-            f.write("**Order File:** `sparkfun_order_consolidated.csv`\n")
-            f.write("**Cart URL File:** `sparkfun_order_consolidated_cart_url.txt`\n\n")
-
-            # Generate individual part links
-            f.write("**Individual Part Links:**\n")
-            for comp in sparkfun_parts:
-                part_num = comp["distributor_part"]
-                if part_num and part_num.startswith("COM-"):
-                    sku = part_num.replace("COM-", "")
-                    url = f"https://www.sparkfun.com/products/{sku}"
                     f.write(
                         f"- [{comp['mpn']}]({url}) - {comp['description']} (Qty: {comp['quantity']})\n"
                     )
@@ -402,26 +226,6 @@ def main():
     else:
         print("⚠️  No Mouser components found for upload file")
 
-    # Generate Adafruit order list
-    adafruit_file = output_dir / "adafruit_order_consolidated.csv"
-    adafruit_count = generate_adafruit_order_list(components, adafruit_file)
-    if adafruit_count > 0:
-        print(
-            f"✅ Generated Adafruit order file: {adafruit_file} ({adafruit_count} components)"
-        )
-    else:
-        print("⚠️  No Adafruit components found for order file")
-
-    # Generate SparkFun order list
-    sparkfun_file = output_dir / "sparkfun_order_consolidated.csv"
-    sparkfun_count = generate_sparkfun_order_list(components, sparkfun_file)
-    if sparkfun_count > 0:
-        print(
-            f"✅ Generated SparkFun order file: {sparkfun_file} ({sparkfun_count} components)"
-        )
-    else:
-        print("⚠️  No SparkFun components found for order file")
-
     # Generate comprehensive purchase summary
     summary_file = output_dir / "PURCHASE_GUIDE.md"
     generate_purchase_summary(components, summary_file)
@@ -430,8 +234,6 @@ def main():
     print("\n📊 Summary:")
     print(f"   Total components: {len(components)}")
     print(f"   Mouser components: {mouser_count}")
-    print(f"   Adafruit components: {adafruit_count}")
-    print(f"   SparkFun components: {sparkfun_count}")
 
     total_cost = sum(comp["extended_price"] for comp in components)
     print(f"   Total project cost: ${total_cost:.2f}")

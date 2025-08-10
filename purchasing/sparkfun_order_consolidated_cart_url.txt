@@ -1,4 +1,0 @@
-SparkFun Cart URL:
-https://www.sparkfun.com/cart?products[14456]=1
-
-Click this link to add all SparkFun components to your cart automatically.

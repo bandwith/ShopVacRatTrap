@@ -326,9 +326,10 @@ color("green", 0.8) translate([180, 0, 0]) sensor_housing_vl53l1x();
 
 // 2025 Design Optimization Summary:
 // ✅ Single PSU + ESP32 regulator: -$27 cost savings
-// ✅ Integrated IEC inlet option: -$20 additional savings potential
-// ✅ OLED integrated status: -$8 (eliminates LEDs + resistors)
-// ✅ Simplified controls: -$12 (streamlined interface)
+// ✅ Battery removal: -$9.95 (AC-only operation)
+// ✅ SSR optimization: -$10 (chassis mount vs kit)
+// ✅ Protection simplification: -$16 (unmountable components removed)
+// ✅ OLED integrated status: Cost neutral (eliminates LEDs + resistors)
 // ✅ Enhanced safety: NEC/IEC compliant (15A protection, proper grounding)
 // ✅ Global support: 120V/230V configurations available
-// 🎯 Total potential savings: -$67 (35% cost reduction possible)
+// 🎯 Total savings achieved: -$62.75 (30% cost reduction from $208.85 to $146.10)

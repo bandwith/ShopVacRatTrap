@@ -42,7 +42,7 @@ CRITICAL_COMPONENTS = [
     "LRS-15-5",  # Power supply
     "6200.4210",  # IEC inlet with fuse
     "0218012.MXP",  # Fuses
-    "ESP32-DEVKITC-32E",  # Main controller
+    "ESP32-S3-5323",  # Main controller
 ]
 
 

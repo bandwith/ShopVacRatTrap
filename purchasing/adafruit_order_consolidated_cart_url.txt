@@ -1,4 +1,0 @@
-Adafruit Cart URL:
-https://www.adafruit.com/shopping_cart?add[]=5323&qty[]=1&add[]=1578&qty[]=1&add[]=2830&qty[]=1&add[]=4210&qty[]=1&add[]=5027&qty[]=1&add[]=4816&qty[]=1&add[]=4397&qty[]=3&add[]=4399&qty[]=1&add[]=1944&qty[]=1&add[]=368&qty[]=1&add[]=4090&qty[]=1&add[]=3258&qty[]=1&add[]=3259&qty[]=1
-
-Click this link to add all Adafruit components to your cart automatically.

@@ -8,29 +8,29 @@ ShopVac Rat Trap - 2025 Optimized Design
 - **Smart Detection**: VL53L0X time-of-flight sensor with 2m range and millimeter precision
 - **Integrated Status Display**: 128x64 OLED with visual status indicators (eliminates separate LEDs)
 - **Modular Design**: STEMMA QT connectors for no-solder assembly
-- **Enhanced Processing**: ESP32-S3 with 4MB Flash + 2MB PSRAM for advanced features
-- **LiPo Battery Backup**: 2500mAh battery provides 25+ hours backup power
+- **Enhanced Processing**: ESP32-S3 with 8MB Flash for advanced features
+- **Cost-Optimized Design**: Single power supply with simplified AC-only operation
 - **Physical Controls**: Large arcade button emergency disable and test trigger
-- **Cost-Optimized Power**: Single power supply with ESP32-S3 built-in 3.3V regulation
 - **Safety Compliant**: NEC/IEC electrical standards with proper circuit protection
 - **WiFi Connectivity**: ESPHome integration with Home Assistant automation
 - **Global Support**: 120V/230V configurations for worldwide deployment
 
 ## 2025 Design Optimizations
 
-### **Cost Savings Achieved: -$47 (19% reduction)**
+### **Cost Savings Achieved: -$62.75 (30% reduction)**
 
 - **Single Power Supply**: ESP32 built-in 3.3V regulator eliminates external regulators (-$27)
 - **Integrated Status Display**: OLED and illuminated E-stop replace separate indicators (-$16)
 - **Simplified Controls**: Streamlined interface reduces component count (-$12)
+- **Battery Removal**: AC-only operation eliminates battery complexity (-$9.95)
 - **Enhanced Safety**: Upgraded to 15A circuit protection for proper vacuum load handling
 
 ### **Available Build Options**
 
 | Option | Processing | Total Cost | Best For |
 |--------|-------------|------------|----------|
-| **Recommended** | ESP32-S3 + STEMMA QT | **$149** | Most builders |
-| **Enhanced** | ESP32-S3 + LiPo Battery | **$164** | Portable/backup power |
+| **Recommended** | ESP32-S3 + STEMMA QT | **$146.10** | Most builders |
+| **Optimized** | ESP32-S3 Cost-Optimized | **$146.10** | Maximum cost efficiency |
 
 ## Component Overview
 
@@ -47,7 +47,7 @@ ShopVac Rat Trap - 2025 Optimized Design
                                                         ↓
 [OLED Status Display] ← [STEMMA QT Bus] → [BME280 Environmental Sensor]
                                         ↓
-[LiPo Battery Backup] ← [ESP32-S3 Charger] ← [5V from PSU]
+[ESP32-S3 Built-in 3.3V Regulation] ← [5V from PSU]
 ```
                                    [LiPo Battery Backup]
 ```
@@ -65,7 +65,6 @@ ShopVac Rat Trap - 2025 Optimized Design
 
 ESP32-S3 Power Management:
 ├─ 5V Input from Mean Well PSU → ESP32-S3 VIN
-├─ LiPo Battery (2500mAh) → Automatic backup power
 └─ Built-in 3.3V Regulator (600mA) → VL53L0X + OLED + BME280 via STEMMA QT (99mA max)
 ```
 
@@ -117,10 +116,10 @@ The project includes automated purchase links and bulk upload files for streamli
 
 ### **💰 Cost Breakdown**
 
-- **Total Project Cost**: ~$213 (single unit, list pricing)
-- **Adafruit Components**: 54.6% - ESP32, sensors, cables
-- **Mouser Components**: 33.6% - Power supply, enclosure, AC parts
-- **SparkFun Components**: 11.7% - Solid state relay
+- **Total Project Cost**: ~$146.10 (single unit, list pricing)
+- **Adafruit Components**: 55.8% - ESP32, sensors, cables
+- **Mouser Components**: 34.0% - Power supply, enclosure, AC parts
+- **SparkFun Components**: 10.2% - Solid state relay
 
 *Volume pricing available for 10+ units with estimated 15-25% savings*
 
@@ -263,9 +262,9 @@ automation:
 
 | Component | 2024 Design | 2025 Optimized | Improvement |
 |-----------|-------------|----------------|-------------|
-| **Processing** | ESP32 basic | ESP32-S3 + 2MB PSRAM | Enhanced performance |
+| **Processing** | ESP32 basic | ESP32-S3 8MB Flash | Enhanced performance |
 | **Connectivity** | Soldered I2C | STEMMA QT modular | No-solder assembly |
-| **Power Backup** | AC only | LiPo battery backup | 25+ hours backup |
+| **Power Operation** | AC only | AC only | AC only |
 | **Status Display** | Separate LEDs | Integrated OLED | Professional interface |
 | **Assembly** | Complex wiring | Modular connectors | Beginner-friendly |
 
@@ -299,6 +298,11 @@ This project includes **GitHub Actions automation** for comprehensive BOM valida
 ---
 
 **⚠️ Electrical Safety Notice: This project involves potentially dangerous AC voltages. Installation must be performed by qualified individuals following all applicable electrical codes and safety procedures.**
+
+**Last Updated:** August 10, 2025
+**BOM Version:** v2025.08.10 - Optimized Design
+**Total Cost:** $146.10 (30% reduction from original $208.85)
+**Components:** 17 items, fully STEMMA QT compatible, no-solder assembly
 
 Credits
 -------

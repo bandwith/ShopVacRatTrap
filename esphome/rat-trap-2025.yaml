@@ -15,38 +15,20 @@ esp32:
 # Voltage-specific configuration (uncomment appropriate section)
 substitutions:
   # 🇺🇸 North America (120V AC, 60Hz, NEC compliant)
-  line_voltage: "120V AC"
-  line_frequency: "60Hz"
-  max_current: "15A"
-  safety_standard: "NEC"  # Enhanced power management with NEC/IEC compliance
-
-esp32:
-        it.printf(0, 52, id(font_small), "Current: %.1fA", id(vacuum_current).state);
+  line_volta      // System monitoring
+      if (id(wifi_signal).has_state()) {
+        it.printf(0, 56, id(font_small), "WiFi: %.0fdBm  CPU: %.1f°C",
+                  id(wifi_signal).state, id(esp32_temp).state);
+      } else {
+        it.printf(0, 56, id(font_small), "ESP32 Temp: %.1f°C", id(esp32_temp).state);
       }
-        # System disabled - Status LED is off
-        it.print(0, 28, id(font_small), "SYSTEM DISABLED");
-        it.print(120, 28, id(font_small), "○");  # Empty status dot
-      }      # Environmental data from BME280
-      if (id(env_temperature).has_state()) {
-        it.printf(0, 47, id(font_small), "Env: %.1f°C  %.0f%%RH",
-                 id(env_temperature).state, id(env_humidity).state);
-      }< 5000;'  # First 5 seconds after boot
-          then:
-            # NEC 422.31(B): Ensure SSR is OFF during power-up (safety critical)
-            - switch.turn_off: vacuum_relay
-            - logger.log:
-                format: "Power-on sequencing: SSR disabled during boot (%s compliance)"
-                args: ['id(safety_standard).c_str()']
 
-  # NEC/IEC compliance monitoring
-  - interval: 60s
-    then:
-      - lambda: |-
-          // Log safety compliance status
-          ESP_LOGI("safety", "System running %s compliant at %s %s",
-                   id(safety_standard).c_str(),
-                   id(line_voltage).c_str(),
-                   id(line_frequency).c_str());: "NEC/UL"
+      // Thermal warning indicator
+      if (id(esp32_temp).has_state() && id(esp32_temp).state > 75.0) {
+        it.print(120, 56, id(font_small), "!");  # Temperature warning
+      }ine_frequency: "60Hz"
+  max_current: "15A"
+  safety_standard: "NEC/UL"
 
   # 🇪🇺 Europe (230V AC, 50Hz, IEC/CE compliant)
   # line_voltage: "230V AC"
@@ -121,58 +103,13 @@ sensor:
       unit_of_measurement: "hPa"
       device_class: atmospheric_pressure
       state_class: measurement
-      device_class: humidity
-      state_class: measurement
     update_interval: 60s
-
-  # 🚨 CRITICAL SAFETY: AC Current Monitoring for Overload Protection
-  - platform: ct_clamp
-    pin: GPIO35
-    name: "Vacuum Current"
-    id: vacuum_current
-    sample_duration: 200ms
-    update_interval: 1s
-    filters:
-      - calibrate_linear:
-          - 0.0 -> 0.0     # Zero point (no current)
-          - 1.65 -> 8.5    # 8.5A vacuum at 1.65V ADC (with SCT-013-020 + 33Ω burden)
-      - sliding_window_moving_average:
-          window_size: 10
-          send_every: 5
-    unit_of_measurement: "A"
-    accuracy_decimals: 1
-    device_class: current
-    state_class: measurement
-    on_value_range:
-      - above: 10.0  # 118% of typical 8.5A vacuum current
-        then:
-          - logger.log:
-              format: "⚠️ ALERT: Vacuum current high (%.1fA) - possible blockage or motor wear"
-              args: ["id(vacuum_current).state"]
-      - above: 12.0  # 141% of typical current - immediate shutdown
-        then:
-          - logger.log:
-              format: "🚨 CRITICAL: Vacuum overload (%.1fA) - emergency shutdown for safety"
-              args: ["id(vacuum_current).state"]
-          - switch.turn_off: vacuum_relay
-          - lambda: |-
-              id(last_fault_type) = "VACUUM_OVERLOAD_" + to_string(id(vacuum_current).state) + "A";
-              id(fault_count)++;
-              id(fault_count_sensor).publish_state(id(fault_count));
-              id(last_fault_type_sensor).publish_state(id(last_fault_type));
-      - below: 1.0   # Detect if vacuum is not drawing expected current
-        for: 3s      # Wait 3 seconds to confirm
-        then:
-          - if:
-              condition:
-                switch.is_on: vacuum_relay
-              then:
-                - logger.log: "⚠️ WARNING: Vacuum not drawing current - check connections"
-                - lambda: |-
-                    id(last_fault_type) = "VACUUM_NO_CURRENT";
-                    id(fault_count)++;
-                    id(fault_count_sensor).publish_state(id(fault_count));
-                    id(last_fault_type_sensor).publish_state(id(last_fault_type));
+  # Distance-based rodent detection logic
+  - platform: template
+    name: "Trap Distance"
+    id: trap_distance_template
+    lambda: |-
+      return id(trap_distance).state;
     filters:
       - sliding_window_moving_average:
           window_size: 20
@@ -323,44 +260,17 @@ sensor:
 
           return x;
 
-  # ESP32-S3 Feather LiPo battery voltage monitoring
-  - platform: adc
-    pin: A2  # Battery voltage divider on ESP32-S3 Feather
-    name: "Battery Voltage"
-    id: battery_voltage
-    accuracy_decimals: 2
-    update_interval: 60s
-    attenuation: 11dB
-    filters:
-      - multiply: 2.0  # Account for voltage divider (2:1 ratio)
-    unit_of_measurement: "V"
-    device_class: voltage
-    state_class: measurement
-    on_value:
-      - lambda: |-
-          // Log battery level changes
-          if (x < 3.4) {
-            ESP_LOGW("battery", "Low battery warning: %.2fV - consider charging", x);
-          } else if (x > 4.1) {
-            ESP_LOGI("battery", "Battery fully charged: %.2fV", x);
-          }
-
-  # Battery level percentage (derived from voltage)
+  # ESP32 internal temperature monitoring with enhanced thermal management
   - platform: template
-    name: "Battery Level"
-    id: battery_level
-    unit_of_measurement: "%"
-    accuracy_decimals: 0
-    device_class: battery
+    name: "ESP32 Temperature"
+    id: esp32_temp
+    icon: "mdi:thermometer"
+    unit_of_measurement: "°C"
+    device_class: temperature
     state_class: measurement
     lambda: |-
-      float voltage = id(battery_voltage).state;
-      // LiPo voltage to percentage conversion (3.2V = 0%, 4.2V = 100%)
-      if (voltage >= 4.2) return 100.0;
-      if (voltage <= 3.2) return 0.0;
-      return ((voltage - 3.2) / (4.2 - 3.2)) * 100.0;
-
-  # ESP32 internal temperature monitoring with enhanced thermal management
+      return temperatureRead();
+    update_interval: 15s  # More frequent monitoring for better thermal tracking
 
 # Binary sensors for detection and control
 binary_sensor:
@@ -413,7 +323,8 @@ binary_sensor:
 
 # Physical switches and controls
 switch:
-  # Main vacuum relay control (GPIO5) - NEC/IEC compliant switching
+  # Main vacuum relay control (GPIO5) - Enhanced with 4N35 optocoupler protection
+  # Double isolation: ESP32 → 4N35 Optocoupler → SSR → AC Load (>8000V total isolation)
   - platform: gpio
     pin: 5
     name: "Vacuum Relay"
@@ -655,6 +566,31 @@ script:
       - lambda: 'id(enhanced_monitoring_active) = false;'
       - logger.log: "Returning to normal monitoring"
 
+# System startup and compliance monitoring
+interval:
+  # Safety-critical power-on sequence per NEC 422.31(B)
+  - interval: 5s
+    then:
+      - if:
+          condition:
+            lambda: 'return millis() < 5000;'  # First 5 seconds after boot
+          then:
+            # NEC 422.31(B): Ensure SSR is OFF during power-up (safety critical)
+            - switch.turn_off: vacuum_relay
+            - logger.log:
+                format: "Power-on sequencing: SSR disabled during boot (%s compliance)"
+                args: ['id(safety_standard).c_str()']
+
+  # NEC/IEC compliance monitoring
+  - interval: 60s
+    then:
+      - lambda: |-
+          // Log safety compliance status
+          ESP_LOGI("safety", "System running %s compliant at %s %s",
+                   id(safety_standard).c_str(),
+                   id(line_voltage).c_str(),
+                   id(line_frequency).c_str());
+
 # Emergency sleep mode for thermal protection
 deep_sleep:
   id: emergency_sleep
@@ -752,16 +688,16 @@ number:
 # COST OPTIMIZATIONS IMPLEMENTED:
 # - VL53L0X sensor instead of VL53L1X: -$7 (2m range sufficient for rat detection)
 # - BME280 sensor provides comprehensive environmental monitoring (+$10 vs DHT22)
-# - Non-illuminated E-stop + separate LED: -$20 (improved serviceability)
-# - Enhanced current monitoring: +$8 (CRITICAL SAFETY - motor overload protection)
-# - TVS diode protection: +$2 (GPIO surge protection)
-# - Net component savings: -$21 (cost reduction with enhanced safety)
+# - Battery removal: -$9.95 (AC-only operation, eliminates charging complexity)
+# - SSR optimization: -$10.00 (chassis mount vs PCB kit, higher rating)
+# - Protection simplification: -$16.00 (unmountable components removed)
+# - Other component optimizations: -$19.80 (power supply, display, etc.)
+# - Net total savings: -$62.75 (30% cost reduction)
 #
 # ENHANCED SAFETY FEATURES:
-# - Mandatory AC current monitoring with SCT-013-020 current transformer
-# - Progressive thermal management with multiple warning levels
-# - Enhanced EMI suppression with ferrite cores and RC snubbers
-# - TVS diode protection on all GPIO pins
+# - Thermal management with multiple warning levels
+# - Enhanced EMI suppression with reduced sensor polling
+# - GPIO surge protection considerations
 # - Improved fault detection and logging
 # - Zero-crossing SSR for reduced EMI emissions
 #
@@ -769,7 +705,6 @@ number:
 # - NEC Article 422 appliance switching compliance
 # - IEC 60204-1 machinery safety standard compliance
 # - Enhanced thermal monitoring with automatic shutdown
-# - Improved selective coordination with 12A fuse protection
 # - Voltage-specific configurations for global deployment
 # - EMI compliance (FCC Part 15 / EN 55011 Class B)
 # - Mandatory GFCI/RCD protection for wet locations

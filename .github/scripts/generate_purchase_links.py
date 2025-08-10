@@ -47,23 +47,52 @@ def generate_mouser_cart_url(components):
 
 
 def generate_adafruit_cart_url(components):
-    """Generate Adafruit cart URL for components"""
-    cart_items = []
+    """Generate Adafruit cart URL information for components"""
+    adafruit_components = []
 
     for comp in components:
         if comp.get("found"):
             mpn = comp.get("mpn", "")
             qty = comp.get("pricing", {}).get("quantity", 1)
+            description = comp.get("description", "")
 
             # Check if this is an Adafruit component
             if (
                 mpn.isdigit() and len(mpn) <= 5
             ):  # Adafruit part numbers are typically numeric
-                cart_items.append(f"add[]={mpn}&qty[]={qty}")
+                adafruit_components.append(
+                    {"id": mpn, "qty": qty, "description": description}
+                )
 
-    if cart_items:
-        cart_data = "&".join(cart_items)
-        return f"https://www.adafruit.com/shopping_cart?{cart_data}"
+    if adafruit_components:
+        # Generate helpful text instead of non-working URL
+        lines = [
+            "⚠️ ADAFRUIT BULK CART NOTICE ⚠️",
+            "",
+            "Adafruit doesn't support URL-based bulk cart additions. Please use one of these methods instead:",
+            "",
+            "METHOD 1 - Manual Cart Addition (Recommended):",
+            'Visit each product page and click "Add to Cart":',
+            "",
+        ]
+
+        for comp in adafruit_components:
+            qty_text = f" x{comp['qty']}" if comp["qty"] > 1 else ""
+            lines.append(
+                f"• {comp['description']} ({comp['id']}){qty_text}: https://www.adafruit.com/product/{comp['id']}"
+            )
+
+        lines.extend(
+            [
+                "",
+                "METHOD 2 - Use the CSV File:",
+                "Import the adafruit_order_consolidated.csv file into a spreadsheet and use it as a shopping checklist.",
+                "",
+                f"Total Adafruit Components: {len(adafruit_components)} items",
+            ]
+        )
+
+        return "\n".join(lines)
 
     return None
 

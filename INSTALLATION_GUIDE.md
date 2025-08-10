@@ -76,12 +76,12 @@ cd ~/rat_trap_build
 curl -O https://raw.githubusercontent.com/bandwith/ShopVacRatTrap/main/ELECTRICAL_DESIGN.md
 ```
 
-**Optimized Components (Cost Savings: -$47):**
+**Optimized Components (Cost Savings: -$62.75):**
 - [ ] ESP32-S3 Feather (test with blink program)
 - [ ] VL53L0X sensor (verify I2C address 0x29)
 - [ ] OLED display (verify I2C address 0x3C) - **Integrated status display**
-- [ ] **Single LRS-35-5 PSU** (5V/7A, eliminates external 3.3V regulator, -$27)
-- [ ] SSR relay 25A (test with low voltage signal)
+- [ ] **Single LRS-15-5 PSU** (5V/3A, eliminates external 3.3V regulator, -$27)
+- [ ] SSR relay 40A (SparkFun COM-13015, chassis mount, -$10 vs kit)
 - [ ] **15A Circuit Breaker** (upgraded from 5A for safety compliance)
 - [ ] **15A Fuses** (upgraded from 5A for proper protection)
 - [ ] Resistors: 2x 10kΩ only (**LEDs eliminated**, -$8 savings)
@@ -268,15 +268,28 @@ font:
    - Better status display with detailed information
    ```
 
-4. **SSR Control Circuit**
+4. **SSR Control Circuit (Enhanced with Optocoupler Protection)**
    ```
-   Control Input:
-   - + Control → GPIO5 (ESP32)
-   - - Control → GND
+   ESP32 GPIO5 → 4N35 Optocoupler Protection Circuit:
 
-   AC Switching:
+   Input Side (ESP32):
+   GPIO5 → 330Ω Resistor → 4N35 LED Anode
+   4N35 LED Cathode → ESP32 GND
+
+   Output Side (SSR):
+   4N35 Collector → SSR + Control
+   4N35 Emitter → SSR - Control (GND)
+
+   AC Switching (unchanged):
    - Input Common → Line from circuit breaker
    - Output NO → Line to NEMA outlet
+
+   Benefits:
+   - Double isolation: ESP32 ↔ Optocoupler ↔ SSR ↔ AC Load
+   - Total isolation: >8000V (4N35: 5000V + SSR: 4000V)
+   - Protects ESP32 from voltage spikes and noise
+   - Standard industrial practice for safety-critical switching
+   - Minimal cost addition: ~$1.50
    ```
 
 #### **2.3 Safety Verification Checklist**
