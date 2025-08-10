@@ -20,12 +20,14 @@ on:
 jobs:
   generate-stl:
     runs-on: ubuntu-latest
+    timeout-minutes: 30  # Prevent workflow from hanging on complex geometries
 
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
       with:
         fetch-depth: 0  # Fetch full history for change detection
+        token: ${{ secrets.GITHUB_TOKEN }}  # Use GitHub token for pushing
 
     - name: Install OpenSCAD
       run: |

@@ -18,7 +18,7 @@ echo -e "${BLUE}🏗️ Starting STL generation...${NC}"
 
 cd "3D Models"
 
-# Function to generate STL with error handling
+# Function to generate STL with error handling and timeout
 generate_stl() {
     local scad_file="$1"
     local base_name=$(basename "$scad_file" .scad)
@@ -26,8 +26,15 @@ generate_stl() {
 
     echo -e "${YELLOW}🔧 Generating $stl_file from $scad_file...${NC}"
 
-    # Generate STL with verbose output and error checking
-    if openscad -o "$stl_file" "$scad_file" --render --quiet; then
+    # Set timeout based on file complexity
+    local timeout_seconds=300  # 5 minutes default
+    if [[ "$scad_file" == *"Inlet_Rodent_Detection_Assembly"* ]]; then
+        timeout_seconds=900  # 15 minutes for complex inlet assembly
+        echo -e "${BLUE}⏱️  Using extended timeout for complex geometry...${NC}"
+    fi
+
+    # Generate STL with timeout, verbose output and error checking
+    if timeout "$timeout_seconds" openscad -o "$stl_file" "$scad_file" --render --quiet; then
         if [ -f "$stl_file" ] && [ -s "$stl_file" ]; then
             echo -e "${GREEN}✅ Successfully generated $stl_file${NC}"
 
@@ -46,7 +53,13 @@ generate_stl() {
             return 1
         fi
     else
-        echo -e "${RED}❌ Error: OpenSCAD failed to generate $stl_file${NC}"
+        local exit_code=$?
+        if [ $exit_code -eq 124 ]; then
+            echo -e "${RED}❌ Error: OpenSCAD timed out after $timeout_seconds seconds for $stl_file${NC}"
+            echo -e "${YELLOW}💡 Consider optimizing the SCAD file geometry or increasing timeout${NC}"
+        else
+            echo -e "${RED}❌ Error: OpenSCAD failed to generate $stl_file (exit code: $exit_code)${NC}"
+        fi
         return 1
     fi
 }
@@ -54,25 +67,41 @@ generate_stl() {
 # Process changed files or all files if force regenerate
 if [ "$FORCE_REGENERATE" = "true" ]; then
     echo -e "${BLUE}🔄 Force regenerating all STL files...${NC}"
+    success_count=0
+    total_count=0
     for scad_file in *.scad; do
         if [ -f "$scad_file" ]; then
-            generate_stl "$scad_file"
+            total_count=$((total_count + 1))
+            if generate_stl "$scad_file"; then
+                success_count=$((success_count + 1))
+            else
+                echo -e "${YELLOW}⚠️  Continuing with next file...${NC}"
+            fi
         fi
     done
+    echo -e "${BLUE}📊 Generated $success_count out of $total_count STL files${NC}"
 else
     echo -e "${BLUE}📝 Processing changed SCAD files...${NC}"
     echo "Changed files: $CHANGED_FILES"
 
     if [ -n "$CHANGED_FILES" ]; then
+        success_count=0
+        total_count=0
         for file_path in $CHANGED_FILES; do
             if [[ "$file_path" == *".scad" ]] && [[ "$file_path" == "3D Models"* ]]; then
                 # Extract just the filename from the full path
                 scad_filename=$(basename "$file_path")
                 if [ -f "$scad_filename" ]; then
-                    generate_stl "$scad_filename"
+                    total_count=$((total_count + 1))
+                    if generate_stl "$scad_filename"; then
+                        success_count=$((success_count + 1))
+                    else
+                        echo -e "${YELLOW}⚠️  Continuing with next file...${NC}"
+                    fi
                 fi
             fi
         done
+        echo -e "${BLUE}📊 Generated $success_count out of $total_count STL files${NC}"
     else
         echo -e "${YELLOW}⚠️  No SCAD files changed${NC}"
     fi
