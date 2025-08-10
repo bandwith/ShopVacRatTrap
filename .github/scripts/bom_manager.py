@@ -47,7 +47,7 @@ REQUESTS_PER_SECOND = 8  # Conservative limit (10 max)
 CRITICAL_COMPONENTS = [
     "D2425-10",  # SSR (safety critical)
     "SCT-013-020",  # Current transformer
-    "LRS-15-5",  # Power supply
+    "LRS-35-5",  # Power supply
     "6200.4210",  # IEC inlet with fuse
     "0218012.MXP",  # Fuses
     "ESP32-S3-5323",  # Main controller

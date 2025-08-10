@@ -35,7 +35,7 @@
 **Mouser 709-LRS35-5**: $18.95 - https://www.mouser.com/ProductDetail/709-LRS35-5
 **Digi-Key 1866-5012-ND**: $18.70
 **Newark 85AC4189**: $19.25
-**Alternative**: LRS-15-5 for budget builds (ensure adequate capacity)
+**Alternative**: LRS-35-5 for higher capacity builds (7A vs 3A capacity)
 
 ### 4. Solid State Relay
 **Primary**: Sensata Crydom D2425-10 (25A, Zero-crossing)
@@ -127,7 +127,7 @@
 ### Budget Version Substitutions
 1. **VL53L0X**: Use generic modules ($3 vs $8) - verify I2C compatibility
 2. **BME280**: Use DHT22 for budget builds ($5 vs $15) - no pressure sensing
-3. **Power supply**: LRS-15-5 for smaller builds ($12 vs $19) - ensure adequate capacity
+3. **Power supply**: LRS-35-5 for standard builds ($19) - provides ample capacity
 4. **Heat sink/thermal pad**: Omit for indoor applications - monitor ESP32 temperature
 
 ### Bulk Pricing
@@ -147,7 +147,7 @@
 |-------------------|---------------|---------------|--------------|
 | VL53L0X Module | Generic module | Sharp GP2Y0A21YK0F | -$4 to -$5 |
 | BME280 STEMMA QT | DHT22 Legacy | SHT30 Alternative | -$10 to +$5 |
-| LRS-15-5 | Generic 5V PSU | Recom RAC03-05SK | -$4 to +$3 |
+| LRS-35-5 | Generic 5V PSU | Recom RAC03-05SK | +$1 to +$7 |
 | D2425-10 | Omron G3NA | Carlo Gavazzi RM1A | -$3 to +$2 |
 | SCT-013-020 | CR Magnetics | Magnelab | +$24 to +$27 |
 

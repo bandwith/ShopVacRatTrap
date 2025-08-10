@@ -6,7 +6,7 @@ ShopVac Rat Trap - 2025 Optimized Design
 ## Key Features
 
 - **Smart Detection**: VL53L0X time-of-flight sensor with 2m range and millimeter precision
-- **Integrated Status Display**: 128x64 OLED with visual status indicators (eliminates separate LEDs)
+- **Integrated Status Display**: 128x64 OLED with visual status indicators
 - **Modular Design**: STEMMA QT connectors for no-solder assembly
 - **Enhanced Processing**: ESP32-S3 with 8MB Flash for advanced features
 - **Cost-Optimized Design**: Single power supply with simplified AC-only operation
@@ -19,18 +19,10 @@ ShopVac Rat Trap - 2025 Optimized Design
 
 ### **Cost Savings Achieved: -$62.75 (30% reduction)**
 
-- **Single Power Supply**: ESP32 built-in 3.3V regulator eliminates external regulators (-$27)
-- **Integrated Status Display**: OLED and illuminated E-stop replace separate indicators (-$16)
-- **Simplified Controls**: Streamlined interface reduces component count (-$12)
-- **Battery Removal**: AC-only operation eliminates battery complexity (-$9.95)
+- **Single Power Supply**: ESP32 built-in 3.3V regulator eliminates external regulators
+- **Integrated Status Display**: OLED and illuminated E-stop replace separate indicators
+- **Simplified Controls**: Streamlined interface reduces component count
 - **Enhanced Safety**: Upgraded to 15A circuit protection for proper vacuum load handling
-
-### **Available Build Options**
-
-| Option | Processing | Total Cost | Best For |
-|--------|-------------|------------|----------|
-| **Recommended** | ESP32-S3 + STEMMA QT | **$146.10** | Most builders |
-| **Optimized** | ESP32-S3 Cost-Optimized | **$146.10** | Maximum cost efficiency |
 
 ## Component Overview
 
@@ -48,8 +40,6 @@ ShopVac Rat Trap - 2025 Optimized Design
 [OLED Status Display] ← [STEMMA QT Bus] → [BME280 Environmental Sensor]
                                         ↓
 [ESP32-S3 Built-in 3.3V Regulation] ← [5V from PSU]
-```
-                                   [LiPo Battery Backup]
 ```
 
 ## Electrical Architecture
@@ -88,7 +78,7 @@ ESP32-S3 Power Management:
 ### **🔨 Build Process**
 
 1. **Review Safety Requirements** - Read [ELECTRICAL_DESIGN.md](ELECTRICAL_DESIGN.md) safety section
-2. **Order Components** - Use detailed BOM with multiple vendor options
+2. **Order Components** - Use detailed BOM
 3. **3D Print Enclosures** - All files in [3D Models](3D%20Models/) directory
 4. **Assemble Electronics** - Follow NEC/IEC compliant wiring diagrams
 5. **Flash Firmware** - Use [rat-trap-2025.yaml](esphome/rat-trap-2025.yaml) configuration
@@ -111,15 +101,10 @@ The project includes automated purchase links and bulk upload files for streamli
 | Supplier | Components | Upload File | Direct Link |
 |----------|------------|-------------|-------------|
 | **Mouser** | Power supplies, enclosure, AC components | `purchasing/mouser_upload_consolidated.csv` | [BOM Upload Tool](https://www.mouser.com/tools/bom-tool) |
-| **Adafruit** | ESP32, sensors, STEMMA QT modules | See cart URL file | [Shopping Cart](https://www.adafruit.com/shopping_cart) |
-| **SparkFun** | Solid State Relay, Qwiic modules | See cart URL file | [Cart](https://www.sparkfun.com/cart) |
 
 ### **💰 Cost Breakdown**
 
 - **Total Project Cost**: ~$146.10 (single unit, list pricing)
-- **Adafruit Components**: 55.8% - ESP32, sensors, cables
-- **Mouser Components**: 34.0% - Power supply, enclosure, AC parts
-- **SparkFun Components**: 10.2% - Solid state relay
 
 *Volume pricing available for 10+ units with estimated 15-25% savings*
 
@@ -251,7 +236,6 @@ automation:
 
 ### **2025 Optimizations Achieved**
 
-- ✅ **Cost Reduction**: 19% savings through component integration
 - ✅ **Safety Enhancement**: Full NEC/IEC electrical code compliance
 - ✅ **Global Support**: 120V/230V configurations for worldwide deployment
 - ✅ **Simplified Assembly**: Reduced component count and wiring complexity
@@ -270,7 +254,7 @@ automation:
 
 ## 🤖 Automated BOM Management
 
-This project includes **GitHub Actions automation** for comprehensive BOM validation and pricing management using the **Nexar API**.
+This project includes **GitHub Actions automation** for comprehensive BOM validation and pricing management using the **Mouser Electronics API**.
 
 ### **Automated Features**
 
@@ -279,12 +263,6 @@ This project includes **GitHub Actions automation** for comprehensive BOM valida
 - 💰 **Cost Change Alerts**: Automatic issues created for significant price changes
 - 📦 **Supply Chain Risk**: Early warnings for out-of-stock safety-critical components
 - 🔄 **Backup System**: Previous pricing automatically preserved before updates
-
-### **Setup**
-
-1. **Get Nexar API credentials** (free): [nexar.com/api](https://nexar.com/api)
-2. **Add GitHub secrets**: `NEXAR_CLIENT_ID` and `NEXAR_CLIENT_SECRET`
-3. **Workflows activate automatically** - see [GITHUB_ACTIONS_SETUP.md](GITHUB_ACTIONS_SETUP.md)
 
 ### **Benefits**
 
@@ -301,12 +279,14 @@ This project includes **GitHub Actions automation** for comprehensive BOM valida
 
 **Last Updated:** August 10, 2025
 **BOM Version:** v2025.08.10 - Optimized Design
-**Total Cost:** $146.10 (30% reduction from original $208.85)
+**Total Cost:** $146.10
 **Components:** 17 items, fully STEMMA QT compatible, no-solder assembly
 
 Credits
 -------
 
 Original Inspiration: <https://shoprodentstoppers.com/products/rat-vac-motion-sensor-rodent-catching-systems>
+
+Forked from: <https://github.com/shellster/ShopVacRatTrap>
 
 Shop Vacuum Adapter OpenSCAD starting point: <https://www.thingiverse.com/thing:1246651>

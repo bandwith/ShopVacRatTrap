@@ -80,7 +80,7 @@ curl -O https://raw.githubusercontent.com/bandwith/ShopVacRatTrap/main/ELECTRICA
 - [ ] ESP32-S3 Feather (test with blink program)
 - [ ] VL53L0X sensor (verify I2C address 0x29)
 - [ ] OLED display (verify I2C address 0x3C) - **Integrated status display**
-- [ ] **Single LRS-15-5 PSU** (5V/3A, eliminates external 3.3V regulator, -$27)
+- [ ] **Single LRS-35-5 PSU** (5V/7A, eliminates external 3.3V regulator, provides ample capacity)
 - [ ] SSR relay 40A (SparkFun COM-13015, chassis mount, -$10 vs kit)
 - [ ] **15A Circuit Breaker** (upgraded from 5A for safety compliance)
 - [ ] **15A Fuses** (upgraded from 5A for proper protection)

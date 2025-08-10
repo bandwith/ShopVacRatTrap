@@ -62,7 +62,7 @@ jobs:
         python .github/scripts/bom_manager.py \
           --bom-file BOM_CONSOLIDATED.csv \
           --output-dir . \
-          --priority-components ESP32-S3-Feather COM-13015 LRS-15-5 \
+          --priority-components ESP32-S3-Feather COM-13015 LRS-35-5 \
           --validate \
           --check-availability \
           --generate-purchase-files \
