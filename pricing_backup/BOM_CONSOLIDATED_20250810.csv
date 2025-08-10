@@ -1,0 +1,22 @@
+Manufacturer,Manufacturer Part Number,Description,Quantity,Reference Designator,Distributor,Distributor Part Number,Unit Price,Extended Price
+Adafruit,5323,ESP32-S3 Feather with 8MB Flash No PSRAM,1,U1,Adafruit,5323,13.00,13.00
+Adafruit,2830,Feather Stacking Headers - 12-pin and 16-pin female headers,1,CONN1,Adafruit,2830,1.25,1.25
+Adafruit,3317,VL53L0X Time of Flight Distance Sensor - STEMMA QT,1,U2,Adafruit,3317,14.95,14.95
+Adafruit,326,Monochrome 0.96" 128x64 OLED Display - STEMMA QT,1,U3,Adafruit,326,14.95,14.95
+Adafruit,4816,BME280 Temperature Humidity Pressure Sensor - STEMMA QT,1,U4,Adafruit,4816,14.95,14.95
+Adafruit,5625,STEMMA QT / Qwiic 5-Port Hub,1,HUB1,Adafruit,5625,7.50,7.50
+SparkFun,COM-13015,SparkFun Solid State Relay - 40A Chassis Mount,1,K1,SparkFun,COM-13015,14.95,14.95
+Adafruit,4401,STEMMA QT / Qwiic JST SH 4-pin Cable - 500mm Long,1,CABLE1,Adafruit,4401,1.95,1.95
+Adafruit,4399,STEMMA QT / Qwiic JST SH 4-pin Cable - 50mm Long,1,CABLE2,Adafruit,4399,0.75,0.75
+Adafruit,4397,STEMMA QT / Qwiic JST SH 4-pin Cable - 100mm Long,2,CABLE3,Adafruit,4397,0.95,1.90
+Adafruit,368,Large Arcade Button 60mm - Red,1,SW1,Adafruit,368,4.95,4.95
+Adafruit,4090,Terminal Block Kit - 2.54mm pitch,1,CONN3,Adafruit,4090,9.95,9.95
+Mean Well,LRS-35-5,Switching Power Supply 5V 7A Chassis Mount,1,PS1,Mouser,709-LRS35-5,18.95,18.95
+Schurter,4300.0030,IEC C14 Inlet with Switch,1,J1,Mouser,693-4300.0030,8.25,8.25
+Leviton,5320-W,NEMA 5-15R Outlet White,1,J2,Mouser,546-5320-W,3.95,3.95
+Adafruit,3258,Silicone Cover Stranded-Core Wire - 2m 26AWG Red,1,W2,Adafruit,3258,2.95,2.95
+Adafruit,3259,Silicone Cover Stranded-Core Wire - 2m 26AWG Black,1,W3,Adafruit,3259,2.95,2.95
+Adafruit,5945,OV5640 5MP Camera with smaller lens - STEMMA QT,1,CAM1,Adafruit,5945,29.95,29.95
+Adafruit,5639,High-Power IR LED - STEMMA JST PH,1,LED1,Adafruit,5639,3.95,3.95
+Adafruit,1833,Micro SD Card 8GB Class 10,1,SD1,Adafruit,1833,9.95,9.95
+Adafruit,3893,STEMMA JST PH 4-pin Cable - 200mm Long,1,CABLE4,Adafruit,3893,1.25,1.25
