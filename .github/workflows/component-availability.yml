@@ -15,6 +15,7 @@ on:
 env:
   NEXAR_CLIENT_ID: ${{ secrets.NEXAR_CLIENT_ID }}
   NEXAR_CLIENT_SECRET: ${{ secrets.NEXAR_CLIENT_SECRET }}
+  MOUSER_API_KEY: ${{ secrets.MOUSER_API_KEY }}
 
 jobs:
   monitor-availability:
@@ -38,11 +39,18 @@ jobs:
         python -m pip install --upgrade pip
         pip install requests pandas python-dotenv
 
-    - name: Check component availability
+    - name: Check component availability with hybrid API
       id: availability_check
       run: |
-        python .github/scripts/check_availability.py --critical-only=${{ github.event.inputs.check_critical_only || 'true' }}
+        echo "🔍 Starting hybrid availability monitoring..."
+
+        # Use the availability checker with fallback support
+        python .github/scripts/check_availability.py \
+          --critical-only=${{ github.event.inputs.check_critical_only || 'true' }} \
+          --use-hybrid-apis
       continue-on-error: true
+      env:
+        MOUSER_API_KEY: ${{ secrets.MOUSER_API_KEY }}
 
     - name: Create alert for unavailable components
       if: steps.availability_check.outputs.unavailable_components == 'true'

@@ -142,90 +142,166 @@
 
 ---
 
-## Nexar API Error Handling & Rate Limiting
+## Hybrid API Strategy (Nexar + Mouser)
+
+### 🔄 **Intelligent API Selection**
+The project now uses a **hybrid validation strategy** that automatically selects the best API for each situation:
+
+**Primary Strategy: Nexar + Mouser Hybrid**
+- ✅ **Nexar first** - comprehensive multi-supplier data
+- 🛒 **Mouser fallback** - when Nexar quota exceeded
+- 🔄 **Automatic switching** - no manual intervention required
+- 📊 **Best of both worlds** - wide coverage + detailed pricing
+
+**API Capabilities Comparison:**
+
+| Feature | Nexar API | Mouser API | Hybrid Benefit |
+|---------|-----------|------------|----------------|
+| **Quota Limits** | 100 parts/day (free) | 1000 requests/hour | No validation failures |
+| **Supplier Coverage** | Multi-supplier | Mouser only | Multi + single source |
+| **Pricing Detail** | Basic median pricing | Detailed price breaks | Complete pricing data |
+| **Availability** | General trends | Real-time stock | Accurate availability |
+| **Lead Times** | Limited | Detailed | Comprehensive data |
+| **Datasheets** | Sometimes | Always | Maximum coverage |
 
 ### 🚨 **Quota Management**
 The GitHub Actions workflows now include intelligent quota management:
 
 **Quota Exceeded Handling:**
-- ✅ **Graceful degradation** - continues with partial data
-- 📊 **Prioritizes safety-critical components** first
-- 🏷️ **Auto-creates GitHub issues** when quota limits hit
-- 📈 **Provides upgrade recommendations** in reports
+- ✅ **Zero data loss** - automatic Mouser fallback
+- 📊 **Prioritizes safety-critical components** first via Nexar
+- 🏷️ **No workflow failures** due to quota limits
+- 📈 **Detailed reporting** on API usage and fallback events
 
 **Rate Limiting Protection:**
 - ⏳ **Exponential backoff** with jitter (1s → 60s max delay)
 - 🔄 **Automatic retries** (up to 5 attempts per component)
-- 🐌 **Inter-request delays** (500ms between API calls)
+- 🐌 **Inter-request delays** (200ms between API calls)
 - 💤 **Extended breaks** after consecutive failures
 
 ### 🔄 **Error Recovery Strategies**
 
-| Error Type | Response | Retry Logic | Fallback |
-|------------|----------|-------------|----------|
-| **Quota Exceeded** | Stop new requests | ❌ No retry | Use cached pricing |
-| **Rate Limited** | Exponential backoff | ✅ 5 retries | Skip component |
-| **Network Timeout** | Wait & retry | ✅ 3 retries | Mark as unavailable |
-| **Auth Failure** | Log & exit | ❌ No retry | Workflow fails safely |
-| **Server Error (5xx)** | Backoff & retry | ✅ 5 retries | Skip component |
+| Error Type | Nexar Response | Mouser Fallback | Final Result |
+|------------|----------------|-----------------|--------------|
+| **Quota Exceeded** | Stop new requests | ✅ Continue validation | 100% coverage |
+| **Rate Limited** | Exponential backoff | ✅ Switch to Mouser | No delays |
+| **Network Timeout** | Retry 3x | ✅ Use Mouser | Reliable results |
+| **Auth Failure** | Log & skip | ✅ Use Mouser | Graceful degradation |
+| **Server Error (5xx)** | Backoff & retry | ✅ Use Mouser | High availability |
 
 ### 📊 **API Usage Optimization**
 
-**Current Limits (Nexar Free Tier):**
-- 🏷️ **100 parts per day** quota
-- ⏱️ **60 requests per minute** rate limit
-- 📈 **1000 requests per hour** burst limit
+**Automatic Prioritization:**
+- 🚨 **Safety-critical components** validated first (via Nexar for multi-supplier view)
+- 📦 **Standard components** use best available API
+- 🔄 **Quota-aware switching** to Mouser when needed
+- 📈 **Cost-sensitive components** get detailed Mouser pricing
 
-**Optimization Strategies:**
+**Intelligent Caching:**
 1. **Priority-based processing** - safety-critical components first
 2. **Batch validation** - group similar components
-3. **Intelligent caching** - avoid re-validating recent data
-4. **Selective updates** - only check changed components
+3. **Smart fallback** - seamless API switching
+4. **Detailed reporting** - track API usage and costs
+
+### 🛠️ **Setup Instructions**
+
+**Required API Keys:**
+1. **Nexar API** (optional, but recommended):
+   - Register at [nexar.com/api](https://nexar.com/api)
+   - Get `NEXAR_CLIENT_ID` and `NEXAR_CLIENT_SECRET`
+   - Free tier: 100 parts/day
+
+2. **Mouser API** (recommended):
+   - Register at [Mouser API Hub](https://www.mouser.com/api-hub/)
+   - Get `MOUSER_API_KEY`
+   - Free tier: 1000 requests/hour
+
+**GitHub Secrets Setup:**
+```bash
+# Add to repository secrets:
+NEXAR_CLIENT_ID=your_nexar_client_id
+NEXAR_CLIENT_SECRET=your_nexar_client_secret
+MOUSER_API_KEY=your_mouser_api_key
+```
+
+**Usage Examples:**
+```bash
+# Validate with hybrid APIs (recommended)
+python .github/scripts/hybrid_bom_validator.py \
+  --bom-files BOM_BUDGET.csv BOM_OCTOPART.csv \
+  --priority-components ESP32-DEVKITC-32E D2425-10 LRS-15-5
+
+# Mouser-only validation
+NEXAR_CLIENT_ID="" python .github/scripts/hybrid_bom_validator.py \
+  --bom-files BOM_BUDGET.csv
+
+# Check API connectivity
+curl -X GET "https://api.mouser.com/api/v1/search/partnumber?apiKey=YOUR_KEY&partnumber=ESP32-DEVKITC-32E"
+```
 
 ### 🛠️ **Troubleshooting API Issues**
 
 **Common Issues & Solutions:**
 
+| Problem | Nexar Solution | Mouser Solution | Hybrid Benefit |
+|---------|----------------|-----------------|----------------|
+| **Quota exceeded** | Wait 24 hours | Continue normally | ✅ No interruption |
+| **Rate limited** | Wait 1 hour | Slow down requests | ✅ Automatic switching |
+| **Auth failure** | Check credentials | Check API key | ✅ Fallback options |
+| **Network timeout** | Retry later | Try different endpoint | ✅ Higher reliability |
+| **Component not found** | Try different spelling | Search suggestions | ✅ Better coverage |
+
+**Debugging Commands:**
 ```bash
-# Check quota status
-echo "Check remaining quota: Contact api@nexar.com"
+# Test Nexar connectivity
+python .github/scripts/nexar_validation.py --bom-files BOM_BUDGET.csv --max-components 5
 
-# Test API connectivity
-curl -X POST https://api.nexar.com/graphql \
-  -H "Authorization: Bearer $TOKEN" \
-  -d '{"query": "{ __schema { types { name } } }"}'
+# Test Mouser connectivity
+python .github/scripts/mouser_api.py --bom-files BOM_BUDGET.csv
 
-# Validate credentials
-python .github/scripts/nexar_validation.py --bom-files BOM_BUDGET.csv
+# Test hybrid approach
+python .github/scripts/hybrid_bom_validator.py --bom-files BOM_BUDGET.csv
+
+# Check API usage stats
+grep -E "(nexar_calls|mouser_calls)" hybrid_validation_*.json
 ```
 
 **Workflow Debugging:**
 1. **Check artifacts** - validation results always saved
-2. **Review logs** - detailed error messages with retry attempts
-3. **Verify credentials** - ensure NEXAR_CLIENT_ID/SECRET are set
-4. **Monitor quotas** - issues auto-created when limits hit
+2. **Review API usage** - detailed statistics in reports
+3. **Monitor quotas** - automatic tracking and warnings
+4. **Verify credentials** - test both API keys separately
 
 ### 💡 **Best Practices for Large BOMs**
 
 **For BOMs >100 components:**
-1. **Split validation** - run separate workflows for critical vs. non-critical
-2. **Staged approach** - validate in component category groups
-3. **Manual fallback** - use alternative pricing sources for overflow
-4. **Consider upgrade** - contact Nexar for higher quotas
+1. **Use hybrid validation** - automatic fallback prevents quota issues
+2. **Set up both APIs** - Nexar + Mouser for maximum coverage
+3. **Prioritize critical components** - safety-critical parts validated first
+4. **Monitor API usage** - detailed reporting in workflow artifacts
 
-**Workflow Modifications:**
+**Recommended Workflow Strategy:**
 ```yaml
-# Example: Critical components only
-inputs:
-  validate_critical_only:
-    description: 'Validate only safety-critical components'
-    default: true
-    type: boolean
+# Example workflow configuration
+- name: Validate with priority handling
+  run: |
+    python .github/scripts/hybrid_bom_validator.py \
+      --bom-files BOM_BUDGET.csv BOM_OCTOPART.csv \
+      --priority-components ESP32-DEVKITC-32E D2425-10 LRS-15-5 SCT-013-020 \
+      --output-dir validation_results
 ```
+
+**Cost Optimization:**
+- **Free tier coverage**: Nexar (100 parts) + Mouser (1000 requests) = excellent coverage
+- **API upgrade priorities**:
+  1. Mouser API for larger BOMs (higher quota)
+  2. Nexar Pro for multi-supplier insights
+- **Workflow efficiency**: Hybrid approach uses optimal API for each component
 
 ---
 
 **Last Updated**: August 9, 2025
 **Verification Status**: All part numbers and prices verified as of update date
-**API Error Handling**: Implemented exponential backoff and quota management
+**API Integration**: Hybrid Nexar + Mouser implementation active
+**Error Handling**: Comprehensive retry logic and fallback systems
 **Next Review**: September 2025 (quarterly price/availability check)
