@@ -30,6 +30,12 @@ LargeEndSnapProjection = 4.1;  // Increased for snap-fit retention
 // Create snap-fit retention rings for small end as well
 SmallEndSnapProjection = 4.1;  // Enhanced for secure hose connection
 
+// Label parameters for component identification
+label_depth = 0.6;          // mm - depth of embossed text
+label_font_size = 4;        // mm - font size for adapter labels
+label_font = "Liberation Sans:style=Bold"; // Font for clear visibility
+small_label_size = 2.5;     // mm - smaller font for detailed labels
+
  $fn=120 *1;
 
      WT=WallThickness;
@@ -59,6 +65,13 @@ module TransCylinder(D1, D2, H, Z)
             cylinder(d1=D1, d2=D2, h=H, center=false);
         }
     }
+
+// Module to create embossed component labels for vacuum adapter
+module component_label(text, size=label_font_size) {
+    linear_extrude(height=label_depth, center=false)
+    text(text, size=size, font=label_font,
+         halign="center", valign="center");
+}
 
 // Print layout and module selection
 // Set which_part to generate specific components:
@@ -103,6 +116,9 @@ if (which_part == "adapter") {
             square([2, 1]);
         }
     }
+
+    // Add component identification labels
+    vacuum_adapter_labels();
 } else if (which_part == "large_end") {
     // Large end section only
     difference() {
@@ -142,4 +158,39 @@ if (which_part == "adapter") {
             TransCylinder(LID, LID, LL/2 + 2, -1);
         }
     }
+}
+
+// Component identification labels for vacuum adapter
+module vacuum_adapter_labels() {
+    // Large end identification (connects to shop vacuum)
+    translate([LOD/2 - 10, 0, LL/2])
+    rotate([90, 0, 0])
+    component_label("TO VACUUM", small_label_size);
+
+    // Small end identification (connects to hose/pipe)
+    translate([SOD/2 - 8, 0, LL + TL + SL/2])
+    rotate([90, 0, 0])
+    component_label("TO PIPE", small_label_size);
+
+    // Product identification on taper section
+    translate([0, (LOD + SOD)/4, LL + TL/2])
+    rotate([0, 0, 90])
+    component_label("ADAPTER", small_label_size);
+
+    // Directional flow arrow
+    translate([0, -(LOD + SOD)/4, LL + TL/2])
+    rotate([0, 0, -90])
+    component_label("→ FLOW →", small_label_size);
+
+    // Size indicators
+    translate([0, LOD/2 - 5, LL - 5])
+    component_label("∅100", small_label_size);
+
+    translate([0, SOD/2 - 5, LL + TL + SL - 5])
+    component_label("∅58", small_label_size);
+
+    // Main product label
+    translate([0, 0, LL + TL/2])
+    rotate([0, 0, 45])
+    component_label("RAT TRAP 2025", small_label_size);
 }
