@@ -165,6 +165,7 @@ jobs:
         cd "3D Models"
 
         echo "🔍 Performing advanced STL validation..."
+        validation_failed=false
 
         for stl_file in *.stl; do
           if [ -f "$stl_file" ]; then
@@ -174,15 +175,36 @@ jobs:
             file_size=$(stat -c%s "$stl_file")
             echo "  File size: $file_size bytes"
 
-            # Use meshlab to validate (basic check)
+            # Use meshlab to validate (strict validation)
             if command -v meshlabserver >/dev/null 2>&1; then
               echo "  Running mesh validation..."
-              # Note: This is a basic validation - more advanced checks could be added
-              if meshlabserver -i "$stl_file" -o "/tmp/test_${stl_file}" 2>/dev/null; then
-                echo "  ✅ Mesh structure appears valid"
+              # Capture both stdout and stderr to detect any issues
+              validation_output=$(meshlabserver -i "$stl_file" -o "/tmp/test_${stl_file}" 2>&1)
+              validation_exit_code=$?
+
+              if [ $validation_exit_code -eq 0 ] && [ -f "/tmp/test_${stl_file}" ]; then
+                echo "  ✅ Mesh structure is valid"
+                rm -f "/tmp/test_${stl_file}"
               else
-                echo "  ⚠️  Mesh validation warnings detected"
+                echo "  ❌ Mesh validation FAILED for $stl_file"
+                echo "  Exit code: $validation_exit_code"
+                if [ -n "$validation_output" ]; then
+                  echo "  Validation output: $validation_output"
+                fi
+                validation_failed=true
               fi
+            else
+              echo "  ⚠️  meshlabserver not available, skipping advanced validation"
             fi
           fi
         done
+
+        if [ "$validation_failed" = true ]; then
+          echo ""
+          echo "❌ STL mesh validation FAILED - some files have invalid geometry"
+          echo "🔧 This indicates issues in the SCAD source files that need to be fixed"
+          exit 1
+        else
+          echo ""
+          echo "✅ All STL files passed mesh validation"
+        fi
