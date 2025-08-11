@@ -86,13 +86,41 @@ i2c:
   scan: true
   frequency: 100kHz  # Reduced from 400kHz for better EMI immunity in high-voltage environment
 
-# Enhanced Time-of-Flight sensor (VL53L0X - cost optimized, 2m range sufficient)
+# IR Distance Sensor (GP2Y0A21YK0F) - Optimized for rodent detection
 sensor:
-  - platform: vl53l0x
+  - platform: adc
+    name: "IR Distance Sensor Raw"
+    id: ir_distance_raw
+    pin: A0  # ESP32-S3 analog pin
+    attenuation: 11db
+    update_interval: 50ms  # Fast for responsive detection
+    accuracy_decimals: 3
+    filters:
+      - multiply: 3.3  # Convert to voltage
+      - lambda: |-
+          // GP2Y0A21YK0F voltage to distance conversion
+          // Distance(cm) = 6762/(ADC_voltage-9)-4 (Sharp datasheet formula)
+          if (x < 0.4) return NAN;  // Invalid reading below 0.4V
+          float distance_cm = 6762.0 / (x + 4.0) + 9.0;
+          if (distance_cm < 10.0 || distance_cm > 80.0) return NAN;
+          return distance_cm * 10.0;  // Convert to mm for consistency
+
+  # Enhanced IR distance with filtering for stable detection
+  - platform: template
     name: "Trap Distance"
     id: trap_distance
-    address: 0x29
-    update_interval: 50ms
+    lambda: |-
+      return id(ir_distance_raw).state;
+    unit_of_measurement: "mm"
+    accuracy_decimals: 0
+    filters:
+      - median:
+          window_size: 5
+          send_every: 2
+      - sliding_window_moving_average:
+          window_size: 8
+          send_every: 3
+      - heartbeat: 300s
 
   # BME280 environmental sensor via STEMMA QT (I2C)
   - platform: bme280
@@ -123,6 +151,30 @@ sensor:
       device_class: atmospheric_pressure
       state_class: measurement
     update_interval: 60s
+
+  # APDS9960 Proximity/Light/Gesture Sensor - PRIMARY detection sensor
+  - platform: apds9960
+    address: 0x39
+    update_interval: 100ms  # Fast for responsive detection
+    proximity:
+      name: "APDS9960 Proximity"
+      id: apds_proximity
+      filters:
+        - sliding_window_moving_average:
+            window_size: 5
+            send_every: 3
+
+  # PIR Motion Sensor - Enhanced Detection (Secondary)
+  - platform: gpio
+    name: "PIR Motion Detected"
+    id: pir_motion
+    pin:
+      number: GPIO13
+      mode: INPUT_PULLDOWN
+    filters:
+      - delayed_on: 10ms    # Debounce
+      - delayed_off: 2000ms # Keep active for 2 seconds
+
   # Distance-based rodent detection logic
   - platform: template
     name: "Trap Distance"

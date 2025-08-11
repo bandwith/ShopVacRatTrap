@@ -228,6 +228,8 @@ wheel==0.45.1
     # via pip-tools
 wsproto==1.2.0
     # via platformio
+xlrd==2.0.2
+    # via -r requirements.in
 zeroconf==0.147.0
     # via
     #   aioesphomeapi

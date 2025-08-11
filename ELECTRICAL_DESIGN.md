@@ -84,33 +84,44 @@ All sensors use standardized JST SH 4-pin connectors for assembly without solder
 - Outlet: CEE 7/7 (Schuko)
 - IEC Inlet: 4300.0063 (230V rated)
 
-### Power Budget Analysis
+### Power Budget Analysis - HYBRID DETECTION SYSTEM
 
-**ESP32-S3 3.3V Load (Standard Configuration):**
+**STANDARD CONFIGURATION (APDS9960 + ToF + PIR):**
 ```
-VL53L0X ToF Sensor:    15mA typical, 30mA peak
-OLED Display:          15mA typical, 25mA peak
-BME280 Env. Sensor:    1μA sleep, 3.6mA active
 ESP32-S3 Core:         45-70mA WiFi active
-Total Load:            61-99mA typical
+APDS9960 Proximity:    400µA typical, 5mA active
+VL53L0X ToF Sensor:    15mA typical, 30mA peak
+PIR Motion Sensor:     65µA quiescent, 2.3mA active
+BME280 Env. Sensor:    1μA sleep, 3.6mA active
+OLED Display:          15mA typical, 25mA peak
+Total Load:            76-108mA typical, 135mA peak
 ESP32-S3 Capacity:     600mA (built-in regulator)
-Safety Margin:         501mA available (84% headroom)
+Safety Margin:         465-524mA available (77-87% headroom)
 ```
 
-**STEMMA QT Camera Enhanced Configuration:**
+**CAMERA CONFIGURATION (Four-Sensor Hybrid Detection):**
 ```
 ESP32-S3 Core:         70mA WiFi + processing
-OV5640 Camera Module:  100mA capturing, 20mA idle
+APDS9960 Proximity:    400µA typical, 5mA active
+OV5640 5MP Camera:     100mA capturing, 20mA idle
+PIR Motion Sensor:     65µA quiescent, 2.3mA active
 VL53L0X ToF Sensor:    15mA typical, 30mA peak
 BME280 Env. Sensor:    1μA sleep, 3.6mA active
 OLED Display:          15mA typical, 25mA peak
-High-Power IR LEDs:    200mA @ 3.3V (pulsed)
+High-Power IR LEDs:    200mA @ 3.3V (pulsed only)
 Camera Processing:     +50mA during image processing
-Total Peak Load:       431mA during capture with IR
+Total Typical:         225mA normal operation
+Total Peak Load:       435mA during capture with IR pulse
 ESP32-S3 Capacity:     600mA (built-in regulator)
-Safety Margin:         169mA available (72% headroom)
+Safety Margin:         165mA available (27% headroom)
 Power Compliance:      ✅ APPROVED - Within ESP32-S3 limits
 ```
+
+**⚠️ CRITICAL POWER MANAGEMENT NOTES:**
+- Camera configuration operates near ESP32 limits during capture
+- IR LED MUST be pulsed only - never continuous operation
+- Thermal monitoring mandatory - ESP32 temperature <85°C
+- Intelligent power sequencing prevents overload conditions
 
 **Key Advantages of STEMMA QT Upgrade:**
 - ✅ Higher resolution: 5MP OV5640 vs 2MP OV2640

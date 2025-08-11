@@ -5,12 +5,41 @@ Replaces multiple separate scripts with a single, unified tool.
 
 This script:
 1. Validates BOM parts and updates pricing using Mouser API
-2. Generates purchase guide with direct links
-3. Creates Mouser upload files for bulk ordering
+2. Generates official Mouser template format files for direct upload
+3. Creates consolidated Mouser-only BOMs with dynamic part lookup
 4. Monitors component availability
 5. Analyzes Mouser consolidation opportunities
 6. Updates BOM files with current pricing
 7. Generates reports and analysis
+
+NEW FEATURES (August 2025):
+- Official Mouser template format generation (BOM_MOUSER_TEMPLATE.xlsx)
+- Dynamic part lookup eliminating hardcoded mappings
+- Real-time pricing and availability via API
+- Complete component data including datasheets and lifecycle info
+- Replaces legacy shell scripts with comprehensive Python functionality
+
+QUICK START EXAMPLES:
+    # Generate all purchase files (replaces generate_purchase_files.sh)
+    python3 .github/scripts/bom_manager.py --bom-file BOM_CONSOLIDATED.csv --generate-purchase-files
+
+    # Full validation and all output files
+    python3 .github/scripts/bom_manager.py --bom-file BOM_CONSOLIDATED.csv --all
+
+    # Just generate Mouser template for upload
+    python3 .github/scripts/bom_manager.py --bom-file BOM_CONSOLIDATED.csv --generate-mouser-template
+
+    # Validate pricing and availability only
+    python3 .github/scripts/bom_manager.py --bom-file BOM_CONSOLIDATED.csv --validate --check-availability
+
+GENERATED FILES:
+    - BOM_MOUSER_TEMPLATE.xlsx: Official Mouser template (RECOMMENDED for upload)
+    - BOM_MOUSER_TEMPLATE.csv: CSV version for review
+    - BOM_MOUSER_ONLY.csv: Mouser-only consolidated BOM
+    - mouser_upload_consolidated_only.csv: Legacy simple upload format
+    - PURCHASE_GUIDE.md: Comprehensive purchase instructions
+    - pricing_report.md: Price change analysis
+    - availability_report.md: Component availability status
 """
 
 import os
@@ -40,206 +69,18 @@ except ImportError:
 MOUSER_API_BASE = "https://api.mouser.com/api/v1"
 MOUSER_SEARCH_ENDPOINT = f"{MOUSER_API_BASE}/search/partnumber"
 
+# Vendor prefix mapping for Mouser part numbers
+VENDOR_PREFIXES = {
+    "Adafruit": "485",  # Corrected from user feedback
+    "SparkFun": "474",  # Confirmed correct
+    "Mean Well": "709",
+    "Schurter": "693",
+    "Leviton": "546",
+    "default": "",  # For manufacturers already using Mouser part numbers
+}
+
 # Rate limiting configuration
 REQUESTS_PER_SECOND = 8  # Conservative limit (10 max)
-
-# Safety-critical components that require special monitoring
-CRITICAL_COMPONENTS = [
-    "D2425-10",  # SSR (safety critical)
-    "SCT-013-020",  # Current transformer
-    "LRS-35-5",  # Power supply
-    "6200.4210",  # IEC inlet with fuse
-    "0218012.MXP",  # Fuses
-    "ESP32-S3-5323",  # Main controller
-]
-
-# Mapping of Adafruit components to Mouser equivalents
-ADAFRUIT_TO_MOUSER_MAPPING = {
-    # ESP32-S3 Development Boards
-    "5323": {  # ESP32-S3 Feather
-        "mouser_alternatives": [
-            {
-                "part": "356-ESP32-S3-DEVKTC1",
-                "manufacturer": "Espressif",
-                "description": "ESP32-S3-DevKitC-1 Development Board",
-            },
-            {
-                "part": "915-ESP32-S3-WROOM-1",
-                "manufacturer": "Espressif",
-                "description": "ESP32-S3-WROOM-1 Module",
-            },
-            {
-                "part": "485-ESP32-S3-WROOM-1",
-                "manufacturer": "SparkFun",
-                "description": "ESP32-S3 Thing Plus",
-            },
-        ]
-    },
-    # Headers and Connectors
-    "2830": {  # Feather Headers
-        "mouser_alternatives": [
-            {
-                "part": "517-974-12",
-                "manufacturer": "3M",
-                "description": "12-Pin Female Header",
-            },
-            {
-                "part": "517-974-16",
-                "manufacturer": "3M",
-                "description": "16-Pin Female Header",
-            },
-            {
-                "part": "575-26-60-4120",
-                "manufacturer": "Amphenol FCI",
-                "description": "2.54mm Female Headers",
-            },
-        ]
-    },
-    # ToF Distance Sensor
-    "3317": {  # VL53L0X ToF Sensor
-        "mouser_alternatives": [
-            {
-                "part": "511-VL53L0X",
-                "manufacturer": "STMicroelectronics",
-                "description": "VL53L0X ToF Sensor IC",
-            },
-            {
-                "part": "474-SEN-14722",
-                "manufacturer": "SparkFun",
-                "description": "VL53L0X Breakout Board",
-            },
-            {
-                "part": "700-VL53L0X-SATEL",
-                "manufacturer": "STMicroelectronics",
-                "description": "VL53L0X Satellite Board",
-            },
-        ]
-    },
-    # OLED Display
-    "326": {  # 0.96" OLED 128x64
-        "mouser_alternatives": [
-            {
-                "part": "992-UG-2864HSWEG01",
-                "manufacturer": "WiseChip",
-                "description": '0.96" OLED 128x64 I2C',
-            },
-            {
-                "part": "426-MOD-LCD-1.3",
-                "manufacturer": "Waveshare",
-                "description": '1.3" OLED 128x64 I2C',
-            },
-            {
-                "part": "474-LCD-14532",
-                "manufacturer": "SparkFun",
-                "description": "OLED Display 128x64",
-            },
-        ]
-    },
-    # Environmental Sensor
-    "2652": {  # BME280
-        "mouser_alternatives": [
-            {
-                "part": "262-BME280",
-                "manufacturer": "Bosch",
-                "description": "BME280 Sensor IC",
-            },
-            {
-                "part": "474-SEN-15440",
-                "manufacturer": "SparkFun",
-                "description": "BME280 Breakout Board",
-            },
-            {
-                "part": "700-BME280-MODULE",
-                "manufacturer": "Bosch",
-                "description": "BME280 Evaluation Board",
-            },
-        ]
-    },
-    # Optocoupler
-    "2515": {  # 4N35 Optocoupler
-        "mouser_alternatives": [
-            {
-                "part": "782-4N35",
-                "manufacturer": "Vishay",
-                "description": "4N35 Optocoupler DIP-6",
-            },
-            {
-                "part": "512-4N35",
-                "manufacturer": "ON Semiconductor",
-                "description": "4N35 Optocoupler",
-            },
-            {
-                "part": "630-4N35",
-                "manufacturer": "Lite-On",
-                "description": "4N35 Optocoupler",
-            },
-        ]
-    },
-    # STEMMA QT/I2C Cables (generic JST SH connectors)
-    "4210": {  # 100mm Cable
-        "mouser_alternatives": [
-            {
-                "part": "538-53047-0410",
-                "manufacturer": "Molex",
-                "description": "JST SH 4-Pin Cable 100mm",
-            },
-            {
-                "part": "455-2660",
-                "manufacturer": "JST",
-                "description": "SH Series 4-Pin Cable",
-            },
-            {
-                "part": "485-CAB-14427",
-                "manufacturer": "SparkFun",
-                "description": "Qwiic Cable 100mm",
-            },
-        ]
-    },
-    "4401": {  # 200mm Cable
-        "mouser_alternatives": [
-            {
-                "part": "538-53047-0420",
-                "manufacturer": "Molex",
-                "description": "JST SH 4-Pin Cable 200mm",
-            },
-            {
-                "part": "455-2661",
-                "manufacturer": "JST",
-                "description": "SH Series 4-Pin Cable 200mm",
-            },
-            {
-                "part": "485-CAB-14428",
-                "manufacturer": "SparkFun",
-                "description": "Qwiic Cable 200mm",
-            },
-        ]
-    },
-}
-
-# Component mapping: Adafruit/SparkFun to Mouser part numbers for direct consolidation
-MOUSER_COMPONENT_MAPPING = {
-    # Adafruit components available at Mouser
-    "5323": "485-5323",  # ESP32-S3 Feather
-    "1578": "485-1578",  # LiPo Battery 2500mAh
-    "2830": "485-2830",  # Feather Stacking Headers
-    "4210": "485-4210",  # VL53L0X ToF Sensor (Note: was 3317 in smaller BOM)
-    "5027": "485-5027",  # 1.3" OLED Display
-    "4816": "485-4816",  # BME280 Sensor
-    "4397": "485-4397",  # STEMMA QT Cable 100mm
-    "4399": "485-4399",  # STEMMA QT Cable 200mm
-    "1944": "485-1944",  # DC Barrel Jack
-    "368": "485-368",  # Arcade Button
-    "4090": "485-4090",  # Terminal Block Kit
-    "3258": "485-3258",  # Wire Red
-    "3259": "485-3259",  # Wire Black
-    # SparkFun components available at Mouser
-    "COM-14456": "474-COM-14456",  # SSR Kit 25A
-    # Components already at Mouser (keep existing)
-    "LRS-35-5": "709-LRS35-5",  # Power Supply
-    "PN-1334-C": "563-PN-1334-C",  # Enclosure
-    "4300.0030": "693-4300.0030",  # IEC Inlet
-    "5320-W": "546-5320-W",  # NEMA Outlet
-}
 
 
 class MouserAPIError(Exception):
@@ -302,22 +143,47 @@ class BOMManager:
         # Record this request
         self.request_times.append(time.time())
 
+    def get_mouser_part_number(
+        self, manufacturer: str, manufacturer_part_number: str
+    ) -> str:
+        """Generate correct Mouser part number with vendor prefix"""
+        # Get vendor prefix from mapping
+        prefix = VENDOR_PREFIXES.get(manufacturer, VENDOR_PREFIXES["default"])
+
+        if prefix:
+            # Format: {prefix}-{manufacturer_part_number}
+            mouser_part = f"{prefix}-{manufacturer_part_number}"
+            print(
+                f"🔧 Generated Mouser part number: {mouser_part} (for {manufacturer} {manufacturer_part_number})"
+            )
+            return mouser_part
+        else:
+            # Use manufacturer part number directly (for vendors already using Mouser format)
+            return manufacturer_part_number
+
     def search_part(self, part_number: str, manufacturer: str = None) -> Dict:
         """Search for a part by part number"""
         self._check_rate_limit()
+
+        # Generate correct Mouser part number if manufacturer is known
+        search_part_number = part_number
+        if manufacturer:
+            search_part_number = self.get_mouser_part_number(manufacturer, part_number)
 
         url = f"{MOUSER_SEARCH_ENDPOINT}?apiKey={self.api_key}"
 
         # Mouser API requires POST with JSON payload
         payload = {
             "SearchByPartRequest": {
-                "mouserPartNumber": part_number,
+                "mouserPartNumber": search_part_number,
                 "partSearchOptions": "Exact",
             }
         }
 
         try:
-            print(f"🔍 Searching for part: {part_number}")
+            print(
+                f"🔍 Searching for part: {search_part_number} (original: {part_number})"
+            )
             response = self.session.post(url, json=payload, timeout=30)
 
             # Handle API errors
@@ -975,17 +841,52 @@ class BOMManager:
 
         return guide_path
 
-    def generate_mouser_upload_file(self, bom_file: str, output_dir: str) -> str:
-        """Generate Mouser BOM upload file"""
-        print("🛒 Generating Mouser upload file...")
+    def generate_mouser_template_file(self, bom_file: str, output_dir: str) -> str:
+        """Generate BOM in official Mouser template format using dynamic lookup"""
+        print("🛒 Generating Mouser template format file...")
 
         # Ensure output directory exists
         os.makedirs(output_dir, exist_ok=True)
 
+        # Use the standard Mouser template column structure
+        mouser_columns = [
+            "Mfr Part Number (Input)",
+            "Manufacturer Part Number",
+            "Mouser Part Number",
+            "Manufacturer Name",
+            "Description",
+            "Quantity 1",
+            "Unit Price 1",
+            "Quantity 2",
+            "Unit Price 2",
+            "Quantity 3",
+            "Unit Price 3",
+            "Quantity 4",
+            "Unit Price 4",
+            "Quantity 5",
+            "Unit Price 5",
+            "Order Quantity",
+            "Order Unit Price",
+            "Min./Mult.",
+            "Availability",
+            "Lead Time in Days",
+            "Lifecycle",
+            "NCNR",
+            "RoHS",
+            "Pb Free",
+            "Package Type",
+            "Datasheet URL",
+            "Product Image",
+            "Design Risk",
+        ]
+        print(
+            f"📋 Using standard Mouser template structure: {len(mouser_columns)} columns"
+        )
+
         # Load BOM data
         components = []
         try:
-            with open(bom_file, "r", newline="") as csvfile:
+            with open(bom_file, "r", newline="", encoding="utf-8") as csvfile:
                 reader = csv.DictReader(csvfile)
                 for row in reader:
                     components.append(row)
@@ -993,35 +894,169 @@ class BOMManager:
             print(f"❌ Error reading BOM file: {e}")
             return None
 
-        # Filter for Mouser components
-        mouser_components = []
-        for component in components:
-            distributor = component.get("Distributor", "").lower()
-            if distributor == "mouser":
-                mouser_components.append(component)
+        print(f"📦 Processing {len(components)} components for Mouser template...")
 
-        if not mouser_components:
-            print("⚠️ No Mouser components found in BOM")
-            return None
+        # Create the migrated BOM data
+        template_data = []
 
-        # Create Mouser upload file (simple format: PartNumber,Quantity)
-        output_file = os.path.join(output_dir, "mouser_upload_consolidated.csv")
-        with open(output_file, "w", newline="") as csvfile:
-            writer = csv.writer(csvfile)
-            writer.writerow(
-                ["Part Number", "Quantity", "Description", "Customer Reference"]
+        for i, component in enumerate(components, 1):
+            print(
+                f"🔍 [{i}/{len(components)}] Processing: {component['Description'][:50]}..."
             )
 
-            for component in mouser_components:
-                part_number = component.get("Distributor Part Number", "")
-                quantity = component.get("Quantity", "1")
-                description = component.get("Description", "")
-                ref = component.get("Reference Designator", "")
+            manufacturer = component.get("Manufacturer", "")
+            mpn = component.get("Manufacturer Part Number", "")
+            quantity = int(component.get("Quantity", 1))
+            current_distributor = component.get("Distributor", "")
 
-                writer.writerow([part_number, quantity, description, ref])
+            # Initialize row with template structure
+            row_data = {col: "" for col in mouser_columns}
 
-        print(f"✅ Created Mouser upload file: {output_file}")
-        return output_file
+            # Set basic information
+            row_data["Mfr Part Number (Input)"] = mpn
+            row_data["Manufacturer Part Number"] = mpn
+            row_data["Manufacturer Name"] = manufacturer
+            row_data["Description"] = component.get("Description", "")
+            row_data["Order Quantity"] = quantity
+
+            # If already from Mouser, use existing data
+            if current_distributor.lower() == "mouser":
+                mouser_part = component.get("Distributor Part Number", "")
+                unit_price = component.get("Unit Price", "0")
+
+                row_data["Mouser Part Number"] = mouser_part
+                row_data["Order Unit Price"] = unit_price
+
+                print(f"  ✅ Already Mouser: {mouser_part}")
+
+            else:
+                # Use dynamic lookup to find Mouser equivalent
+                if manufacturer and mpn:
+                    # Try to get Mouser part number using vendor prefix
+                    mouser_part = self.get_mouser_part_number(manufacturer, mpn)
+
+                    if mouser_part:
+                        # Search for detailed part information
+                        part_result = self.search_part(mouser_part)
+
+                        if part_result.get("found"):
+                            # Get pricing for our quantity
+                            price_data = self.get_best_price(part_result, quantity)
+
+                            row_data["Mouser Part Number"] = mouser_part
+                            row_data["Manufacturer Name"] = part_result.get(
+                                "manufacturer", manufacturer
+                            )
+                            row_data["Description"] = part_result.get(
+                                "description", component.get("Description", "")
+                            )
+
+                            if price_data:
+                                row_data["Order Unit Price"] = price_data["unit_price"]
+                                row_data["Quantity 1"] = price_data.get("quantity", 1)
+                                row_data["Unit Price 1"] = price_data["unit_price"]
+
+                            row_data["Availability"] = part_result.get(
+                                "availability", "Unknown"
+                            )
+                            row_data["Lead Time in Days"] = part_result.get(
+                                "lead_time", "Unknown"
+                            )
+                            row_data["Lifecycle"] = part_result.get(
+                                "lifecycle", "Unknown"
+                            )
+                            row_data["RoHS"] = part_result.get("rohs", "Unknown")
+                            row_data["Package Type"] = part_result.get(
+                                "package", "Unknown"
+                            )
+                            row_data["Datasheet URL"] = part_result.get(
+                                "datasheet_url", ""
+                            )
+
+                            print(f"  ✅ Found Mouser equivalent: {mouser_part}")
+                        else:
+                            row_data["Order Unit Price"] = component.get(
+                                "Unit Price", "0"
+                            )
+                            row_data["Design Risk"] = "No Mouser equivalent found"
+                            print(f"  ❌ No Mouser part found for {mouser_part}")
+                    else:
+                        # Try direct search
+                        part_result = self.search_part(mpn, manufacturer)
+
+                        if part_result.get("found"):
+                            mouser_part = part_result.get("mouser_part", "")
+                            price_data = self.get_best_price(part_result, quantity)
+
+                            row_data["Mouser Part Number"] = mouser_part
+                            row_data["Manufacturer Name"] = part_result.get(
+                                "manufacturer", manufacturer
+                            )
+                            row_data["Description"] = part_result.get(
+                                "description", component.get("Description", "")
+                            )
+
+                            if price_data:
+                                row_data["Order Unit Price"] = price_data["unit_price"]
+
+                            print(f"  ✅ Found by search: {mouser_part}")
+                        else:
+                            row_data["Order Unit Price"] = component.get(
+                                "Unit Price", "0"
+                            )
+                            row_data["Design Risk"] = (
+                                f"No Mouser equivalent found for {manufacturer} {mpn}"
+                            )
+                            print("  ❌ No Mouser equivalent found")
+                else:
+                    row_data["Order Unit Price"] = component.get("Unit Price", "0")
+                    row_data["Design Risk"] = "Incomplete manufacturer/part number data"
+                    print("  ⚠️ Missing manufacturer or part number information")
+
+            template_data.append(row_data)
+
+        # Save as Excel and CSV files
+        try:
+            import pandas as pd
+
+            output_df = pd.DataFrame(template_data)
+
+            # Save as Excel file (Mouser preferred format)
+            excel_file = os.path.join(output_dir, "BOM_MOUSER_TEMPLATE.xlsx")
+            output_df.to_excel(excel_file, index=False, engine="openpyxl")
+
+            # Also save as CSV for easy viewing
+            csv_file = os.path.join(output_dir, "BOM_MOUSER_TEMPLATE.csv")
+            output_df.to_csv(csv_file, index=False)
+
+            print("✅ Created Mouser template files:")
+            print(f"   📁 Excel: {excel_file}")
+            print(f"   📁 CSV: {csv_file}")
+
+            # Generate summary
+            total_components = len(template_data)
+            with_mouser_parts = len(
+                [row for row in template_data if row["Mouser Part Number"]]
+            )
+
+            print("\n📊 Template Summary:")
+            print(f"  Total components: {total_components}")
+            print(
+                f"  With Mouser parts: {with_mouser_parts} ({with_mouser_parts / total_components * 100:.1f}%)"
+            )
+
+            return excel_file
+
+        except ImportError:
+            print("❌ pandas not available, saving CSV only")
+            csv_file = os.path.join(output_dir, "BOM_MOUSER_TEMPLATE.csv")
+            with open(csv_file, "w", newline="", encoding="utf-8") as csvfile:
+                writer = csv.DictWriter(csvfile, fieldnames=mouser_columns)
+                writer.writeheader()
+                writer.writerows(template_data)
+
+            print(f"✅ Created Mouser template CSV: {csv_file}")
+            return csv_file
 
     def generate_mouser_only_bom(self, bom_file: str, output_dir: str) -> str:
         """Generate a consolidated BOM with only Mouser parts"""
@@ -1038,17 +1073,26 @@ class BOMManager:
             print(f"❌ Error reading BOM file: {e}")
             return None
 
-        # Convert all components to Mouser
+        # Convert all components to Mouser using dynamic lookup
         mouser_components = []
         for component in components:
             mpn = component.get("Manufacturer Part Number", "")
+            manufacturer = component.get("Manufacturer", "")
             new_component = component.copy()
 
-            # Check if we have a Mouser mapping for this part
-            if mpn in MOUSER_COMPONENT_MAPPING:
-                new_component["Distributor"] = "Mouser"
-                new_component["Distributor Part Number"] = MOUSER_COMPONENT_MAPPING[mpn]
-                print(f"✅ Mapped {mpn} -> {MOUSER_COMPONENT_MAPPING[mpn]}")
+            # Try to find Mouser equivalent using dynamic lookup
+            if manufacturer and mpn:
+                mouser_part_number = self.get_mouser_part_number(manufacturer, mpn)
+                part_result = self.search_part(mpn, manufacturer)
+
+                if part_result.get("found"):
+                    new_component["Distributor"] = "Mouser"
+                    new_component["Distributor Part Number"] = mouser_part_number
+                    print(f"✅ Found Mouser equivalent: {mpn} -> {mouser_part_number}")
+                else:
+                    print(
+                        f"⚠️ No Mouser equivalent found for: {mpn} from {manufacturer}"
+                    )
             elif component.get("Distributor", "").lower() == "mouser":
                 # Already at Mouser, keep as-is
                 print(f"✅ Keeping Mouser part: {mpn}")
@@ -1106,7 +1150,7 @@ class BOMManager:
     def calculate_mouser_consolidation_cost(
         self, bom_file: str, output_dir: str
     ) -> Dict:
-        """Calculate cost comparison between current BOM and Mouser alternatives"""
+        """Calculate cost comparison between current BOM and Mouser alternatives using dynamic lookup"""
         print("📊 Analyzing Mouser consolidation opportunities...")
 
         components = []
@@ -1123,14 +1167,16 @@ class BOMManager:
             "current_total": 0,
             "mouser_total": 0,
             "components": [],
-            "adafruit_components": [],
-            "non_adafruit_components": [],
+            "non_mouser_components": [],
+            "mouser_components": [],
             "savings": 0,
             "unavailable_alternatives": [],
         }
 
         for component in components:
             distributor = component.get("Distributor", "")
+            manufacturer = component.get("Manufacturer", "")
+            mpn = component.get("Manufacturer Part Number", "")
             quantity = int(component.get("Quantity", 1))
 
             try:
@@ -1139,7 +1185,6 @@ class BOMManager:
                 current_price = 0.0
 
             extended_price = current_price * quantity
-
             analysis["current_total"] += extended_price
 
             component_analysis = {
@@ -1147,94 +1192,57 @@ class BOMManager:
                 "quantity": quantity,
                 "current_price": current_price,
                 "current_extended": extended_price,
-                "alternatives": [],
-                "best_alternative": None,
+                "mouser_equivalent": None,
                 "potential_savings": 0,
             }
 
-            if distributor.lower() == "adafruit":
-                analysis["adafruit_components"].append(component_analysis)
+            if distributor.lower() != "mouser" and manufacturer and mpn:
+                # Try to find Mouser equivalent using dynamic lookup
+                print(f"🔍 Searching for Mouser equivalent of {manufacturer} {mpn}...")
 
-                # Check for Mouser alternatives
-                adafruit_id = component.get("Distributor Part Number", "")
+                part_result = self.search_part(mpn, manufacturer)
 
-                if adafruit_id in ADAFRUIT_TO_MOUSER_MAPPING:
-                    mapping = ADAFRUIT_TO_MOUSER_MAPPING[adafruit_id]
-                    alternatives = []
+                if part_result.get("found"):
+                    price_data = self.get_best_price(part_result, quantity)
 
-                    for alternative in mapping["mouser_alternatives"]:
-                        mouser_part = alternative["part"]
+                    if price_data:
+                        mouser_extended = price_data["total_price"]
+                        savings = extended_price - mouser_extended
 
-                        # Get pricing if API is available
-                        pricing_info = self.search_part(mouser_part)
+                        component_analysis["mouser_equivalent"] = {
+                            "mouser_part": part_result["mouser_part"],
+                            "manufacturer": part_result["manufacturer"],
+                            "description": part_result["description"],
+                            "unit_price": price_data["unit_price"],
+                            "extended_price": mouser_extended,
+                            "availability": part_result["availability"],
+                            "savings": savings,
+                        }
+                        component_analysis["potential_savings"] = savings
+                        analysis["mouser_total"] += mouser_extended
 
-                        if pricing_info.get("found", False):
-                            price_data = self.get_best_price(pricing_info, quantity)
-
-                            if price_data:
-                                alternatives.append(
-                                    {
-                                        "mouser_part": mouser_part,
-                                        "manufacturer": pricing_info["manufacturer"],
-                                        "description": pricing_info["description"],
-                                        "unit_price": price_data["unit_price"],
-                                        "availability": pricing_info["availability"],
-                                        "min_order_qty": price_data.get("quantity", 1),
-                                        "estimated_price": price_data["total_price"],
-                                    }
-                                )
-                        else:
-                            # Use estimated pricing if API failed
-                            alternatives.append(
-                                {
-                                    "mouser_part": mouser_part,
-                                    "manufacturer": alternative["manufacturer"],
-                                    "description": alternative["description"],
-                                    "unit_price": None,
-                                    "availability": "Unknown",
-                                    "min_order_qty": 1,
-                                    "estimated_price": None,
-                                }
-                            )
-
-                    component_analysis["alternatives"] = alternatives
-
-                    # Find best alternative (lowest total cost)
-                    best_alt = None
-                    best_total = float("inf")
-
-                    for alt in alternatives:
-                        if (
-                            alt["estimated_price"]
-                            and alt["estimated_price"] < best_total
-                        ):
-                            best_alt = alt
-                            best_total = alt["estimated_price"]
-
-                    if best_alt:
-                        component_analysis["best_alternative"] = best_alt
-                        component_analysis["potential_savings"] = (
-                            extended_price - best_total
+                        print(
+                            f"✅ Found: {part_result['mouser_part']} - ${price_data['unit_price']:.2f} each"
                         )
-                        analysis["mouser_total"] += best_total
                     else:
+                        print("⚠️ Found part but no pricing available")
+                        analysis["unavailable_alternatives"].append(component_analysis)
                         analysis["mouser_total"] += (
-                            extended_price  # Keep original if no better alternative
-                        )
-                        analysis["unavailable_alternatives"].append(
-                            component["Description"]
+                            extended_price  # Use current price as fallback
                         )
                 else:
+                    print(f"❌ No Mouser equivalent found for {manufacturer} {mpn}")
+                    analysis["unavailable_alternatives"].append(component_analysis)
                     analysis["mouser_total"] += (
-                        extended_price  # Keep original if no mapping
+                        extended_price  # Use current price as fallback
                     )
-                    analysis["unavailable_alternatives"].append(
-                        component["Description"]
-                    )
+
+                analysis["non_mouser_components"].append(component_analysis)
             else:
-                # Non-Adafruit component - keep as is
-                analysis["non_adafruit_components"].append(component_analysis)
+                # Already at Mouser or no manufacturer info
+                analysis["mouser_components"].append(component_analysis)
                 analysis["mouser_total"] += extended_price
+                print(f"✅ Already Mouser: {mpn}")
 
             analysis["components"].append(component_analysis)
 
@@ -1272,38 +1280,38 @@ class BOMManager:
         report.append("")
 
         # Component distribution
-        adafruit_count = len(analysis["adafruit_components"])
-        non_adafruit_count = len(analysis["non_adafruit_components"])
+        non_mouser_count = len(analysis["non_mouser_components"])
+        mouser_count = len(analysis["mouser_components"])
 
         report.append("## 🧩 Component Distribution")
         report.append("| Source | Components | Current Cost | Mouser Cost |")
         report.append("|--------|------------|--------------|-------------|")
 
-        adafruit_current = sum(
-            c["current_extended"] for c in analysis["adafruit_components"]
+        non_mouser_current = sum(
+            c["current_extended"] for c in analysis["non_mouser_components"]
         )
-        adafruit_mouser = sum(
-            c["best_alternative"]["estimated_price"]
-            if c["best_alternative"]
+        non_mouser_mouser = sum(
+            c["mouser_equivalent"]["extended_price"]
+            if c["mouser_equivalent"]
             else c["current_extended"]
-            for c in analysis["adafruit_components"]
+            for c in analysis["non_mouser_components"]
         )
 
-        non_adafruit_current = sum(
-            c["current_extended"] for c in analysis["non_adafruit_components"]
+        mouser_current = sum(
+            c["current_extended"] for c in analysis["mouser_components"]
         )
 
         report.append(
-            f"| Adafruit | {adafruit_count} | ${adafruit_current:.2f} | ${adafruit_mouser:.2f} |"
+            f"| Non-Mouser | {non_mouser_count} | ${non_mouser_current:.2f} | ${non_mouser_mouser:.2f} |"
         )
         report.append(
-            f"| Other | {non_adafruit_count} | ${non_adafruit_current:.2f} | ${non_adafruit_current:.2f} |"
+            f"| Mouser | {mouser_count} | ${mouser_current:.2f} | ${mouser_current:.2f} |"
         )
         report.append("")
 
         # Detailed component analysis
-        if analysis["adafruit_components"]:
-            report.append("## 🔍 Adafruit Component Analysis")
+        if analysis["non_mouser_components"]:
+            report.append("## 🔍 Non-Mouser Component Analysis")
             report.append(
                 "| Component | Current Price | Best Mouser Alternative | Mouser Price | Savings |"
             )
@@ -1311,13 +1319,13 @@ class BOMManager:
                 "|-----------|---------------|------------------------|--------------|---------|"
             )
 
-            for comp in analysis["adafruit_components"]:
+            for comp in analysis["non_mouser_components"]:
                 original = comp["original"]
                 current_cost = comp["current_extended"]
 
-                if comp["best_alternative"]:
-                    alt = comp["best_alternative"]
-                    alt_cost = alt["estimated_price"] or current_cost
+                if comp["mouser_equivalent"]:
+                    alt = comp["mouser_equivalent"]
+                    alt_cost = alt["extended_price"]
                     savings = current_cost - alt_cost
                     savings_str = f"${savings:.2f}" if savings > 0 else "$0.00"
 
@@ -1401,6 +1409,11 @@ def main():
         help="Generate purchase guide and files",
     )
     parser.add_argument(
+        "--generate-mouser-template",
+        action="store_true",
+        help="Generate BOM in official Mouser template format",
+    )
+    parser.add_argument(
         "--analyze-consolidation",
         action="store_true",
         help="Analyze Mouser consolidation opportunities",
@@ -1421,6 +1434,7 @@ def main():
             args.check_availability,
             args.update_pricing,
             args.generate_purchase_files,
+            args.generate_mouser_template,
             args.analyze_consolidation,
             args.generate_mouser_only,
         ]
@@ -1483,11 +1497,50 @@ def main():
 
         # Generate purchase files
         if do_all or args.generate_purchase_files:
-            # Purchase guide generation removed - see COMPONENT_SOURCING.md instead
-            # manager.generate_purchase_guide(
-            #     args.bom_file, validation_results, args.output_dir
-            # )
-            manager.generate_mouser_upload_file(args.bom_file, args.output_dir)
+            print("🛒 Generating comprehensive purchase files...")
+
+            # Generate Mouser template (primary format)
+            manager.generate_mouser_template_file(args.bom_file, args.output_dir)
+
+            # Generate legacy Mouser-only BOM (for compatibility)
+            manager.generate_mouser_only_bom(args.bom_file, args.output_dir)
+
+            # Create unified purchase guide
+            manager.generate_purchase_guide(
+                args.bom_file, validation_results, args.output_dir
+            )
+
+            print("")
+            print("✅ Purchase files generated successfully!")
+            print("")
+            print("📁 Generated Files:")
+            print(
+                "   - BOM_MOUSER_TEMPLATE.xlsx (Official Mouser template - RECOMMENDED)"
+            )
+            print("   - BOM_MOUSER_TEMPLATE.csv (CSV version for review)")
+            print("   - BOM_MOUSER_ONLY.csv (Mouser-only consolidated BOM)")
+            print(
+                "   - mouser_upload_consolidated_only.csv (Legacy simple upload format)"
+            )
+            print("   - PURCHASE_GUIDE.md (Comprehensive purchase instructions)")
+            print("")
+            print("🛒 Next Steps:")
+            print("1. See COMPONENT_SOURCING.md for complete sourcing strategy")
+            print(
+                "2. Upload BOM_MOUSER_TEMPLATE.xlsx to https://www.mouser.com/tools/bom-tool"
+            )
+            print("3. Enjoy simplified single-distributor ordering!")
+            print("")
+            print("💡 Benefits of integrated BOM manager:")
+            print("   ✅ Real-time pricing via Mouser API")
+            print("   ✅ Dynamic part lookup (no hardcoded mappings)")
+            print("   ✅ Official Mouser template format")
+            print("   ✅ Complete component data (availability, datasheets)")
+            print("")
+
+        # Generate Mouser template format (NEW - preferred format)
+        if do_all or args.generate_mouser_template:
+            manager.generate_mouser_template_file(args.bom_file, args.output_dir)
 
         # Analyze Mouser consolidation opportunities
         if do_all or args.analyze_consolidation:

@@ -1,5 +1,22 @@
 # ShopVac Rat Trap - AI Agent Instructions
 
+## ⚠️ **FILE CREATION POLICIES** ⚠️
+
+### **FORBIDDEN FILE TYPES - DO NOT CREATE:**
+- ❌ **NO SUMMARY FILES**: Never create files with "SUMMARY", "REFACTOR_SUMMARY", "CLEANUP_SUMMARY", or similar names
+- ❌ **NO TEMPORARY DOCS**: Avoid creating temporary documentation files that duplicate existing content
+- ❌ **NO MIGRATION GUIDES**: Don't create separate migration or transition documentation
+- ❌ **NO STATUS REPORTS**: Avoid standalone status or completion report files
+
+### **APPROVED DOCUMENTATION UPDATES:**
+- ✅ **UPDATE EXISTING FILES**: Modify existing documentation files instead of creating new ones
+- ✅ **USE EXISTING GUIDES**: Update `INSTALLATION_GUIDE.md`, `README.md`, or code comments
+- ✅ **INLINE DOCUMENTATION**: Add documentation directly within code files as comments
+- ✅ **ESSENTIAL FILES ONLY**: Create new files only when absolutely necessary for core functionality
+
+### **RATIONALE:**
+This project maintains a clean, focused file structure. Summary files create documentation debt, become outdated quickly, and add confusion. All project status and changes should be documented within existing files or git commit messages.
+
 ## Project Overview
 Modern ESP32-based IoT rat trap with ToF sensor, OLED display, and Home Assistant integration. **Recently optimized (Aug 2025)** for safety compliance, cost reduction (-19%), and simplified assembly.
 

@@ -345,9 +345,77 @@ Check log output for:
 - [ ] All GPIO pins responding
 - [ ] Home Assistant API connected
 
-### **Phase 4: Calibration & Testing**
+### **Phase 4: Sensor Integration & Testing**
 
-#### **4.1 Distance Sensor Calibration**
+#### **4.1 Hybrid Detection System Setup**
+
+**STANDARD CONFIGURATION (ToF + PIR Backup):**
+1. **Primary ToF Sensor Installation**
+   ```
+   - Mount VL53L0X in sensor tower at 75mm from pipe entrance
+   - Connect via STEMMA QT to hub or daisy chain
+   - Verify I2C address 0x29 detection
+   - Test distance readings with clear line of sight
+   ```
+
+2. **PIR Motion Sensor (Backup Detection)**
+   ```
+   - Mount PIR sensor in backup tower at 85mm from pipe entrance
+   - Connect to GPIO13 with 3-pin JST PH cable
+   - Verify motion detection sensitivity
+   - Test range and field of view coverage
+   - Adjust sensitivity potentiometer if needed
+   ```
+
+**CAMERA CONFIGURATION (Hybrid Cascaded Detection):**
+1. **Primary Camera System**
+   ```
+   - Mount OV5640 5MP camera at 75mm from pipe entrance
+   - Connect via STEMMA QT chain to hub
+   - Test camera capture and image quality
+   - Verify IR LED illumination timing
+   - Configure computer vision parameters
+   ```
+
+2. **Secondary PIR Motion Detection**
+   ```
+   - Install PIR sensor at 85mm position as backup
+   - Configure as secondary confirmation sensor
+   - Test motion detection reliability
+   - Verify integration with camera trigger logic
+   ```
+
+3. **Tertiary ToF Confirmation**
+   ```
+   - Position VL53L0X as final confirmation sensor
+   - Configure as distance validation backup
+   - Test integration with hybrid detection logic
+   ```
+
+#### **4.2 Cascaded Detection Logic Testing**
+
+1. **Multi-Sensor Confirmation**
+   ```yaml
+   # Test detection requirements in ESPHome:
+   # Standard Config: ToF primary + PIR backup (1 of 2 required)
+   # Camera Config: Camera primary + PIR + ToF (2 of 3 required)
+
+   # Test scenarios:
+   - Single sensor activation (should not trigger)
+   - Multiple sensor confirmation (should trigger)
+   - False positive rejection
+   - Environmental interference immunity
+   ```
+
+2. **Detection Timing Validation**
+   ```
+   - Test rodent entry simulation at various speeds
+   - Verify 0.15-0.25 second confirmation window
+   - Ensure full entry before vacuum activation
+   - Test entrance investigation vs. full entry
+   ```
+
+#### **4.3 Distance Sensor Calibration**
 1. **Baseline Reading**
    ```
    - Mount sensor in final position

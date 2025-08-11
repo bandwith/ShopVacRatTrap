@@ -28,9 +28,9 @@ generate_stl() {
 
     # Set timeout based on file complexity
     local timeout_seconds=300  # 5 minutes default
-    if [[ "$scad_file" == *"Inlet_Rodent_Detection_Assembly"* ]]; then
-        timeout_seconds=900  # 15 minutes for complex inlet assembly
-        echo -e "${BLUE}⏱️  Using extended timeout for complex geometry...${NC}"
+    if [[ "$scad_file" == *"Complete_Trap_Tube_Assembly"* ]]; then
+        timeout_seconds=1800  # 30 minutes for large unified assembly
+        echo -e "${BLUE}⏱️  Using extended timeout for unified 3D printed design...${NC}"
     fi
 
     # Generate STL with timeout, verbose output and error checking

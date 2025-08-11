@@ -142,12 +142,52 @@ OLED Display (I2C Address: 0x3C)
 │                                  └─────────────────┘
 ```
 
-### Optimized Component Placement Strategy
+### Optimized Component Placement Strategy - HYBRID DETECTION
 ```
-INLET AREA (At Pipe Detection Point):
+INLET AREA (Cascaded Detection Point):
 ├─ QWIIC/STEMMA QT 5-Port Hub (Adafruit 5625)
-├─ VL53L0X ToF Sensor (Primary Detection)
+├─ VL53L0X ToF Sensor (Primary/Tertiary Detection)
+├─ PIR Motion Sensor (Secondary/Backup Detection) - GPIO13
 ├─ BME280 Environmental Sensor (Optional - can be at inlet or control box)
+└─ [Future: OV5640 Camera, Additional Sensors]
+
+CONTROL BOX (Main Electronics):
+├─ ESP32-S3 Feather (Main Controller)
+├─ OLED Display (User Interface)
+├─ Power Supply (Mean Well LRS-35-5)
+├─ SSR + Optocoupler (AC Switching)
+└─ Emergency Stop Button
+
+HYBRID DETECTION WIRING:
+┌─────────────────────────────────────────────────────────────────┐
+│                     ENHANCED WIRING DIAGRAM                    │
+│                     (Hybrid Detection System)                  │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│ CONTROL BOX:           INLET AREA:                              │
+│ ┌─────────────────┐    ┌─────────────────────────────────────┐  │
+│ │ ESP32-S3        │    │ Sensor Array (75-85mm from entry)  │  │
+│ │                 │    │                                     │  │
+│ │ GPIO5  ──────────────┼─→ SSR Control (Safety Critical)    │  │
+│ │ GPIO13 ──────────────┼─→ PIR Motion Sensor (Backup)       │  │
+│ │ GPIO21 ─────(SDA)────┼─→ STEMMA QT Chain:                 │  │
+│ │ GPIO22 ─────(SCL)────┼─→   ├─ VL53L0X ToF (Primary)       │  │
+│ │                 │    │     ├─ BME280 Environmental        │  │
+│ │ Built-in 3.3V   │    │     ├─ OLED Display (Control Box)  │  │
+│ │ Regulator       │    │     └─ [Future Camera Module]     │  │
+│ │ (600mA max)     │    │                                     │  │
+│ └─────────────────┘    └─────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────────┘
+
+PIR SENSOR CONNECTION (3-Wire):
+┌─────────────────────────────────────────────────────────────────┐
+│ PIR Sensor (HC-SR501) ←→ ESP32-S3                              │
+├─────────────────────────────────────────────────────────────────┤
+│ VCC (Red)    ←→ 3.3V (ESP32 regulated output)                  │
+│ GND (Black)  ←→ GND                                             │
+│ OUT (White)  ←→ GPIO13 (with internal pulldown)                │
+└─────────────────────────────────────────────────────────────────┘
+```
 └─ [Future: Camera, Additional Sensors]
 
 CONTROL BOX (Main Electronics):
@@ -275,9 +315,9 @@ CONTROL BOX Direct Connections:
 
 ### 3D Model Updates Required
 
-#### Inlet Area Models (Primary Changes)
-The following SCAD files need significant updates for hub integration:
-- `Inlet_Rodent_Detection_Assembly.scad` - Add hub mounting provisions
+#### Main Assembly Models (Updated for Unified Design)
+The following SCAD files have been updated for integrated STEMMA QT hub:
+- `Complete_Trap_Tube_Assembly.scad` - **CURRENT** - Includes integrated hub mounting at 25mm position
 
 #### New Parameters for Inlet Hub Integration
 ```scad

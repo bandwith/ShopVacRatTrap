@@ -2,15 +2,24 @@
 
 ## 🚀 Quick Purchase Options
 
-**NEW**: Automated purchase files and links are now available for streamlined ordering:
+**UPDATED (August 2025)**: Automated purchase files using integrated BOM manager:
 
-- **Run**: `./bom_manager.py generate-purchase-files` to generate current purchase files
+- **Run**: `python3 .github/scripts/bom_manager.py --bom-file BOM_CONSOLIDATED.csv --generate-purchase-files`
 - **Files Created**:
-  - `mouser_upload_consolidated.csv` - Mouser bulk upload file
-  - `adafruit_order_consolidated_cart_url.txt` - One-click Adafruit cart
-  - `sparkfun_order_consolidated_cart_url.txt` - One-click SparkFun cart
+  - `BOM_MOUSER_TEMPLATE.xlsx` - **Official Mouser template format (RECOMMENDED)**
+  - `BOM_MOUSER_TEMPLATE.csv` - CSV version for review
+  - `BOM_MOUSER_ONLY.csv` - Mouser-only consolidated BOM
+  - `mouser_upload_consolidated_only.csv` - Legacy simple upload format
+  - `PURCHASE_GUIDE.md` - Comprehensive purchase instructions
 
-**Bulk Ordering**: Upload CSV files to supplier BOM tools for instant pricing and availability.
+**Benefits of New System**:
+- ✅ **Real-time pricing** via Mouser API
+- ✅ **Dynamic part lookup** (no hardcoded mappings)
+- ✅ **Official Mouser template format** for direct upload
+- ✅ **Complete component data** (availability, datasheets, lifecycle)
+- ✅ **Single command** replaces multiple shell scripts
+
+**Bulk Ordering**: Upload BOM_MOUSER_TEMPLATE.xlsx to Mouser BOM tools for instant pricing and cart creation.
 
 ---
 
@@ -266,16 +275,22 @@ cp .env.example .env
 # 2. Edit .env with your API credentials
 nano .env
 
-# 3. Run the consolidated BOM manager locally - it will automatically load .env
-python3 bom_manager.py validate --bom-files BOM_CONSOLIDATED.csv
-python3 bom_manager.py check-availability --bom-files BOM_CONSOLIDATED.csv
-python3 bom_manager.py generate-purchase-files --bom-files BOM_CONSOLIDATED.csv
+# 3. Run the integrated BOM manager - it will automatically load .env
+python3 .github/scripts/bom_manager.py --bom-file BOM_CONSOLIDATED.csv --validate
+python3 .github/scripts/bom_manager.py --bom-file BOM_CONSOLIDATED.csv --check-availability
+python3 .github/scripts/bom_manager.py --bom-file BOM_CONSOLIDATED.csv --generate-purchase-files
+
+# 4. Or run everything at once
+python3 .github/scripts/bom_manager.py --bom-file BOM_CONSOLIDATED.csv --all
 ```
 
 **BOM Manager Script Features:**
-- ✅ `validate` - Hybrid Nexar/Mouser validation
-- ✅ `check-availability` - Component availability checking
-- ✅ `generate-purchase-files` - Generate all purchase files
+- ✅ `--validate` - Real-time Mouser pricing validation
+- ✅ `--check-availability` - Component availability checking
+- ✅ `--generate-purchase-files` - Generate all purchase files and templates
+- ✅ `--generate-mouser-template` - Official Mouser template format (RECOMMENDED)
+- ✅ `--analyze-consolidation` - Cost analysis for single-vendor sourcing
+- ✅ `--all` - Complete validation, pricing, and file generation
 - ✅ `update-pricing` - Update BOM with current pricing
 - ✅ `generate-reports` - Create summary reports
 

@@ -47,8 +47,10 @@ The authors and contributors of this project provide this design "as is" without
 - Emergency stop switch for safety compliance
 - Power supply, SSR, and terminal blocks
 
-**Inlet Components** (Detection assembly):
-- VL53L0X ToF sensor for distance detection
+**Inlet Components** (Hybrid Detection Assembly):
+- APDS9960 proximity/gesture sensor for primary detection
+- VL53L0X ToF sensor for distance confirmation (secondary)
+- PIR motion sensor for backup motion detection (tertiary)
 - BME280 environmental sensor for monitoring conditions
 - STEMMA QT 5-Port Hub to minimize cable count (single 500mm cable to control box)
 - Weatherproof housing and mounting hardware
@@ -60,13 +62,40 @@ The authors and contributors of this project provide this design "as is" without
 - Large arcade button and emergency stop switch
 - Power supply with sufficient capacity for camera system
 
-**Inlet Components** (Enhanced detection assembly):
-- OV5640 5MP Camera with autofocus lens for computer vision detection
-- VL53L0X ToF sensor for backup distance detection
+**Inlet Components** (Four-Sensor Hybrid Detection Assembly):
+- APDS9960 proximity/gesture sensor for primary detection (fully offline)
+- OV5640 5MP Camera for evidence capture and Home Assistant logging
+- PIR motion sensor for motion backup detection (secondary)
+- VL53L0X ToF sensor for distance confirmation (tertiary)
 - BME280 environmental sensor for monitoring conditions
 - High-Power IR LED for night vision illumination
 - STEMMA QT 5-Port Hub for centralized sensor management
 - Single 500mm cable connection to control box
+
+## Detection Strategy - Enhanced Hybrid System
+
+### **Multi-Modal Sensor Confirmation (Fully Offline Operation)**
+**Standard Configuration:**
+- **Primary**: APDS9960 proximity/gesture detection (offline)
+- **Secondary**: VL53L0X ToF distance confirmation
+- **Tertiary**: PIR motion sensor backup
+- **Logic**: 2 of 3 sensors required for trigger
+
+**Camera Configuration:**
+- **Primary**: APDS9960 proximity/gesture detection (offline)
+- **Secondary**: PIR motion sensor backup
+- **Tertiary**: VL53L0X ToF distance confirmation
+- **Evidence**: OV5640 camera captures photo for Home Assistant logging
+- **Logic**: 2 of 3 detection sensors required for trigger
+
+**Benefits of Enhanced Hybrid Approach:**
+- ✅ **Fully offline operation** - No WiFi required for detection logic
+- ✅ **APDS9960 proximity detection** - Superior to computer vision for rodent detection
+- ✅ **Four-sensor redundancy** - Eliminates false positives from any single sensor failure
+- ✅ **Evidence capture** - Camera provides visual confirmation sent to Home Assistant
+- ✅ **Gesture detection capability** - APDS9960 can distinguish different movement patterns
+- ✅ **Ambient light awareness** - APDS9960 RGB sensor provides lighting context
+- ✅ **Proven reliability** - Based on upstream project's successful APDS9960 implementation
 
 ## Component Overview
 

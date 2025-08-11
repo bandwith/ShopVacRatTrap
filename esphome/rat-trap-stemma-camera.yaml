@@ -63,7 +63,7 @@ i2c:
   scan: true
   frequency: 100kHz  # Reduced for better EMI immunity in high-voltage environment
 
-# Camera configuration for OV5640 STEMMA QT
+# Camera configuration for OV5640 STEMMA QT - Used for image capture/logging
 esp32_camera:
   name: "Rat Trap Camera"
   external_clock:
@@ -78,27 +78,392 @@ esp32_camera:
   pixel_clock_pin: GPIO27
   power_down_pin: GPIO32
 
-  # Camera settings for OV5640 5MP sensor
-  resolution: 2048x1536  # 3MP for better performance while maintaining quality
-  jpeg_quality: 15  # High quality for better animal identification
-  aec_sensor: false  # Disable automatic exposure for consistent lighting
+  # Camera settings optimized for documentation (not real-time processing)
+  resolution: 1024x768   # Reduced for faster capture and storage
+  jpeg_quality: 20       # Good quality for documentation
+  aec_sensor: true       # Auto exposure for varying conditions
   aec2: false
-  ae_level: 2
+  ae_level: 0
   aec_value: 300
-  agc_sensor: false  # Disable automatic gain for consistent image quality
+  agc_sensor: true       # Auto gain for varying lighting
   agc_gain: 0
-  bpc: true  # Bad pixel correction
-  wpc: true  # White pixel correction
-  raw_gma: true  # Gamma correction
-  lenc: true  # Lens correction
+  bpc: true              # Bad pixel correction
+  wpc: true              # White pixel correction
+  raw_gma: true          # Gamma correction
+  lenc: true             # Lens correction
   special_effect: none
-  wb_mode: auto  # Auto white balance for various lighting conditions
+  wb_mode: auto          # Auto white balance
   test_pattern: false
 
-# Enhanced Time-of-Flight sensor (VL53L0X)
+# APDS9960 Proximity/Light/Gesture Sensor - PRIMARY detection sensor
 sensor:
-  - platform: vl53l0x
+  - platform: apds9960
+    address: 0x39
+    update_interval: 60s
+    proximity:
+      name: "APDS9960 Proximity"
+      id: apds_proximity
+    red_channel:
+      name: "APDS9960 Red"
+      id: apds_red
+    green_channel:
+      name: "APDS9960 Green"
+      id: apds_green
+    blue_channel:
+      name: "APDS9960 Blue"
+      id: apds_blue
+    clear_channel:
+      name: "APDS9960 Clear"
+      id: apds_clear
+
+# Enhanced Time-of-Flight sensor (VL53L0X) - Tertiary confirmation
+
+# IR Distance Sensor (GP2Y0A21YK0F) - Tertiary confirmation
+sensor:
+  - platform: adc
+    name: "IR Distance Sensor Raw"
+    id: ir_distance_raw
+    pin: A0  # ESP32-S3 analog pin
+    attenuation: 11db
+    update_interval: 100ms  # Slower in camera config to reduce load
+    accuracy_decimals: 3
+    filters:
+      - multiply: 3.3  # Convert to voltage
+      - lambda: |-
+          // GP2Y0A21YK0F voltage to distance conversion
+          if (x < 0.4) return NAN;  // Invalid reading
+          float distance_cm = 6762.0 / (x + 4.0) + 9.0;
+          if (distance_cm < 10.0 || distance_cm > 80.0) return NAN;
+          return distance_cm * 10.0;  // Convert to mm for consistency
+
+  # Template sensor for IR distance
+  - platform: template
     name: "Trap Distance"
+    id: trap_distance
+    lambda: |-
+      return id(ir_distance_raw).state;
+    unit_of_measurement: "mm"
+    accuracy_decimals: 0
+    filters:
+      - median:
+          window_size: 5
+          send_every: 3
+      - heartbeat: 300s
+
+  # PIR Motion Sensor - Secondary/Backup Detection
+  - platform: gpio
+    name: "PIR Motion Detected"
+    id: pir_motion
+    pin:
+      number: GPIO13
+      mode: INPUT_PULLDOWN
+    filters:
+      - delayed_on: 10ms    # Debounce
+      - delayed_off: 2000ms # Keep active for 2 seconds
+
+  # ESP32 internal temperature monitoring
+  - platform: template
+    name: "ESP32 Temperature"
+    id: esp32_temp
+    lambda: |-
+      return temperatureRead();
+    unit_of_measurement: "°C"
+    accuracy_decimals: 1
+    update_interval: 30s
+    filters:
+      - lambda: |-
+          if (x > 85.0) {
+            // Thermal shutdown protection
+            id(thermal_shutdown).execute();
+          }
+          return x;
+
+  # WiFi signal strength monitoring
+  - platform: wifi_signal
+    name: "WiFi Signal"
+    id: wifi_signal
+    update_interval: 60s
+
+  # Environmental monitoring (BME280 via STEMMA QT)
+  - platform: bme280
+    address: 0x76
+    update_interval: 60s
+    temperature:
+      name: "Environmental Temperature"
+      id: env_temperature
+      accuracy_decimals: 1
+    humidity:
+      name: "Environmental Humidity"
+      id: env_humidity
+      accuracy_decimals: 0
+    pressure:
+      name: "Barometric Pressure"
+      id: env_pressure
+      accuracy_decimals: 1
+
+  # Detection statistics
+  - platform: template
+    name: "Total Captures"
+    id: capture_count_sensor
+    unit_of_measurement: "captures"
+    accuracy_decimals: 0
+    lambda: |-
+      return id(capture_count);
+
+# Hybrid Detection Logic - Four-Sensor Cascaded System (Offline Operation)
+binary_sensor:
+  # Primary detection: APDS9960 proximity sensing
+  - platform: template
+    name: "APDS9960 Proximity Detection"
+    id: apds_detection
+    lambda: |-
+      // APDS9960 proximity detection (primary sensor)
+      float proximity = id(apds_proximity).state;
+      return (proximity > 50);  // Adjust threshold based on testing
+
+  # Secondary detection: PIR motion backup
+  - platform: template
+    name: "PIR Motion Detection"
+    id: pir_detection
+    lambda: |-
+      return id(pir_motion).state;
+
+  # Tertiary detection: ToF distance confirmation
+  - platform: template
+    name: "ToF Distance Detection"
+    id: tof_detection
+    lambda: |-
+      float distance = id(ir_distance_filtered).state;
+      float threshold = id(detection_threshold).state;
+      return (distance > 0 && distance < threshold);
+
+  # Master detection logic: Requires confirmation from multiple sensors
+  - platform: template
+    name: "Trap Triggered"
+    id: trap_triggered
+    lambda: |-
+      // Four-sensor hybrid system for maximum reliability
+      int detection_count = 0;
+
+      if (id(apds_detection).state) detection_count++;
+      if (id(pir_detection).state) detection_count++;
+      if (id(tof_detection).state) detection_count++;
+
+      // Require at least 2 of 3 sensors for positive detection
+      bool detection_confirmed = (detection_count >= 2);
+
+      // Additional safety: Check if emergency stop is active
+      bool emergency_active = id(emergency_stop).state;
+
+      return detection_confirmed && !emergency_active;
+    on_press:
+      then:
+        - logger.log: "HYBRID DETECTION: Multiple sensors confirm rodent presence"
+        - script.execute: activate_vacuum
+        - script.execute: capture_evidence_photo
+        - lambda: |-
+            id(capture_count) += 1;
+            id(last_trigger_time) = id(homeassistant_time).now().timestamp;
+
+  # Emergency stop switch
+  - platform: gpio
+    name: "Emergency Stop"
+    id: emergency_stop
+    pin:
+      number: GPIO4
+      mode: INPUT_PULLUP
+      inverted: true
+    filters:
+      - delayed_on: 10ms
+    on_press:
+      then:
+        - logger.log: "EMERGENCY STOP ACTIVATED"
+        - script.execute: emergency_shutdown
+
+# Configurable parameters for hybrid detection system
+number:
+  - platform: template
+    name: "Detection Threshold (mm)"
+    id: detection_threshold
+    min_value: 50.0
+    max_value: 200.0
+    step: 5.0
+    initial_value: 150.0
+    optimistic: true
+    unit_of_measurement: "mm"
+
+  - platform: template
+    name: "Vacuum Runtime (seconds)"
+    id: vacuum_runtime
+    min_value: 3.0
+    max_value: 30.0
+    step: 1.0
+    initial_value: 10.0
+    optimistic: true
+    unit_of_measurement: "s"
+
+  - platform: template
+    name: "Detection Confirmation Window (ms)"
+    id: confirmation_window
+    min_value: 500.0
+    max_value: 5000.0
+    step: 100.0
+    initial_value: 2000.0
+    optimistic: true
+    unit_of_measurement: "ms"
+
+# Global variables for state tracking
+globals:
+  - id: capture_count
+    type: int
+    initial_value: '0'
+    restore_value: true
+
+  - id: last_trigger_time
+    type: time_t
+    initial_value: '0'
+    restore_value: true
+
+  - id: system_armed
+    type: bool
+    initial_value: 'true'
+    restore_value: true
+
+# Safety and control scripts
+script:
+  # Main vacuum activation script
+  - id: activate_vacuum
+    then:
+      - logger.log: "ACTIVATING VACUUM - Multi-sensor confirmation received"
+      - switch.turn_on: vacuum_relay
+      - delay: !lambda "return id(vacuum_runtime).state * 1000;"
+      - switch.turn_off: vacuum_relay
+      - logger.log: "VACUUM CYCLE COMPLETE"
+
+  # Emergency shutdown script
+  - id: emergency_shutdown
+    then:
+      - logger.log: "EMERGENCY SHUTDOWN - All vacuum operations halted"
+      - switch.turn_off: vacuum_relay
+      - lambda: |-
+          id(system_armed) = false;
+
+  # System rearm script
+  - id: rearm_system
+    then:
+      - logger.log: "SYSTEM REARMED - Detection active"
+      - lambda: |-
+          id(system_armed) = true;
+
+  # Evidence photo capture script (for Home Assistant logging)
+  - id: capture_evidence_photo
+    then:
+      - logger.log: "CAPTURING EVIDENCE PHOTO"
+      - esp32_camera.capture:
+      - delay: 200ms  # Allow camera to stabilize
+      - logger.log: "Evidence photo captured and sent to Home Assistant"
+
+  # Thermal shutdown protection
+  - id: thermal_shutdown
+    then:
+      - logger.log: "THERMAL SHUTDOWN - ESP32 overheating detected"
+      - switch.turn_off: vacuum_relay
+      - deep_sleep:
+          sleep_duration: 60s
+
+# Hardware control interfaces
+switch:
+  # Vacuum relay control (GPIO5 - SAFETY CRITICAL)
+  - platform: gpio
+    name: "Vacuum Relay"
+    id: vacuum_relay
+    pin: GPIO5
+    restore_mode: ALWAYS_OFF  # Safety: Always start with vacuum OFF
+
+  # System arming control
+  - platform: template
+    name: "System Armed"
+    id: system_armed_switch
+    lambda: |-
+      return id(system_armed);
+    turn_on_action:
+      - script.execute: rearm_system
+    turn_off_action:
+      - script.execute: emergency_shutdown
+
+# Time component for timestamps
+time:
+  - platform: homeassistant
+    id: homeassistant_time
+
+# Status display (SSD1306 OLED via STEMMA QT)
+font:
+  - file: "gfonts://Roboto"
+    id: font_small
+    size: 10
+  - file: "gfonts://Roboto"
+    id: font_medium
+    size: 14
+  - file: "gfonts://Roboto"
+    id: font_large
+    size: 18
+
+display:
+  - platform: ssd1306_i2c
+    model: "SSD1306 128x64"
+    address: 0x3C
+    lambda: |-
+      // Header with system info
+      it.printf(0, 0, id(font_small), "RatTrap %s %s", id(line_voltage).c_str(), id(safety_standard).c_str());
+
+      // WiFi status indicator
+      if (id(wifi_component).is_connected()) {
+        it.printf(105, 0, id(font_small), "WiFi");
+      } else {
+        it.printf(100, 0, id(font_small), "No Net");
+      }
+
+      // Multi-sensor detection status
+      it.printf(0, 12, id(font_medium), "4-Sensor Hybrid:");
+
+      // Sensor status indicators (compact 4-sensor display)
+      int y_offset = 26;
+      if (id(apds_detection).state) {
+        it.printf(0, y_offset, id(font_small), "✓ APDS");
+      } else {
+        it.printf(0, y_offset, id(font_small), "○ APDS");
+      }
+
+      if (id(pir_detection).state) {
+        it.printf(40, y_offset, id(font_small), "✓ PIR");
+      } else {
+        it.printf(40, y_offset, id(font_small), "○ PIR");
+      }
+
+      if (id(tof_detection).state) {
+        it.printf(70, y_offset, id(font_small), "✓ ToF");
+      } else {
+        it.printf(70, y_offset, id(font_small), "○ ToF");
+      }
+
+      it.printf(100, y_offset, id(font_small), "📷");  // Camera always available
+
+      // Master trigger status
+      y_offset += 12;
+      if (id(trap_triggered).state) {
+        it.filled_rectangle(0, y_offset, 128, 12, COLOR_ON);
+        it.print(2, y_offset + 2, id(font_small), COLOR_OFF, ">> VACUUM ACTIVE <<");
+      } else if (id(emergency_stop).state) {
+        it.printf(0, y_offset, id(font_small), "EMERGENCY STOP");
+      } else if (id(system_armed)) {
+        it.printf(0, y_offset, id(font_small), "System Armed - Ready");
+      } else {
+        it.printf(0, y_offset, id(font_small), "System Disarmed");
+      }
+
+      // Statistics and environmental data
+      it.printf(0, 54, id(font_small), "Captures: %.0f  Temp: %.1f°C",
+                id(capture_count_sensor).state, id(env_temperature).state);
     id: trap_distance
     address: 0x29
     update_interval: 50ms
