@@ -67,7 +67,6 @@ jobs:
             --validate \
             --check-availability \
             --generate-purchase-files \
-            --analyze-consolidation \
             --generate-mouser-only
         continue-on-error: true
 
@@ -203,7 +202,6 @@ jobs:
             validation_results.json
             pricing_report.md
             availability_report.md
-            mouser_consolidation_analysis.md
             pricing_backup/ # Contains the 5 most recent BOM pricing backups
             purchasing/
           retention-days: 30
@@ -223,12 +221,6 @@ jobs:
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "## 📦 Availability Report" >> $GITHUB_STEP_SUMMARY
             cat availability_report.md >> $GITHUB_STEP_SUMMARY
-          fi
-
-          if [ -f mouser_consolidation_analysis.md ]; then
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "## 📊 Consolidation Analysis" >> $GITHUB_STEP_SUMMARY
-            cat mouser_consolidation_analysis.md >> $GITHUB_STEP_SUMMARY
           fi
 
           echo "" >> $GITHUB_STEP_SUMMARY

@@ -1146,240 +1146,6 @@ class BOMManager:
 
         return output_file
 
-    def calculate_mouser_consolidation_cost(
-        self, bom_file: str, output_dir: str
-    ) -> dict:
-        """Calculate cost comparison between current BOM and Mouser alternatives using dynamic lookup"""
-        print("📊 Analyzing Mouser consolidation opportunities...")
-
-        components = []
-        try:
-            with open(bom_file, newline="", encoding="utf-8") as csvfile:
-                reader = csv.DictReader(csvfile)
-                for row in reader:
-                    components.append(row)
-        except Exception as e:
-            print(f"❌ Error reading BOM file: {e}")
-            return None
-
-        analysis = {
-            "current_total": 0,
-            "mouser_total": 0,
-            "components": [],
-            "non_mouser_components": [],
-            "mouser_components": [],
-            "savings": 0,
-            "unavailable_alternatives": [],
-        }
-
-        for component in components:
-            distributor = component.get("Distributor", "")
-            manufacturer = component.get("Manufacturer", "")
-            mpn = component.get("Manufacturer Part Number", "")
-            quantity = int(component.get("Quantity", 1))
-
-            try:
-                current_price = float(component.get("Unit Price", 0))
-            except ValueError:
-                current_price = 0.0
-
-            extended_price = current_price * quantity
-            analysis["current_total"] += extended_price
-
-            component_analysis = {
-                "original": component,
-                "quantity": quantity,
-                "current_price": current_price,
-                "current_extended": extended_price,
-                "mouser_equivalent": None,
-                "potential_savings": 0,
-            }
-
-            if distributor.lower() != "mouser" and manufacturer and mpn:
-                # Try to find Mouser equivalent using dynamic lookup
-                print(f"🔍 Searching for Mouser equivalent of {manufacturer} {mpn}...")
-
-                part_result = self.search_part(mpn, manufacturer)
-
-                if part_result.get("found"):
-                    price_data = self.get_best_price(part_result, quantity)
-
-                    if price_data:
-                        mouser_extended = price_data["total_price"]
-                        savings = extended_price - mouser_extended
-
-                        component_analysis["mouser_equivalent"] = {
-                            "mouser_part": part_result["mouser_part"],
-                            "manufacturer": part_result["manufacturer"],
-                            "description": part_result["description"],
-                            "unit_price": price_data["unit_price"],
-                            "extended_price": mouser_extended,
-                            "availability": part_result["availability"],
-                            "savings": savings,
-                        }
-                        component_analysis["potential_savings"] = savings
-                        analysis["mouser_total"] += mouser_extended
-
-                        print(
-                            f"✅ Found: {part_result['mouser_part']} - ${price_data['unit_price']:.2f} each"
-                        )
-                    else:
-                        print("⚠️ Found part but no pricing available")
-                        analysis["unavailable_alternatives"].append(component_analysis)
-                        analysis["mouser_total"] += (
-                            extended_price  # Use current price as fallback
-                        )
-                else:
-                    print(f"❌ No Mouser equivalent found for {manufacturer} {mpn}")
-                    analysis["unavailable_alternatives"].append(component_analysis)
-                    analysis["mouser_total"] += (
-                        extended_price  # Use current price as fallback
-                    )
-
-                analysis["non_mouser_components"].append(component_analysis)
-            else:
-                # Already at Mouser or no manufacturer info
-                analysis["mouser_components"].append(component_analysis)
-                analysis["mouser_total"] += extended_price
-                print(f"✅ Already Mouser: {mpn}")
-
-            analysis["components"].append(component_analysis)
-
-        analysis["savings"] = analysis["current_total"] - analysis["mouser_total"]
-        analysis["savings_percentage"] = (
-            (analysis["savings"] / analysis["current_total"] * 100)
-            if analysis["current_total"] > 0
-            else 0
-        )
-
-        # Generate analysis report
-        self._generate_consolidation_analysis(
-            analysis, os.path.join(output_dir, "mouser_consolidation_analysis.md")
-        )
-
-        return analysis
-
-    def _generate_consolidation_analysis(
-        self, analysis: dict, output_file: str = "mouser_consolidation_analysis.md"
-    ):
-        """Generate detailed consolidation analysis report"""
-        report = []
-
-        report.append("# Mouser Consolidation Analysis")
-        report.append(
-            f"*Generated on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}*\n"
-        )
-
-        report.append("## 📊 Cost Comparison Summary")
-        report.append(f"**Current Total Cost:** ${analysis['current_total']:.2f}")
-        report.append(f"**Mouser Consolidated Cost:** ${analysis['mouser_total']:.2f}")
-        report.append(
-            f"**Potential Savings:** ${analysis['savings']:.2f} ({analysis['savings_percentage']:.1f}%)"
-        )
-        report.append("")
-
-        # Component distribution
-        non_mouser_count = len(analysis["non_mouser_components"])
-        mouser_count = len(analysis["mouser_components"])
-
-        report.append("## 🧩 Component Distribution")
-        report.append("| Source | Components | Current Cost | Mouser Cost |")
-        report.append("|--------|------------|--------------|-------------|")
-
-        non_mouser_current = sum(
-            c["current_extended"] for c in analysis["non_mouser_components"]
-        )
-        non_mouser_mouser = sum(
-            c["mouser_equivalent"]["extended_price"]
-            if c["mouser_equivalent"]
-            else c["current_extended"]
-            for c in analysis["non_mouser_components"]
-        )
-
-        mouser_current = sum(
-            c["current_extended"] for c in analysis["mouser_components"]
-        )
-
-        report.append(
-            f"| Non-Mouser | {non_mouser_count} | ${non_mouser_current:.2f} | ${non_mouser_mouser:.2f} |"
-        )
-        report.append(
-            f"| Mouser | {mouser_count} | ${mouser_current:.2f} | ${mouser_current:.2f} |"
-        )
-        report.append("")
-
-        # Detailed component analysis
-        if analysis["non_mouser_components"]:
-            report.append("## 🔍 Non-Mouser Component Analysis")
-            report.append(
-                "| Component | Current Price | Best Mouser Alternative | Mouser Price | Savings |"
-            )
-            report.append(
-                "|-----------|---------------|------------------------|--------------|---------|"
-            )
-
-            for comp in analysis["non_mouser_components"]:
-                original = comp["original"]
-                current_cost = comp["current_extended"]
-
-                if comp["mouser_equivalent"]:
-                    alt = comp["mouser_equivalent"]
-                    alt_cost = alt["extended_price"]
-                    savings = current_cost - alt_cost
-                    savings_str = f"${savings:.2f}" if savings > 0 else "$0.00"
-
-                    report.append(
-                        f"| {original['Description'][:40]}... | ${current_cost:.2f} | {alt['mouser_part']} | ${alt_cost:.2f} | {savings_str} |"
-                    )
-                else:
-                    report.append(
-                        f"| {original['Description'][:40]}... | ${current_cost:.2f} | No alternative found | - | $0.00 |"
-                    )
-
-            report.append("")
-
-        # Unavailable alternatives
-        if analysis["unavailable_alternatives"]:
-            report.append("## ⚠️ Components Without Mouser Alternatives")
-            for component in analysis["unavailable_alternatives"]:
-                report.append(f"- {component}")
-            report.append("")
-
-        report.append("## 🛒 Recommendation")
-
-        if analysis["savings"] > 0:
-            report.append("✅ **RECOMMENDED**: Switch to Mouser consolidation")
-            report.append(
-                f"- **Total savings**: ${analysis['savings']:.2f} ({analysis['savings_percentage']:.1f}%)"
-            )
-            report.append("- **Single supplier**: Simplified ordering and shipping")
-            report.append("- **Professional components**: Higher quality alternatives")
-            report.append("")
-            report.append("### Next Steps:")
-            report.append("1. Review the generated `BOM_MOUSER_ONLY.csv`")
-            report.append(
-                "2. Verify component compatibility for STEMMA QT alternatives"
-            )
-            report.append("3. Test the generated purchase files")
-            report.append("4. Update project documentation if adopting changes")
-        else:
-            report.append(
-                "❌ **NOT RECOMMENDED**: Current multi-supplier approach is more cost-effective"
-            )
-            report.append("- Consider Mouser for future revisions as pricing changes")
-            report.append("- Keep current BOM for optimal cost")
-
-        report.append("")
-        report.append("---")
-        report.append(
-            "*Analysis based on current Mouser pricing and component availability.*"
-        )
-
-        with open(output_file, "w") as f:
-            f.write("\n".join(report))
-
-        return output_file
-
 
 def main():
     parser = argparse.ArgumentParser(
@@ -1413,11 +1179,6 @@ def main():
         help="Generate BOM in official Mouser template format",
     )
     parser.add_argument(
-        "--analyze-consolidation",
-        action="store_true",
-        help="Analyze Mouser consolidation opportunities",
-    )
-    parser.add_argument(
         "--generate-mouser-only", action="store_true", help="Generate Mouser-only BOM"
     )
 
@@ -1434,7 +1195,6 @@ def main():
             args.update_pricing,
             args.generate_purchase_files,
             args.generate_mouser_template,
-            args.analyze_consolidation,
             args.generate_mouser_only,
         ]
     )
@@ -1540,10 +1300,6 @@ def main():
         # Generate Mouser template format (NEW - preferred format)
         if do_all or args.generate_mouser_template:
             manager.generate_mouser_template_file(args.bom_file, args.output_dir)
-
-        # Analyze Mouser consolidation opportunities
-        if do_all or args.analyze_consolidation:
-            manager.calculate_mouser_consolidation_cost(args.bom_file, args.output_dir)
 
         # Generate Mouser-only BOM
         if do_all or args.generate_mouser_only:

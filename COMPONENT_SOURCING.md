@@ -292,7 +292,6 @@ python3 .github/scripts/bom_manager.py --bom-file BOM_CONSOLIDATED.csv --all
 - ✅ `--check-availability` - Component availability checking
 - ✅ `--generate-purchase-files` - Generate all purchase files and templates
 - ✅ `--generate-mouser-template` - Official Mouser template format (RECOMMENDED)
-- ✅ `--analyze-consolidation` - Cost analysis for single-vendor sourcing
 - ✅ `--all` - Complete validation, pricing, and file generation
 - ✅ `update-pricing` - Update BOM with current pricing
 - ✅ `generate-reports` - Create summary reports

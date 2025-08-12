@@ -51,7 +51,6 @@ Consolidated script for BOM management:
 - **Pricing Updates**: Updates BOM files with current pricing
 - **Availability Checking**: Monitors stock levels for all components
 - **Purchase Files**: Generates guides and distributor upload files
-- **Consolidation Analysis**: Analyzes Mouser-only sourcing opportunities
 
 **Usage:**
 
@@ -63,7 +62,6 @@ python .github/scripts/bom_manager.py --bom-file BOM_CONSOLIDATED.csv --all
 python .github/scripts/bom_manager.py --bom-file BOM_CONSOLIDATED.csv --validate --check-availability
 python .github/scripts/bom_manager.py --bom-file BOM_CONSOLIDATED.csv --update-pricing
 python .github/scripts/bom_manager.py --bom-file BOM_CONSOLIDATED.csv --generate-purchase-files
-python .github/scripts/bom_manager.py --bom-file BOM_CONSOLIDATED.csv --analyze-consolidation
 python .github/scripts/bom_manager.py --bom-file BOM_CONSOLIDATED.csv --generate-mouser-only
 ```
 
@@ -172,7 +170,6 @@ Consolidated script for BOM management:
 - **Pricing Updates**: Updates BOM files with current pricing
 - **Availability Checking**: Monitors stock levels for all components
 - **Purchase Files**: Generates guides and distributor upload files
-- **Consolidation Analysis**: Analyzes Mouser-only sourcing opportunities
 
 **Usage:**
 
@@ -184,7 +181,6 @@ python .github/scripts/bom_manager.py --bom-file BOM_CONSOLIDATED.csv --all
 python .github/scripts/bom_manager.py --bom-file BOM_CONSOLIDATED.csv --validate --check-availability
 python .github/scripts/bom_manager.py --bom-file BOM_CONSOLIDATED.csv --update-pricing
 python .github/scripts/bom_manager.py --bom-file BOM_CONSOLIDATED.csv --generate-purchase-files
-python .github/scripts/bom_manager.py --bom-file BOM_CONSOLIDATED.csv --analyze-consolidation
 python .github/scripts/bom_manager.py --bom-file BOM_CONSOLIDATED.csv --generate-mouser-only
 ```
 
@@ -224,7 +220,6 @@ Add this to your GitHub repository secrets:
 - ✅ **Change Detection**: Issues created for significant price changes
 - ✅ **Availability Monitoring**: Weekly checks for critical components
 - ✅ **Supply Chain Alerts**: Notifications for stock issues
-- ✅ **Consolidation Analysis**: Identifies single-supplier opportunities
 
 ### Reporting
 

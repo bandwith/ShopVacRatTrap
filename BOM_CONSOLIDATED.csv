@@ -5,8 +5,7 @@ Adafruit,3317,VL53L0X Time of Flight Distance Sensor - STEMMA QT,1,U2,Adafruit,3
 Adafruit,326,Monochrome 0.96" 128x64 OLED Display - STEMMA QT,1,U3,Adafruit,326,14.95,14.95
 Adafruit,4816,BME280 Temperature Humidity Pressure Sensor - STEMMA QT,1,U4,Adafruit,4816,14.95,14.95
 Adafruit,5625,STEMMA QT / Qwiic 5-Port Hub,1,HUB1,Adafruit,5625,7.50,7.50
-Adafruit,3595,APDS9960 Proximity Light RGB Gesture Sensor - STEMMA QT,1,U5,Adafruit,3595,7.95,7.95
-Adafruit,4871,PIR (motion) sensor (HC-SR501) - STEMMA JST PH,1,U6,Adafruit,4871,5.95,5.95
+Adafruit,3595,APDS9960 Proximity Light RGB Gesture Sensor - STEMMA QT,1,U6,Adafruit,3595,7.95,7.95
 SparkFun,COM-13015,SparkFun Solid State Relay - 40A Chassis Mount,1,K1,SparkFun,COM-13015,14.95,14.95
 Adafruit,4401,STEMMA QT / Qwiic JST SH 4-pin Cable - 500mm Long,1,CABLE1,Adafruit,4401,1.95,1.95
 Adafruit,4399,STEMMA QT / Qwiic JST SH 4-pin Cable - 50mm Long,1,CABLE2,Adafruit,4399,0.75,0.75
