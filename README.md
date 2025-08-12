@@ -336,3 +336,4 @@ Original Inspiration: <https://shoprodentstoppers.com/products/rat-vac-motion-se
 Forked from: <https://github.com/shellster/ShopVacRatTrap>
 
 Shop Vacuum Adapter OpenSCAD starting point: <https://www.thingiverse.com/thing:1246651>
+# Trigger STL generation - Mon Aug 11 10:48:07 PM EDT 2025
