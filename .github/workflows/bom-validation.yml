@@ -1,18 +1,19 @@
+---
 name: BOM Validation & Monitoring
 
 on:
   schedule:
     # Run weekly on Mondays at 9 AM UTC
-    - cron: '0 9 * * 1'
+    - cron: 0 9 * * 1
   workflow_dispatch:
     inputs:
       check_availability:
-        description: 'Check component availability'
+        description: Check component availability
         required: false
         default: true
         type: boolean
       force_update:
-        description: 'Force update even if prices unchanged'
+        description: Force update even if prices unchanged
         required: false
         default: false
         type: boolean
@@ -29,210 +30,211 @@ jobs:
       issues: write
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.11'
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
 
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install requests pandas
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests pandas
 
-    - name: Create backup of current BOM and manage older backups
-      run: |
-        # Create backup directory if it doesn't exist
-        mkdir -p pricing_backup
+      - name: Create backup of current BOM and manage older backups
+        run: |
+          # Create backup directory if it doesn't exist
+          mkdir -p pricing_backup
 
-        # Create today's backup with date stamp
-        cp BOM_CONSOLIDATED.csv pricing_backup/BOM_CONSOLIDATED_$(date +%Y%m%d).csv
+          # Create today's backup with date stamp
+          cp BOM_CONSOLIDATED.csv pricing_backup/BOM_CONSOLIDATED_$(date +%Y%m%d).csv
 
-        # Keep only the 5 most recent backups and remove older ones
-        cd pricing_backup
-        ls -t BOM_CONSOLIDATED_*.csv | tail -n +6 | xargs -r rm
-        cd ..
+          # Keep only the 5 most recent backups and remove older ones
+          cd pricing_backup
+          ls -t BOM_CONSOLIDATED_*.csv | tail -n +6 | xargs -r rm
+          cd ..
 
-    - name: Run BOM validation and generate all files
-      id: bom_validation
-      run: |
-        echo "🔄 Starting BOM management process..."
-        python .github/scripts/bom_manager.py \
-          --bom-file BOM_CONSOLIDATED.csv \
-          --output-dir . \
-          --priority-components ESP32-S3-Feather COM-13015 LRS-35-5 \
-          --validate \
-          --check-availability \
-          --generate-purchase-files \
-          --analyze-consolidation \
-          --generate-mouser-only
-      continue-on-error: true
+      - name: Run BOM validation and generate all files
+        id: bom_validation
+        run: |
+          echo "🔄 Starting BOM management process..."
+          python .github/scripts/bom_manager.py \
+            --bom-file BOM_CONSOLIDATED.csv \
+            --output-dir . \
+            --priority-components ESP32-S3-Feather COM-13015 LRS-35-5 \
+            --validate \
+            --check-availability \
+            --generate-purchase-files \
+            --analyze-consolidation \
+            --generate-mouser-only
+        continue-on-error: true
 
-    - name: Check for pricing changes
-      id: pricing_changes
-      run: |
-        if [ -f validation_results.json ]; then
-          CHANGES=$(jq '.pricing_changes.changes_detected' validation_results.json)
-          echo "changes_detected=$CHANGES" >> $GITHUB_OUTPUT
+      - name: Check for pricing changes
+        id: pricing_changes
+        run: |
+          if [ -f validation_results.json ]; then
+            CHANGES=$(jq '.pricing_changes.changes_detected' validation_results.json)
+            echo "changes_detected=$CHANGES" >> $GITHUB_OUTPUT
 
-          SIGNIFICANT=$(jq '.pricing_changes.significant_changes' validation_results.json)
-          echo "significant_changes=$SIGNIFICANT" >> $GITHUB_OUTPUT
-        else
-          echo "changes_detected=false" >> $GITHUB_OUTPUT
-          echo "significant_changes=false" >> $GITHUB_OUTPUT
-        fi
+            SIGNIFICANT=$(jq '.pricing_changes.significant_changes' validation_results.json)
+            echo "significant_changes=$SIGNIFICANT" >> $GITHUB_OUTPUT
+          else
+            echo "changes_detected=false" >> $GITHUB_OUTPUT
+            echo "significant_changes=false" >> $GITHUB_OUTPUT
+          fi
 
-    - name: Update BOM files with current pricing
-      if: steps.pricing_changes.outputs.changes_detected == 'true' || github.event.inputs.force_update == 'true'
-      run: |
-        echo "📝 Updating BOM files with current pricing..."
-        python .github/scripts/bom_manager.py \
-          --bom-file BOM_CONSOLIDATED.csv \
-          --output-dir . \
-          --update-pricing
-        echo "BOM files updated with current pricing"
+      - name: Update BOM files with current pricing
+        if: steps.pricing_changes.outputs.changes_detected == 'true' || github.event.inputs.force_update == 'true'
+        run: |
+          echo "📝 Updating BOM files with current pricing..."
+          python .github/scripts/bom_manager.py \
+            --bom-file BOM_CONSOLIDATED.csv \
+            --output-dir . \
+            --update-pricing
+          echo "BOM files updated with current pricing"
 
-    - name: Create alert for unavailable components
-      if: steps.bom_validation.outputs.unavailable_components == 'true'
-      uses: actions/github-script@v7
-      with:
-        script: |
-          const fs = require('fs');
+      - name: Create alert for unavailable components
+        if: steps.bom_validation.outputs.unavailable_components == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
 
-          let reportContent = '';
-          try {
-            reportContent = fs.readFileSync('availability_report.md', 'utf8');
-          } catch (error) {
-            reportContent = '❌ Unable to generate availability report';
-          }
+            let reportContent = '';
+            try {
+              reportContent = fs.readFileSync('availability_report.md', 'utf8');
+            } catch (error) {
+              reportContent = '❌ Unable to generate availability report';
+            }
 
-          const issueBody = `${reportContent}
+            const issueBody = `${reportContent}
 
-          ## 🚨 Action Required
+            ## 🚨 Action Required
 
-          **Critical components are showing low availability or are out of stock.**
+            **Critical components are showing low availability or are out of stock.**
 
-          ### Immediate Actions:
-          1. **Review affected components** listed above
-          2. **Source alternative suppliers** for out-of-stock items
-          3. **Consider alternative components** if needed
-          4. **Update BOM** with alternative part numbers if substitutions are made
-          5. **Test alternatives** before finalizing changes
+            ### Immediate Actions:
+            1. **Review affected components** listed above
+            2. **Source alternative suppliers** for out-of-stock items
+            3. **Consider alternative components** if needed
+            4. **Update BOM** with alternative part numbers if substitutions are made
+            5. **Test alternatives** before finalizing changes
 
-          *This alert was automatically generated by the component availability monitoring system.*`;
+            *This alert was automatically generated by the component availability monitoring system.*`;
 
-          const issue = await github.rest.issues.create({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            title: '🚨 Component Availability Alert - Critical Parts Low Stock',
-            body: issueBody,
-            labels: ['automation', 'availability', 'urgent', 'supply-chain']
-          });
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: '🚨 Component Availability Alert - Critical Parts Low Stock',
+              body: issueBody,
+              labels: ['automation', 'availability', 'urgent', 'supply-chain']
+            });
 
-          console.log(`Created urgent availability issue #${issue.data.number}`);
+            console.log(`Created urgent availability issue #${issue.data.number}`);
 
-    - name: Create issue for significant price changes
-      if: steps.pricing_changes.outputs.significant_changes == 'true'
-      uses: actions/github-script@v7
-      with:
-        script: |
-          const fs = require('fs');
+      - name: Create issue for significant price changes
+        if: steps.pricing_changes.outputs.significant_changes == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
 
-          let reportContent = '';
-          try {
-            reportContent = fs.readFileSync('pricing_report.md', 'utf8');
-          } catch (error) {
-            reportContent = '❌ Unable to generate pricing report';
-          }
+            let reportContent = '';
+            try {
+              reportContent = fs.readFileSync('pricing_report.md', 'utf8');
+            } catch (error) {
+              reportContent = '❌ Unable to generate pricing report';
+            }
 
-          const issueBody = `${reportContent}
+            const issueBody = `${reportContent}
 
-          ## 🔍 Action Required
+            ## 🔍 Action Required
 
-          **Significant price changes have been detected in the BOM components.**
+            **Significant price changes have been detected in the BOM components.**
 
-          ### Next Steps:
-          1. Review the pricing changes above
-          2. Update project cost estimates if needed
-          3. Consider alternative components for items with major price increases
-          4. Update ELECTRICAL_DESIGN.md cost analysis if total project cost changed significantly
-          5. Close this issue once changes have been reviewed and addressed
+            ### Next Steps:
+            1. Review the pricing changes above
+            2. Update project cost estimates if needed
+            3. Consider alternative components for items with major price increases
+            4. Update ELECTRICAL_DESIGN.md cost analysis if total project cost changed significantly
+            5. Close this issue once changes have been reviewed and addressed
 
-          *This issue was automatically created by the BOM validation workflow.*`;
+            *This issue was automatically created by the BOM validation workflow.*`;
 
-          const issue = await github.rest.issues.create({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            title: '⚠️ Significant BOM Price Changes Detected',
-            body: issueBody,
-            labels: ['automation', 'pricing', 'review-needed']
-          });
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: '⚠️ Significant BOM Price Changes Detected',
+              body: issueBody,
+              labels: ['automation', 'pricing', 'review-needed']
+            });
 
-          console.log(`Created issue #${issue.data.number}`);
+            console.log(`Created issue #${issue.data.number}`);
 
-    - name: Commit and push changes
-      if: steps.pricing_changes.outputs.changes_detected == 'true' || github.event.inputs.force_update == 'true'
-      run: |
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
+      - name: Commit and push changes
+        if: steps.pricing_changes.outputs.changes_detected == 'true' || github.event.inputs.force_update == 'true'
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
 
-        git add BOM_*.csv
-        git add pricing_backup/
-        git add purchasing/
+          git add BOM_*.csv
+          git add pricing_backup/
+          git add purchasing/
 
-        if ! git diff --staged --quiet; then
-          git commit -m "🤖 Auto-update BOM pricing and purchase links - $(date +%Y-%m-%d)
+          if ! git diff --staged --quiet; then
+            git commit -m "🤖 Auto-update BOM pricing and purchase links - $(date +%Y-%m-%d)
 
-          - Updated component pricing from Mouser API
-          - Created Mouser upload files for bulk ordering
-          - Backup created: pricing_backup/BOM_CONSOLIDATED_$(date +%Y%m%d).csv
-          - Only keeping 5 most recent pricing backups for repository cleanliness"
+            - Updated component pricing from Mouser API
+            - Created Mouser upload files for bulk ordering
+            - Backup created: pricing_backup/BOM_CONSOLIDATED_$(date +%Y%m%d).csv
+            - Only keeping 5 most recent pricing backups for repository cleanliness"
 
-          git push
-        fi
+            git push
+          fi
 
-    - name: Upload artifacts
-      if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: bom-validation-${{ github.run_number }}
-        path: |
-          validation_results.json
-          pricing_report.md
-          availability_report.md
-          mouser_consolidation_analysis.md
-          pricing_backup/ # Contains the 5 most recent BOM pricing backups
-          purchasing/
-        retention-days: 30
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bom-validation-${{ github.run_number }}
+          path: |
+            validation_results.json
+            pricing_report.md
+            availability_report.md
+            mouser_consolidation_analysis.md
+            pricing_backup/ # Contains the 5 most recent BOM pricing backups
+            purchasing/
+          retention-days: 30
 
-    - name: Post summary to workflow
-      if: always()
-      run: |
-        echo "## 💰 BOM Validation Summary" >> $GITHUB_STEP_SUMMARY
+      - name: Post summary to workflow
+        if: always()
+        run: |
+          echo "## 💰 BOM Validation Summary" >> $GITHUB_STEP_SUMMARY
 
-        if [ -f pricing_report.md ]; then
-          cat pricing_report.md >> $GITHUB_STEP_SUMMARY
-        else
-          echo "❌ Pricing validation failed - check logs for details" >> $GITHUB_STEP_SUMMARY
-        fi
+          if [ -f pricing_report.md ]; then
+            cat pricing_report.md >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Pricing validation failed - check logs for details" >> $GITHUB_STEP_SUMMARY
+          fi
 
-        if [ -f availability_report.md ]; then
+          if [ -f availability_report.md ]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "## 📦 Availability Report" >> $GITHUB_STEP_SUMMARY
+            cat availability_report.md >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [ -f mouser_consolidation_analysis.md ]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "## 📊 Consolidation Analysis" >> $GITHUB_STEP_SUMMARY
+            cat mouser_consolidation_analysis.md >> $GITHUB_STEP_SUMMARY
+          fi
+
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "## 📦 Availability Report" >> $GITHUB_STEP_SUMMARY
-          cat availability_report.md >> $GITHUB_STEP_SUMMARY
-        fi
-
-        if [ -f mouser_consolidation_analysis.md ]; then
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "## 📊 Consolidation Analysis" >> $GITHUB_STEP_SUMMARY
-          cat mouser_consolidation_analysis.md >> $GITHUB_STEP_SUMMARY
-        fi
-
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "### 📊 Workflow Statistics" >> $GITHUB_STEP_SUMMARY
-        echo "- **Run Date**: $(date)" >> $GITHUB_STEP_SUMMARY
-        echo "- **Trigger**: ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
-        echo "- **Changes Detected**: ${{ steps.pricing_changes.outputs.changes_detected }}" >> $GITHUB_STEP_SUMMARY
-        echo "- **Significant Changes**: ${{ steps.pricing_changes.outputs.significant_changes }}" >> $GITHUB_STEP_SUMMARY
+          echo "### 📊 Workflow Statistics" >> $GITHUB_STEP_SUMMARY
+          echo "- **Run Date**: $(date)" >> $GITHUB_STEP_SUMMARY
+          echo "- **Trigger**: ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Changes Detected**: ${{ steps.pricing_changes.outputs.changes_detected }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Significant Changes**: ${{ steps.pricing_changes.outputs.significant_changes }}" \
+            >> $GITHUB_STEP_SUMMARY

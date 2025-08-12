@@ -7,42 +7,42 @@ extends: default
 rules:
   # ESPHome configurations often have longer lines for complex lambdas,
   # sensor configurations, and comments
-    line-length:
-        max: 120
-        level: error
+  line-length:
+    max: 120
+    level: error
 
   # Allow more flexible comment spacing for ESPHome documentation
-    comments:
-        min-spaces-from-content: 1
+  comments:
+    min-spaces-from-content: 1
 
   # ESPHome uses truthy values like "on"/"off" which are more readable
   # than strict "true"/"false" in many contexts
-    truthy:
-        allowed-values: ['true', 'false', on, off, yes, no, 'True', 'False', On, Off, Yes, No]
+  truthy:
+    allowed-values: ['yes', 'no', 'true', 'false', 'on', 'off']
 
   # Document start is optional for ESPHome configurations
   # Allow document starts but don't require them (compatible with yamlfmt)
-    document-start: disable
+  document-start: disable
 
   # Allow trailing spaces in some cases (useful for ESPHome templates)
-    trailing-spaces:
-        level: warning
+  trailing-spaces:
+    level: warning
 
   # ESPHome configurations can be quite indented with nested structures
-    indentation:
-        spaces: 2
-        indent-sequences: true
-        check-multi-line-strings: false
+  indentation:
+    spaces: 2
+    indent-sequences: true
+    check-multi-line-strings: false
 
   # Allow empty values for ESPHome placeholders
-    empty-values:
-        forbid-in-block-mappings: false
-        forbid-in-flow-mappings: false
+  empty-values:
+    forbid-in-block-mappings: false
+    forbid-in-flow-mappings: false
 
 # Ignore paths that contain external dependencies or generated files
 ignore: |
-    .venv/
-    .git/
-    *.stl
-    *.gcode
-    pricing_backup/
+  .venv/
+  .git/
+  *.stl
+  *.gcode
+  pricing_backup/

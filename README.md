@@ -198,21 +198,6 @@ Total Load Camera: 379mA peak capture (37% headroom) ✅ APPROVED
 The project includes automated purchase links and bulk upload files for streamlined component ordering:
 
 - **[COMPONENT_SOURCING.md](COMPONENT_SOURCING.md)** - Complete purchase guide with direct links
-- **`purchasing/mouser_upload_consolidated.csv`** - Upload directly to Mouser BOM tool
-- **`purchasing/adafruit_order_consolidated.csv`** - Adafruit component list with cart URL
-- **`purchasing/sparkfun_order_consolidated.csv`** - SparkFun components with cart URL
-
-### **🛒 One-Click Ordering**
-
-| Supplier | Components | Upload File | Direct Link |
-|----------|------------|-------------|-------------|
-| **Mouser** | Power supplies, enclosure, AC components | `purchasing/mouser_upload_consolidated.csv` | [BOM Upload Tool](https://www.mouser.com/tools/bom-tool) |
-
-### **💰 Cost Breakdown**
-
-- **Total Project Cost**: ~$146.10 (single unit, list pricing)
-
-*Volume pricing available for 10+ units*
 
 ### **📁 Project Documentation**
 
