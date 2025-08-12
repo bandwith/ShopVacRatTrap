@@ -3,10 +3,8 @@ name: Generate STL Files from SCAD
 
 on:
   push:
-    paths:
-      - 3D Models/*.scad
-      - .github/workflows/stl-generation.yml
-      - .github/scripts/stl_*.sh
+    branches:
+      - main
   pull_request:
     paths:
       - 3D Models/*.scad
