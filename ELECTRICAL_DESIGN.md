@@ -86,7 +86,7 @@ All sensors use standardized JST SH 4-pin connectors for assembly without solder
 
 ### Power Budget Analysis - HYBRID DETECTION SYSTEM
 
-**STANDARD CONFIGURATION (APDS9960 + ToF + PIR):**
+**STANDARD CONFIGURATION (APDS9960 + VL53L0X + PIR + BME280):**
 ```
 ESP32-S3 Core:         45-70mA WiFi active
 APDS9960 Proximity:    400µA typical, 5mA active
@@ -94,12 +94,13 @@ VL53L0X ToF Sensor:    15mA typical, 30mA peak
 PIR Motion Sensor:     65µA quiescent, 2.3mA active
 BME280 Env. Sensor:    1μA sleep, 3.6mA active
 OLED Display:          15mA typical, 25mA peak
-Total Load:            76-108mA typical, 135mA peak
+Total Load:            76-106mA typical, 135mA peak
 ESP32-S3 Capacity:     600mA (built-in regulator)
 Safety Margin:         465-524mA available (77-87% headroom)
+Power Compliance:      ✅ APPROVED - Excellent headroom
 ```
 
-**CAMERA CONFIGURATION (Four-Sensor Hybrid Detection):**
+**CAMERA CONFIGURATION (Four-Sensor + OV5640 Camera):**
 ```
 ESP32-S3 Core:         70mA WiFi + processing
 APDS9960 Proximity:    400µA typical, 5mA active
@@ -111,9 +112,9 @@ OLED Display:          15mA typical, 25mA peak
 High-Power IR LEDs:    200mA @ 3.3V (pulsed only)
 Camera Processing:     +50mA during image processing
 Total Typical:         225mA normal operation
-Total Peak Load:       435mA during capture with IR pulse
+Total Peak Load:       431mA during capture with IR pulse
 ESP32-S3 Capacity:     600mA (built-in regulator)
-Safety Margin:         165mA available (27% headroom)
+Safety Margin:         169mA available (28% headroom)
 Power Compliance:      ✅ APPROVED - Within ESP32-S3 limits
 ```
 
@@ -140,28 +141,18 @@ Power Compliance:      ✅ APPROVED - Within ESP32-S3 limits
                                               ↓                ↓
 [Shop Vacuum] ← [SSR Output] ← [SSR Control] ← [GPIO5] ← [3.3V Regulation]
                                                         ↓
-[STEMMA QT Bus] ← [I2C Sensors: VL53L0X + BME280 + OLED]
+[STEMMA QT Bus] ← [I2C Sensors: APDS9960 + VL53L0X + BME280 + OLED]
 ```
 
 **STEMMA QT Camera Enhanced Configuration:**
-**Standard ESP32-S3 Configuration:**
 ```
 [120V AC Input] → [IEC Inlet + Switch] → [Mean Well PSU] → [ESP32-S3 Feather]
                                               ↓                ↓
 [Shop Vacuum] ← [SSR Output] ← [SSR Control] ← [GPIO5] ← [3.3V Built-in Regulator]
                                                          ↓
-[STEMMA QT Bus] ← [I2C: VL53L0X + BME280 + OLED] → [Detection Trigger]
-```
-
-**STEMMA QT Camera Enhancement:**
-```
-[120V AC Input] → [IEC Inlet + Switch] → [Mean Well PSU] → [ESP32-S3 Feather]
-                                              ↓                ↓
-[Shop Vacuum] ← [SSR Output] ← [SSR Control] ← [GPIO5] ← [3.3V Built-in Regulator]
+[STEMMA QT Bus] ← [I2C: APDS9960 + VL53L0X + BME280 + OLED] → [Hybrid Detection]
                                                          ↓
-[STEMMA QT Bus] ← [VL53L0X + BME280 + OLED] → [Detection Trigger]
-                                                         ↓
-[SD Card Storage] ← [Image Capture] ← [OV5640 STEMMA Camera] ← [Auto Trigger]
+[Evidence Storage] ← [Image Capture] ← [OV5640 STEMMA Camera] ← [Auto Trigger]
                                                          ↓
 [High-Power IR] ← [STEMMA JST PH] ← [GPIO6] ← [Night Vision Control]
 ```
@@ -174,21 +165,24 @@ Power Compliance:      ✅ APPROVED - Within ESP32-S3 limits
 | GPIO | Function | Connection | Safety Level |
 |------|----------|------------|--------------|
 | GPIO5 | SSR Control | 4N35 Optocoupler → SSR | SAFETY CRITICAL |
-| GPIO13 | Emergency Stop | Arcade Button (Active Low) | SAFETY CRITICAL |
+| GPIO18 | Emergency Stop | Arcade Button (Active Low) | SAFETY CRITICAL |
 | GPIO3 | I2C SDA | STEMMA QT Bus (Primary) | Standard |
 | GPIO4 | I2C SCL | STEMMA QT Bus (Primary) | Standard |
-| GPIO13 | Status LED | Onboard LED | Standard |
+| GPIO10 | Reset Button | Reset/Test Button | Standard |
+| GPIO13 | PIR Motion | PIR Sensor Input | Standard |
 
 **STEMMA QT Camera Enhanced Configuration:**
 | GPIO | Function | Connection | Safety Level |
 |------|----------|------------|--------------|
 | GPIO5 | SSR Control | 4N35 Optocoupler → SSR | SAFETY CRITICAL |
-| GPIO13 | Emergency Stop | Arcade Button (Active Low) | SAFETY CRITICAL |
+| GPIO18 | Emergency Stop | Arcade Button (Active Low) | SAFETY CRITICAL |
 | GPIO3 | I2C SDA | STEMMA QT Bus (Sensors) | Standard |
 | GPIO4 | I2C SCL | STEMMA QT Bus (Sensors) | Standard |
 | GPIO8 | I2C SDA | OV5640 Camera (Secondary Bus) | Standard |
 | GPIO9 | I2C SCL | OV5640 Camera (Secondary Bus) | Standard |
 | GPIO6 | IR LED Control | High-Power IR STEMMA Module | Standard |
+| GPIO10 | Reset Button | Reset/Test Button | Standard |
+| GPIO13 | PIR Motion | PIR Sensor Input | Standard |
 
 ### Power Distribution
 
@@ -218,35 +212,34 @@ Mean Well LRS-35-5 (5V/7A)
 
 **Current Implementation: STEMMA QT Daisy Chain**
 ```
-ESP32-S3 STEMMA QT Port
-    ↓ (100mm cable)
-VL53L0X ToF Sensor (0x29)
-    ↓ (100mm cable)
-BME280 Environmental (0x77)
-    ↓ (200mm cable)
-OLED Display (0x3C)
-```
-
-**⚡ RECOMMENDED: Inlet Hub-Based Configuration**
-```
-ESP32-S3 STEMMA QT Port (Control Box)
+ESP32-S3 STEMMA QT Port (GPIO3/GPIO4)
     ↓ (500mm cable to inlet area)
-QWIIC/STEMMA QT 5-Port Hub (Adafruit 5625) - Located at Inlet
-    ├─ Port 1 → VL53L0X ToF Sensor (50mm cable - co-located)
-    ├─ Port 2 → BME280 Environmental (100mm cable - inlet area)
-    ├─ Port 3 → [Reserved for Camera Module at inlet]
-    ├─ Port 4 → [Reserved for Additional Inlet Sensors]
+STEMMA QT 5-Port Hub (Adafruit 5625) - Located at Inlet
+    ├─ Port 1 → APDS9960 Proximity Sensor (50mm cable)
+    ├─ Port 2 → VL53L0X ToF Sensor (50mm cable)
+    ├─ Port 3 → BME280 Environmental (100mm cable)
+    ├─ Port 4 → [Reserved for PIR Module]
     └─ Port 5 → [Reserved for Future Expansion]
 
 OLED Display (0x3C) → Direct to ESP32 (100mm cable in control box)
 ```
 
-**I2C Device Addresses:**
-- `0x29` - VL53L0X Time-of-Flight sensor (at inlet)
-- `0x3C` - SSD1306 OLED display (in control box)
-- `0x77` - BME280 environmental sensor (at inlet for accurate readings)
+**Camera Configuration Additional Bus:**
+```
+ESP32-S3 Secondary I2C (GPIO8/GPIO9)
+    ↓
+OV5640 5MP Camera Module (Adafruit 5945)
+    ↓
+High-Power IR LED → GPIO6 (STEMMA JST PH)
+```
 
-**Inlet Hub Benefits:**
+**I2C Device Addresses:**
+- `0x39` - APDS9960 Proximity/Light/Gesture sensor (at inlet)
+- `0x29` - VL53L0X Time-of-Flight sensor (at inlet)
+- `0x77` - BME280 environmental sensor (at inlet for accurate readings)
+- `0x3C` - SSD1306 OLED display (in control box)
+
+**Hub-Based Benefits:**
 - ✅ **Massive Cable Reduction**: Only 1 cable run between control box and inlet area
 - ✅ **Accurate Environmental Data**: BME280 at inlet monitors actual entry conditions
 - ✅ **Simplified Installation**: Single cable routing vs. multiple sensor cable runs

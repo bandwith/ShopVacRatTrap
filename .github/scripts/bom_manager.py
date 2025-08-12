@@ -51,7 +51,6 @@ import requests
 import random
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional
 
 # Load environment variables from .env file if it exists (for local development)
 try:
@@ -161,7 +160,7 @@ class BOMManager:
             # Use manufacturer part number directly (for vendors already using Mouser format)
             return manufacturer_part_number
 
-    def search_part(self, part_number: str, manufacturer: str = None) -> Dict:
+    def search_part(self, part_number: str, manufacturer: str = None) -> dict:
         """Search for a part by part number"""
         self._check_rate_limit()
 
@@ -276,7 +275,7 @@ class BOMManager:
             print(f"❌ Request error: {e}")
             return {"found": False, "error": str(e)}
 
-    def get_best_price(self, part: Dict, quantity: int = 1) -> Optional[Dict]:
+    def get_best_price(self, part: dict, quantity: int = 1) -> dict | None:
         """Get best price for a given quantity"""
         price_breaks = part.get("price_breaks", [])
 
@@ -308,15 +307,15 @@ class BOMManager:
         }
 
     def validate_bom(
-        self, bom_file: str, priority_components: List[str] = None
-    ) -> Dict:
+        self, bom_file: str, priority_components: list[str] = None
+    ) -> dict:
         """Validate entire BOM file with pricing and availability"""
         print(f"📋 Validating BOM file: {bom_file}")
 
         try:
             # Read BOM file
             components = []
-            with open(bom_file, "r", newline="") as csvfile:
+            with open(bom_file, newline="") as csvfile:
                 reader = csv.DictReader(csvfile)
                 for row in reader:
                     components.append(row)
@@ -514,7 +513,7 @@ class BOMManager:
             print(f"❌ Error validating BOM: {e}")
             return {"error": str(e)}
 
-    def _generate_pricing_report(self, validation_results: Dict):
+    def _generate_pricing_report(self, validation_results: dict):
         """Generate pricing report from validation results"""
         report = []
 
@@ -580,7 +579,7 @@ class BOMManager:
         with open("pricing_report.md", "w") as f:
             f.write("\n".join(report))
 
-    def _generate_availability_report(self, validation_results: Dict):
+    def _generate_availability_report(self, validation_results: dict):
         """Generate availability report from validation results"""
         report = []
 
@@ -654,13 +653,13 @@ class BOMManager:
                 f"unavailable_components={'true' if has_unavailable else 'false'}\n"
             )
 
-    def update_bom_pricing(self, bom_file: str, validation_results: Dict) -> bool:
+    def update_bom_pricing(self, bom_file: str, validation_results: dict) -> bool:
         """Update BOM with current pricing from validation results"""
         print(f"📝 Updating BOM pricing in {bom_file}...")
 
         try:
             # Read the original BOM to preserve structure
-            with open(bom_file, "r", newline="") as csvfile:
+            with open(bom_file, newline="") as csvfile:
                 reader = csv.reader(csvfile)
                 header = next(reader)
                 rows = list(reader)
@@ -735,7 +734,7 @@ class BOMManager:
             return False
 
     def generate_purchase_guide(
-        self, bom_file: str, validation_results: Dict = None, output_dir: str = "."
+        self, bom_file: str, validation_results: dict = None, output_dir: str = "."
     ) -> str:
         """Generate purchase guide with direct links"""
         print("📋 Generating purchase guide...")
@@ -743,7 +742,7 @@ class BOMManager:
         # Load BOM data
         components = []
         try:
-            with open(bom_file, "r", newline="") as csvfile:
+            with open(bom_file, newline="") as csvfile:
                 reader = csv.DictReader(csvfile)
                 for row in reader:
                     components.append(row)
@@ -886,7 +885,7 @@ class BOMManager:
         # Load BOM data
         components = []
         try:
-            with open(bom_file, "r", newline="", encoding="utf-8") as csvfile:
+            with open(bom_file, newline="", encoding="utf-8") as csvfile:
                 reader = csv.DictReader(csvfile)
                 for row in reader:
                     components.append(row)
@@ -1065,7 +1064,7 @@ class BOMManager:
         # Read the consolidated BOM
         components = []
         try:
-            with open(bom_file, "r", newline="", encoding="utf-8") as csvfile:
+            with open(bom_file, newline="", encoding="utf-8") as csvfile:
                 reader = csv.DictReader(csvfile)
                 for row in reader:
                     components.append(row)
@@ -1149,13 +1148,13 @@ class BOMManager:
 
     def calculate_mouser_consolidation_cost(
         self, bom_file: str, output_dir: str
-    ) -> Dict:
+    ) -> dict:
         """Calculate cost comparison between current BOM and Mouser alternatives using dynamic lookup"""
         print("📊 Analyzing Mouser consolidation opportunities...")
 
         components = []
         try:
-            with open(bom_file, "r", newline="", encoding="utf-8") as csvfile:
+            with open(bom_file, newline="", encoding="utf-8") as csvfile:
                 reader = csv.DictReader(csvfile)
                 for row in reader:
                     components.append(row)
@@ -1261,7 +1260,7 @@ class BOMManager:
         return analysis
 
     def _generate_consolidation_analysis(
-        self, analysis: Dict, output_file: str = "mouser_consolidation_analysis.md"
+        self, analysis: dict, output_file: str = "mouser_consolidation_analysis.md"
     ):
         """Generate detailed consolidation analysis report"""
         report = []

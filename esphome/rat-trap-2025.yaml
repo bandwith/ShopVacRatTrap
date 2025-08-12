@@ -1,48 +1,23 @@
+---
 esphome:
-  name: rat-trap-2025
-  friendly_name: "ShopVac Rat Trap 2025"
-  platform: ESP32
-  board: adafruit_feather_esp32s3
-  comment: "NEC/IEC compliant ESP32-S3 based rat trap with STEMMA QT sensors"
+    name: rat-trap-2025
+    friendly_name: ShopVac Rat Trap 2025
+    comment: NEC/IEC compliant ESP32-S3 based rat trap with STEMMA QT hybrid detection system
 
-# Hardware variant selection - Choose your configuration
-# STANDARD: ESP32-S3 Feather with basic sensors
-# ENHANCED VERSION: ESP32-S3 with VL53L0X ToF sensor, OLED display, BME280 environmental monitoring
-substitutions:
-  hardware_variant: "STANDARD"  # Options: STANDARD, CAMERA
-
-# Enhanced ESP32-S3 configuration (Standard variant)
+# ESP32-S3 Feather configuration - Standard hybrid detection variant
 esp32:
-  variant: esp32s3
-  board: adafruit_feather_esp32s3
-  framework:
-    type: arduino
-
-# Note: For CAMERA variant, use rat-trap-camera-enhanced.yaml instead
+    board: adafruit_feather_esp32s3
+    variant: esp32s3
+    framework:
+        type: arduino
 
 # Voltage-specific configuration (uncomment appropriate section)
 substitutions:
   # 🇺🇸 North America (120V AC, 60Hz, NEC compliant)
-  line_volta      // System monitoring
-      if (id(wifi_signal).has_state()) {
-        it.printf(0, 56, id(font_small), "WiFi: %.0fdBm  CPU: %.1f°C",
-                  id(wifi_signal).state, id(esp32_temp).state);
-      } else {
-        it.printf(0, 56, id(font_small), "ESP32 Temp: %.1f°C", id(esp32_temp).state);
-      }
-
-      // Thermal warning indicator
-      if (id(esp32_temp).has_state() && id(esp32_temp).state > 75.0) {
-        it.print(120, 56, id(font_small), "!");  # Temperature warning
-      }
-
-# Voltage-specific configuration (uncomment appropriate section)
-substitutions:
-  # 🇺🇸 North America (120V AC, 60Hz, NEC compliant)
-  line_voltage: "120V AC"
-  line_frequency: "60Hz"
-  max_current: "15A"
-  safety_standard: "NEC/UL"
+    line_voltage: 120V AC
+    line_frequency: 60Hz
+    max_current: 15A
+    safety_standard: NEC/UL
 
   # 🇪🇺 Europe (230V AC, 50Hz, IEC/CE compliant)
   # line_voltage: "230V AC"
@@ -52,695 +27,646 @@ substitutions:
 
 # Enable logging
 logger:
-  level: INFO
+    level: INFO
 
 # Enable Home Assistant API
 api:
-  encryption:
-    key: !secret api_encryption_key
+    encryption:
+        key: !secret api_encryption_key
 
 ota:
-  - platform: esphome
-    password: !secret ota_password
+    - platform: esphome
+      password: !secret ota_password
 
 wifi:
-  ssid: !secret wifi_ssid
-  password: !secret wifi_password
+    ssid: !secret wifi_ssid
+    password: !secret wifi_password
 
   # Enable fallback hotspot (captive portal) in case wifi connection fails
-  ap:
-    ssid: "RatTrap2025 Fallback"
-    password: !secret ap_password
+    ap:
+        ssid: RatTrap2025 Fallback
+        password: !secret ap_password
 
 captive_portal:
 
-# I2C bus configuration for VL53L0X, BME280 and OLED via STEMMA QT with enhanced EMI protection
-# Uses STEMMA QT 5-Port Hub (Adafruit 5625) to minimize cable count
-# Hub connects: ESP32 ← Hub → ToF, BME280, OLED
-# RECOMMENDED: Use Adafruit QWIIC/STEMMA QT 5-Port Hub (5625) for improved cable management
-# Hub Configuration: ESP32 → Hub → Individual devices (star topology)
-# Legacy Configuration: ESP32 → VL53L0X → BME280 → OLED (daisy chain)
+# I2C bus configuration for hybrid detection sensors via STEMMA QT
+# Standard configuration uses STEMMA QT daisy chain for easy assembly
+# Primary sensors: APDS9960 + VL53L0X + BME280 + OLED display
 i2c:
-  sda: 21
-  scl: 22
-  scan: true
-  frequency: 100kHz  # Reduced from 400kHz for better EMI immunity in high-voltage environment
+    - id: bus_a
+      sda: 3 # ESP32-S3 Feather STEMMA QT SDA
+      scl: 4 # ESP32-S3 Feather STEMMA QT SCL
+      scan: true
+      frequency: 100kHz # Reduced for EMI immunity in high-voltage environment
 
-# IR Distance Sensor (GP2Y0A21YK0F) - Optimized for rodent detection
+# Hybrid detection sensor configuration - Standard STEMMA QT sensors
 sensor:
-  - platform: adc
-    name: "IR Distance Sensor Raw"
-    id: ir_distance_raw
-    pin: A0  # ESP32-S3 analog pin
-    attenuation: 11db
-    update_interval: 50ms  # Fast for responsive detection
-    accuracy_decimals: 3
-    filters:
-      - multiply: 3.3  # Convert to voltage
-      - lambda: |-
-          // GP2Y0A21YK0F voltage to distance conversion
-          // Distance(cm) = 6762/(ADC_voltage-9)-4 (Sharp datasheet formula)
-          if (x < 0.4) return NAN;  // Invalid reading below 0.4V
-          float distance_cm = 6762.0 / (x + 4.0) + 9.0;
-          if (distance_cm < 10.0 || distance_cm > 80.0) return NAN;
-          return distance_cm * 10.0;  // Convert to mm for consistency
+  # APDS9960 Proximity/Light/Gesture Sensor - PRIMARY detection sensor
+    - platform: apds9960
+      address: 0x39
+      update_interval: 100ms # Fast for responsive detection
+      proximity:
+          name: APDS9960 Proximity
+          id: apds_proximity
+          filters:
+              - sliding_window_moving_average:
+                    window_size: 5
+                    send_every: 3
 
-  # Enhanced IR distance with filtering for stable detection
-  - platform: template
-    name: "Trap Distance"
-    id: trap_distance
-    lambda: |-
-      return id(ir_distance_raw).state;
-    unit_of_measurement: "mm"
-    accuracy_decimals: 0
-    filters:
-      - median:
-          window_size: 5
-          send_every: 2
-      - sliding_window_moving_average:
-          window_size: 8
-          send_every: 3
-      - heartbeat: 300s
+  # VL53L0X Time-of-Flight sensor - SECONDARY confirmation sensor
+    - platform: vl53l0x
+      name: ToF Distance
+      id: tof_distance
+      address: 0x29
+      update_interval: 100ms
+      long_range: true
+      filters:
+          - median:
+                window_size: 5
+                send_every: 2
+          - sliding_window_moving_average:
+                window_size: 8
+                send_every: 3
+          - lambda: |-
+                // Reject obviously bad readings
+                if (x > 2000 || x < 10) return {};
+                return x;
 
   # BME280 environmental sensor via STEMMA QT (I2C)
-  - platform: bme280
-    address: 0x77  # Adafruit STEMMA QT BME280 default address
-    temperature:
-      name: "Environmental Temperature"
-      id: env_temperature
-      accuracy_decimals: 1
-      filters:
-        - sliding_window_moving_average:
-            window_size: 5
-            send_every: 5
-      unit_of_measurement: "°C"
-      device_class: temperature
-      state_class: measurement
-    humidity:
-      name: "Environmental Humidity"
-      id: env_humidity
+    - platform: bme280
+      address: 0x77 # Adafruit STEMMA QT BME280 default address
+      temperature:
+          name: Environmental Temperature
+          id: env_temperature
+          accuracy_decimals: 1
+          filters:
+              - sliding_window_moving_average:
+                    window_size: 5
+                    send_every: 5
+          unit_of_measurement: °C
+          device_class: temperature
+          state_class: measurement
+      humidity:
+          name: Environmental Humidity
+          id: env_humidity
+          accuracy_decimals: 0
+          unit_of_measurement: '%'
+          device_class: humidity
+          state_class: measurement
+      pressure:
+          name: Barometric Pressure
+          id: env_pressure
+          accuracy_decimals: 1
+          unit_of_measurement: hPa
+          device_class: atmospheric_pressure
+          state_class: measurement
+      update_interval: 60s
+
+  # Hybrid detection trigger - Template sensor for multi-sensor confirmation
+    - platform: template
+      name: Detection Confidence
+      id: detection_confidence
+      unit_of_measurement: sensors
       accuracy_decimals: 0
-      unit_of_measurement: "%"
-      device_class: humidity
-      state_class: measurement
-    pressure:
-      name: "Barometric Pressure"
-      id: env_pressure
-      accuracy_decimals: 1
-      unit_of_measurement: "hPa"
-      device_class: atmospheric_pressure
-      state_class: measurement
-    update_interval: 60s
+      lambda: |-
+          int detection_count = 0;
 
-  # APDS9960 Proximity/Light/Gesture Sensor - PRIMARY detection sensor
-  - platform: apds9960
-    address: 0x39
-    update_interval: 100ms  # Fast for responsive detection
-    proximity:
-      name: "APDS9960 Proximity"
-      id: apds_proximity
-      filters:
-        - sliding_window_moving_average:
-            window_size: 5
-            send_every: 3
+          // APDS9960 proximity detection
+          if (id(apds_proximity).state > 50) detection_count++;
 
-  # PIR Motion Sensor - Enhanced Detection (Secondary)
-  - platform: gpio
-    name: "PIR Motion Detected"
-    id: pir_motion
-    pin:
-      number: GPIO13
-      mode: INPUT_PULLDOWN
-    filters:
-      - delayed_on: 10ms    # Debounce
-      - delayed_off: 2000ms # Keep active for 2 seconds
+          // VL53L0X distance detection
+          if (id(tof_distance).state < id(detection_threshold).state) detection_count++;
 
-  # Distance-based rodent detection logic
-  - platform: template
-    name: "Trap Distance"
-    id: trap_distance_template
-    lambda: |-
-      return id(trap_distance).state;
-    filters:
-      - sliding_window_moving_average:
-          window_size: 20
-          send_every: 5
-      - lambda: |-
-          // Reject obviously bad readings
-          if (x > 4000 || x < 10) return {};
-          return x;
-    on_value_range:
-      - below: 150.0  # 15cm threshold for rodent detection
-        then:
+          // PIR motion detection
+          if (id(pir_motion).state) detection_count++;
+
+          return detection_count;
+      on_value:
           - if:
-              condition:
-                and:
-                  - binary_sensor.is_off: trap_triggered
-                  - lambda: 'return (millis() - id(last_trigger_time) > (id(cooldown_period).state * 1000));' # Configurable cooldown
-              then:
-                - logger.log: "Rodent detected! Triggering vacuum sequence."
-                - binary_sensor.template.publish:
-                    id: rodent_detected
-                    state: ON
-                - binary_sensor.template.publish:
-                    id: trap_triggered
-                    state: ON
-                - switch.turn_on: vacuum_relay
-                - lambda: 'id(last_trigger_time) = millis();'
-                - delay: !lambda 'return id(vacuum_runtime).state * 1000;'  # Configurable runtime
-                - switch.turn_off: vacuum_relay
-                - lambda: |-
-                    // Update capture count
-                    id(capture_count) += 1;
-                    id(capture_count_sensor).publish_state(id(capture_count));
-
-                    // Update vacuum runtime tracking
-                    float runtime_minutes = id(vacuum_runtime).state / 60.0;
-                    id(total_vacuum_runtime) += runtime_minutes;
-                    id(vacuum_runtime_sensor).publish_state(id(total_vacuum_runtime));
-                - delay: 2s
-                - binary_sensor.template.publish:
-                    id: trap_triggered
-                    state: OFF
-                - delay: !lambda 'return id(cooldown_period).state * 1000;'  # Configurable cooldown
-                - binary_sensor.template.publish:
-                    id: rodent_detected
-                    state: OFF
-      - above: 200.0  # Clear detection threshold
-        then:
-          - if:
-              condition:
-                and:
-                  - binary_sensor.is_off: trap_triggered
-              then:
-                - binary_sensor.template.publish:
-                    id: rodent_detected
-                    state: OFF
+                condition:
+                    and:
+                        - lambda: return x >= 2; # Require 2 of 3 sensors
+                        - binary_sensor.is_off: trap_triggered
+                        - lambda: return (millis() - id(last_trigger_time) > (id(cooldown_period).state * 1000));
+                then:
+                    - logger.log: Hybrid detection confirmed - 2+ sensors triggered
+                    - script.execute: activate_trap_sequence
 
   # Capture count tracker with persistence
-  - platform: template
-    name: "Capture Count"
-    id: capture_count_sensor
-    icon: "mdi:counter"
-    accuracy_decimals: 0
-    state_class: total_increasing
+    - platform: template
+      name: Capture Count
+      id: capture_count_sensor
+      icon: mdi:counter
+      accuracy_decimals: 0
+      state_class: total_increasing
+      lambda: |-
+          return id(capture_count);
 
   # Vacuum runtime tracking for maintenance scheduling
-  - platform: template
-    name: "Total Vacuum Runtime"
-    id: vacuum_runtime_sensor
-    icon: "mdi:vacuum"
-    unit_of_measurement: "minutes"
-    accuracy_decimals: 1
-    device_class: duration
-    state_class: total_increasing
-    lambda: |-
-      return id(total_vacuum_runtime);
-
-  # System fault monitoring
-  - platform: template
-    name: "Fault Count"
-    id: fault_count_sensor
-    icon: "mdi:alert"
-    accuracy_decimals: 0
-    state_class: total_increasing
-    lambda: |-
-      return id(fault_count);
-
-  # System monitoring sensors
-  - platform: wifi_signal
-    name: "WiFi Signal Strength"
-    id: wifi_signal
-    update_interval: 60s
-
-  - platform: uptime
-    name: "System Uptime"
-    id: uptime_sensor
+    - platform: template
+      name: Total Vacuum Runtime
+      id: vacuum_runtime_sensor
+      icon: mdi:vacuum
+      unit_of_measurement: minutes
+      accuracy_decimals: 1
+      device_class: duration
+      state_class: total_increasing
+      lambda: |-
+          return id(total_vacuum_runtime);
 
   # ESP32 internal temperature monitoring with enhanced thermal management
-  - platform: template
-    name: "ESP32 Temperature"
-    id: esp32_temp
-    icon: "mdi:thermometer"
-    unit_of_measurement: "°C"
-    device_class: temperature
-    state_class: measurement
-    lambda: |-
-      return temperatureRead();
-    update_interval: 15s  # More frequent monitoring for better thermal tracking
-    filters:
-      - sliding_window_moving_average:  # Smooth out temperature readings
-          window_size: 4
-          send_every: 2
-      - lambda: |-
-          // Enhanced thermal protection with tiered warnings
-          static int high_temp_count = 0;
-          static unsigned long last_warning_time = 0;
+    - platform: template
+      name: ESP32 Temperature
+      id: esp32_temp
+      icon: mdi:thermometer
+      unit_of_measurement: °C
+      device_class: temperature
+      state_class: measurement
+      lambda: |-
+          return temperatureRead();
+      update_interval: 15s
+      filters:
+          - sliding_window_moving_average:
+                window_size: 4
+                send_every: 2
+          - lambda: |-
+                // Enhanced thermal protection
+                if (x > 85.0) {
+                  ESP_LOGW("thermal", "CRITICAL: ESP32 overheating: %.1f°C - initiating emergency shutdown", x);
+                  id(last_fault_type) = "THERMAL_CRITICAL";
+                  id(fault_count)++;
+                  id(thermal_shutdown_button).press();
+                  return x;
+                }
+                if (x > 75.0) {
+                  ESP_LOGW("thermal", "WARNING: ESP32 temperature elevated: %.1f°C", x);
+                }
+                return x;
 
-          // Critical overheating - immediate shutdown
-          if (x > 85.0) {
-            ESP_LOGW("thermal", "CRITICAL: ESP32 overheating: %.1f°C - initiating emergency shutdown", x);
-            id(last_fault_type) = "THERMAL_CRITICAL";
-            id(fault_count)++;
-            id(thermal_shutdown).execute();
-            return x;
-          }
+  # System fault monitoring
+    - platform: template
+      name: Fault Count
+      id: fault_count_sensor
+      icon: mdi:alert
+      accuracy_decimals: 0
+      state_class: total_increasing
+      lambda: |-
+          return id(fault_count);
 
-          // High temperature warning - multiple stages
-          if (x > 75.0) {
-            high_temp_count++;
+  # System monitoring sensors
+    - platform: wifi_signal
+      name: WiFi Signal Strength
+      id: wifi_signal
+      update_interval: 60s
 
-            // Persistent high temperature
-            if (high_temp_count > 12) { // ~3 minutes of elevated temperature
-              ESP_LOGW("thermal", "WARNING: ESP32 persistent high temperature: %.1f°C - preventive shutdown", x);
-              id(last_fault_type) = "THERMAL_PERSISTENT";
-              id(fault_count)++;
-              id(thermal_shutdown).execute();
-              return x;
-            }
+    - platform: uptime
+      name: System Uptime
+      id: uptime_sensor
 
-            // Repeated warnings at 1 minute intervals
-            if (millis() - last_warning_time > 60000) {
-              ESP_LOGW("thermal", "WARNING: ESP32 temperature elevated: %.1f°C - monitoring", x);
-              last_warning_time = millis();
-            }
-          } else {
-            // Temperature normal - reset counter
-            high_temp_count = 0;
-          }
-
-          return x;
-
-# Binary sensors for detection and control
+# Binary sensors for hybrid detection system
 binary_sensor:
-  # Rodent detection state
-  - platform: template
-    name: "Rodent Detected"
-    id: rodent_detected
-    icon: "mdi:rat"
-    device_class: motion
+  # PIR Motion Sensor - TERTIARY detection sensor (HC-SR501 STEMMA JST PH)
+    - platform: gpio
+      name: PIR Motion Detected
+      id: pir_motion
+      pin:
+          number: GPIO13
+          mode: INPUT_PULLDOWN
+      filters:
+          - delayed_on: 10ms # Debounce
+          - delayed_off: 2000ms # Keep active for 2 seconds
+
+  # Rodent detection state (triggered by hybrid sensor confirmation)
+    - platform: template
+      name: Rodent Detected
+      id: rodent_detected
+      icon: mdi:rat
+      device_class: motion
 
   # Trap triggered state
-  - platform: template
-    name: "Trap Triggered"
-    id: trap_triggered
-    icon: "mdi:power"
+    - platform: template
+      name: Trap Triggered
+      id: trap_triggered
+      icon: mdi:power
 
-  # Physical reset button (GPIO18)
-  - platform: gpio
-    pin:
-      number: 18
-      mode: INPUT_PULLUP
-      inverted: true
-    name: "Reset Button"
-    id: reset_button
-    filters:
-      - delayed_on: 100ms
-      - delayed_off: 100ms
-    on_press:
-      - logger.log: "Reset button pressed - restarting system"
-      - delay: 1s
-      - button.press: restart_button
+  # Emergency stop switch (GPIO18 - Safety critical)
+    - platform: gpio
+      pin:
+          number: 18
+          mode: INPUT_PULLUP
+          inverted: true
+      name: Emergency Stop
+      id: emergency_stop
+      filters:
+          - delayed_on: 100ms
+          - delayed_off: 100ms
+      on_press:
+          - logger.log: EMERGENCY STOP ACTIVATED - All operations halted
+          - switch.turn_off: vacuum_relay
+          - binary_sensor.template.publish:
+                id: trap_triggered
+                state: off
+          - lambda: id(system_armed) = false;
 
-  # Test trigger functionality moved to software trigger in Home Assistant
-
-  # Optional PIR Motion Sensor (HC-SR501) for pre-detection
-  # Add this component to provide early detection and power saving
-  - platform: gpio
-    pin:
-      number: 13  # Adjust GPIO as needed
-      mode: INPUT
-    name: "PIR Motion Sensor"
-    id: pir_sensor
-    device_class: motion
-    filters:
-      - delayed_off: 30s
-    on_press:
-      then:
-        - logger.log: "PIR detected motion - activating enhanced monitoring"
-        - script.execute: activate_enhanced_monitoring
+  # Reset button (GPIO10)
+    - platform: gpio
+      pin:
+          number: 10
+          mode: INPUT_PULLUP
+          inverted: true
+      name: Reset Button
+      id: reset_button
+      filters:
+          - delayed_on: 100ms
+          - delayed_off: 100ms
+      on_press:
+          - logger.log: Reset button pressed - restarting system
+          - delay: 1s
+          - button.press: restart_button
 
 # Physical switches and controls
 switch:
-  # Main vacuum relay control (GPIO5) - Enhanced with 4N35 optocoupler protection
-  # Double isolation: ESP32 → 4N35 Optocoupler → SSR → AC Load (>8000V total isolation)
-  - platform: gpio
-    pin: 5
-    name: "Vacuum Relay"
-    id: vacuum_relay
-    icon: "mdi:vacuum"
-    restore_mode: ALWAYS_OFF
-    on_turn_on:
-      - logger.log:
-          format: "SSR activated - switching %s load (%s compliant)"
-          args: ['id(line_voltage).c_str()', 'id(safety_standard).c_str()']
-    on_turn_off:
-      - logger.log: "SSR deactivated - load disconnected"
+  # Main vacuum relay control (GPIO5) - Enhanced with optocoupler isolation
+  # Safety critical: ESP32 → 4N35 Optocoupler → SSR → AC Load
+    - platform: gpio
+      pin: 5
+      name: Vacuum Relay
+      id: vacuum_relay
+      icon: mdi:vacuum
+      restore_mode: ALWAYS_OFF # Safety: Always start with vacuum OFF
+      on_turn_on:
+          - logger.log:
+                format: SSR activated - switching %s load (%s compliant)
+                args: ['${line_voltage}', '${safety_standard}']
+      on_turn_off:
+          - logger.log: SSR deactivated - load disconnected
 
   # Software manual trigger
-  - platform: template
-    name: "Manual Trigger"
-    id: manual_trigger
-    icon: "mdi:play-circle"
-    turn_on_action:
-      - if:
-          condition:
-            binary_sensor.is_off: trap_triggered
-          then:
-            - logger.log: "Software manual trigger activated"
-            - switch.turn_on: vacuum_relay
-            - delay: 3s
-            - switch.turn_off: vacuum_relay
-            # Update vacuum runtime for manual activations too
-            - lambda: |-
-                float runtime_minutes = 3.0 / 60.0;
-                id(total_vacuum_runtime) += runtime_minutes;
-                id(vacuum_runtime_sensor).publish_state(id(total_vacuum_runtime));
-          else:
-            - logger.log: "Manual trigger ignored - system disabled or busy"
+    - platform: template
+      name: Manual Trigger
+      id: manual_trigger
+      icon: mdi:play-circle
+      turn_on_action:
+          - if:
+                condition:
+                    and:
+                        - binary_sensor.is_off: trap_triggered
+                        - binary_sensor.is_off: emergency_stop
+                then:
+                    - logger.log: Manual trigger activated
+                    - script.execute: activate_trap_sequence
+                else:
+                    - logger.log: Manual trigger ignored - system disabled or emergency stop active
 
-  # Power-saving mode control
-  - platform: template
-    name: "Power Saving Mode"
-    id: power_saving_mode
-    icon: "mdi:battery-10"
-    optimistic: true
-    restore_value: true
-    turn_on_action:
-      - logger.log: "Power saving mode enabled - using PIR for initial detection"
-    turn_off_action:
-      - logger.log: "Power saving mode disabled - continuous monitoring active"
+  # System arming control
+    - platform: template
+      name: System Armed
+      id: system_armed_switch
+      icon: mdi:shield-check
+      optimistic: true
+      restore_value: true
+      turn_on_action:
+          - logger.log: System armed - hybrid detection active
+          - lambda: id(system_armed) = true;
+      turn_off_action:
+          - logger.log: System disarmed - detection disabled
+          - lambda: id(system_armed) = false;
 
-# Restart button
+# Control scripts for trap operation
+script:
+  # Main trap activation sequence
+    - id: activate_trap_sequence
+      mode: single
+      then:
+          - if:
+                condition:
+                    and:
+                        - lambda: return id(system_armed);
+                        - binary_sensor.is_off: emergency_stop
+                        - binary_sensor.is_off: trap_triggered
+                then:
+                    - logger.log: Trap sequence initiated - hybrid detection confirmed
+                    - binary_sensor.template.publish:
+                          id: rodent_detected
+                          state: on
+                    - binary_sensor.template.publish:
+                          id: trap_triggered
+                          state: on
+                    - switch.turn_on: vacuum_relay
+                    - lambda: id(last_trigger_time) = millis();
+                    - delay: !lambda 'return id(vacuum_runtime).state * 1000;'
+                    - switch.turn_off: vacuum_relay
+                    - lambda: |-
+                          // Update capture statistics
+                          id(capture_count) += 1;
+                          id(capture_count_sensor).publish_state(id(capture_count));
+
+                          // Update vacuum runtime tracking
+                          float runtime_minutes = id(vacuum_runtime).state / 60.0;
+                          id(total_vacuum_runtime) += runtime_minutes;
+                          id(vacuum_runtime_sensor).publish_state(id(total_vacuum_runtime));
+                    - delay: 2s
+                    - binary_sensor.template.publish:
+                          id: trap_triggered
+                          state: off
+                    - delay: !lambda 'return id(cooldown_period).state * 1000;'
+                    - binary_sensor.template.publish:
+                          id: rodent_detected
+                          state: off
+                    - logger.log: Trap sequence complete - system re-armed
+                else:
+                    - logger.log: Trap sequence blocked - system disarmed or emergency stop active
+
+  # Thermal shutdown script
+    - id: thermal_shutdown
+      mode: single
+      then:
+          - logger.log: THERMAL SHUTDOWN ACTIVATED
+          - switch.turn_off: vacuum_relay
+          - binary_sensor.template.publish:
+                id: trap_triggered
+                state: off
+          - lambda: |-
+                id(system_armed) = false;
+          - deep_sleep.enter:
+                id: emergency_sleep
+                sleep_duration: 300s # 5 minute cooldown
+
+# Control buttons
 button:
-  - platform: restart
-    name: "Restart ESP32"
-    id: restart_button
+    - platform: restart
+      name: Restart ESP32
+      id: restart_button
 
-  # Enhanced thermal shutdown protection
-  - platform: template
-    name: "Thermal Shutdown"
-    id: thermal_shutdown
-    on_press:
-      - logger.log: "THERMAL SHUTDOWN INITIATED - ESP32 overheating detected"
-      - switch.turn_off: vacuum_relay
-      # Record fault occurrence to persistent storage
-      - lambda: |-
-          if (id(last_fault_type) == "") {
-            id(last_fault_type) = "THERMAL_EMERGENCY";
-          }
-          id(fault_count_sensor).publish_state(id(fault_count));
-          id(last_fault_type_sensor).publish_state(id(last_fault_type));
-      - deep_sleep.enter: emergency_sleep
+  # Thermal shutdown button (software controlled)
+    - platform: template
+      name: Thermal Shutdown
+      id: thermal_shutdown_button
+      on_press:
+          - script.execute: thermal_shutdown
 
   # System diagnostic tool
-  - platform: template
-    name: "Run Diagnostics"
-    id: run_diagnostics
-    on_press:
-      - logger.log: "Running system diagnostics..."
-      # Basic system checks
-      - lambda: |-
-          bool system_ok = true;
-          std::string diagnostic_results = "";
+    - platform: template
+      name: Run Diagnostics
+      id: run_diagnostics
+      on_press:
+          - logger.log: Running system diagnostics...
+          - lambda: |-
+                bool system_ok = true;
+                std::string diagnostic_results = "";
 
-          // Check I2C devices
-          if (i2c::global_i2c_bus->scan_device(0x29) == false) {
-            system_ok = false;
-            diagnostic_results += "VL53L0X sensor not detected. ";
-          }
-          if (i2c::global_i2c_bus->scan_device(0x3C) == false) {
-            system_ok = false;
-            diagnostic_results += "OLED display not detected. ";
-          }
+                // Check I2C devices
+                ESP_LOGI("diagnostics", "Checking I2C devices...");
+                if (!id(apds_proximity).has_state()) {
+                  system_ok = false;
+                  diagnostic_results += "APDS9960 sensor not responding. ";
+                }
+                if (!id(tof_distance).has_state()) {
+                  system_ok = false;
+                  diagnostic_results += "VL53L0X ToF sensor not responding. ";
+                }
+                if (!id(env_temperature).has_state()) {
+                  system_ok = false;
+                  diagnostic_results += "BME280 environmental sensor not responding. ";
+                }
 
-          // Check WiFi
-          if (!wifi::global_wifi_component->is_connected()) {
-            diagnostic_results += "WiFi not connected. ";
-          }
+                // Check thermal status
+                if (id(esp32_temp).state > 70.0) {
+                  system_ok = false;
+                  diagnostic_results += "Temperature high: " + to_string(id(esp32_temp).state) + "C. ";
+                }
 
-          // Check thermal status
-          if (id(esp32_temp).state > 70.0) {
-            system_ok = false;
-            diagnostic_results += "Temperature high: " + to_string(id(esp32_temp).state) + "C. ";
-          }
-
-          // Log results
-          if (system_ok) {
-            ESP_LOGI("diagnostics", "System diagnostics passed");
-          } else {
-            ESP_LOGW("diagnostics", "System diagnostics failed: %s", diagnostic_results.c_str());
-            id(last_fault_type) = "DIAGNOSTICS: " + diagnostic_results;
-            id(fault_count)++;
-            id(fault_count_sensor).publish_state(id(fault_count));
-            id(last_fault_type_sensor).publish_state(id(last_fault_type));
-          }
-      - logger.log: "Diagnostics complete"
-
-# REMOVED: LED indicators (functionality integrated into OLED display)
-
-# REMOVED: Separate LED indicators (replaced with integrated OLED status display and illuminated E-stop)
-# Status display integration using OLED
-
-# Enhanced OLED Display with Integrated Status (Replaces separate LEDs)
-display:
-  - platform: ssd1306_i2c
-    model: "SSD1306 128x64"
-    address: 0x3C
-    update_interval: 1s
-    lambda: |-
-      // Header with voltage-specific system status
-      it.printf(0, 0, id(font_small), "Rat Trap %s %s", id(line_voltage).c_str(), id(safety_standard).c_str());
-
-      // WiFi status indicator
-      if (id(wifi_component).is_connected()) {
-        it.printf(105, 0, id(font_small), "WiFi");
-      } else {
-        it.printf(100, 0, id(font_small), "No Net");
-      }
-
-      // Current distance reading
-      it.printf(0, 12, id(font_medium), "Distance: %.0fmm", id(trap_distance).state);
-
-      // System status with visual highlighting (replaces LEDs)
-      if (id(trap_triggered).state) {
-        // Vacuum running - equivalent to red LED strobe
-        it.filled_rectangle(0, 26, 128, 16, COLOR_ON);
-        it.print(2, 30, id(font_medium), COLOR_OFF, ">> VACUUM ON <<");
-      } else if (id(rodent_detected).state) {
-        // Rodent detected - equivalent to red LED alert
-        it.rectangle(0, 26, 128, 16, COLOR_ON);
-        it.print(2, 30, id(font_medium), "* RODENT ALERT *");
-      } else {
-        // System armed and monitoring
-        it.print(0, 28, id(font_small), "Armed & Monitoring");
-        it.print(120, 28, id(font_small), "●");  // Status dot
-      }
-
-      // Capture statistics
-      it.printf(0, 42, id(font_small), "Captures: %.0f", id(capture_count_sensor).state);
-
-      // Environmental data from BME280
-      if (id(env_temperature).has_state()) {
-        it.printf(0, 47, id(font_small), "Env: %.1f°C  %.0f%%RH",
-                 id(env_temperature).state, id(env_humidity).state);
-      }
-
-      // System monitoring
-      if (id(wifi_signal).has_state()) {
-        it.printf(0, 56, id(font_small), "WiFi: %.0fdBm  CPU: %.1f°C",
-                  id(wifi_signal).state, id(esp32_temp).state);
-      } else {
-        it.printf(0, 56, id(font_small), "ESP32 Temp: %.1f°C", id(esp32_temp).state);
-      }
-
-      // Thermal warning indicator
-      if (id(esp32_temp).has_state() && id(esp32_temp).state > 75.0) {
-        it.print(120, 56, id(font_small), "!");  // Temperature warning
-      }
-
-      // Current monitoring (if ACS712 sensor is installed)
-      if (id(vacuum_current).has_state()) {
-        it.printf(0, 56, id(font_small), "Vacuum: %.1fA", id(vacuum_current).state);
-      }
-
-      // PIR motion indicator (if HC-SR501 sensor is installed)
-      if (id(pir_sensor).state) {
-        it.print(115, 56, id(font_small), "◯");  // Motion indicator
-      }
-
-# Fonts for display
-font:
-  - file: "gfonts://Roboto Mono"
-    id: font_small
-    size: 8
-  - file: "gfonts://Roboto Mono"
-    id: font_medium
-    size: 12
+                // Log results
+                if (system_ok) {
+                  ESP_LOGI("diagnostics", "System diagnostics passed");
+                  id(last_fault_type) = "DIAGNOSTICS_PASSED";
+                } else {
+                  ESP_LOGW("diagnostics", "System diagnostics failed: %s", diagnostic_results.c_str());
+                  id(last_fault_type) = "DIAGNOSTICS: " + diagnostic_results;
+                  id(fault_count)++;
+                  id(fault_count_sensor).publish_state(id(fault_count));
+                }
+                id(last_fault_type_sensor).publish_state(id(last_fault_type));
+          - logger.log: Diagnostics complete
 
 # Global variables for state tracking
 globals:
-  - id: capture_count
-    type: int
-    restore_value: yes
-    initial_value: '0'
+    - id: capture_count
+      type: int
+      restore_value: yes
+      initial_value: '0'
 
-  - id: last_trigger_time
-    type: unsigned long
-    restore_value: no
-    initial_value: '0'
+    - id: last_trigger_time
+      type: unsigned long
+      restore_value: no
+      initial_value: '0'
 
-  - id: total_vacuum_runtime
-    type: float
-    restore_value: yes
-    initial_value: '0'
+    - id: total_vacuum_runtime
+      type: float
+      restore_value: yes
+      initial_value: '0'
 
-  - id: fault_count
-    type: int
-    restore_value: yes
-    initial_value: '0'
+    - id: fault_count
+      type: int
+      restore_value: yes
+      initial_value: '0'
 
-  - id: last_fault_type
-    type: std::string
-    restore_value: yes
-    initial_value: '""'
+    - id: last_fault_type
+      type: std::string
+      restore_value: yes
+      initial_value: '""'
 
-  - id: enhanced_monitoring_active
-    type: bool
-    restore_value: no
-    initial_value: 'false'
-
-# Script for PIR-based enhanced monitoring
-script:
-  - id: activate_enhanced_monitoring
-    then:
-      - lambda: 'id(enhanced_monitoring_active) = true;'
-      - logger.log: "Enhanced monitoring mode activated"
-      # Increase sensor polling rate when motion is detected
-      - sensor.template.publish:
-          id: trap_distance
-          state: !lambda 'return id(trap_distance).state;'
-      # After 30 seconds, return to normal operation
-      - delay: 30s
-      - lambda: 'id(enhanced_monitoring_active) = false;'
-      - logger.log: "Returning to normal monitoring"
-
-# System startup and compliance monitoring
-interval:
-  # Safety-critical power-on sequence per NEC 422.31(B)
-  - interval: 5s
-    then:
-      - if:
-          condition:
-            lambda: 'return millis() < 5000;'  # First 5 seconds after boot
-          then:
-            # NEC 422.31(B): Ensure SSR is OFF during power-up (safety critical)
-            - switch.turn_off: vacuum_relay
-            - logger.log:
-                format: "Power-on sequencing: SSR disabled during boot (%s compliance)"
-                args: ['id(safety_standard).c_str()']
-
-  # NEC/IEC compliance monitoring
-  - interval: 60s
-    then:
-      - lambda: |-
-          // Log safety compliance status
-          ESP_LOGI("safety", "System running %s compliant at %s %s",
-                   id(safety_standard).c_str(),
-                   id(line_voltage).c_str(),
-                   id(line_frequency).c_str());
-
-# Emergency sleep mode for thermal protection
-deep_sleep:
-  id: emergency_sleep
-  sleep_duration: 60s  # Cool down period
-
-# REMOVED: LED control automations (functionality integrated into OLED display)
-# Simplified automation focused on core safety and functionality
-
-# Web server for local configuration
-web_server:
-  port: 80
-  version: 2
-  include_internal: true
-
-# Status indication integrated into OLED display
-
-# System information with voltage specifications
-text_sensor:
-  - platform: template
-    name: "System Voltage"
-    id: system_voltage
-    lambda: 'return {"${line_voltage}"};'
-
-  - platform: template
-    name: "Line Frequency"
-    id: system_frequency
-    lambda: 'return {"${line_frequency}"};'
-
-  - platform: template
-    name: "Safety Standard"
-    id: system_safety_standard
-    lambda: 'return {"${safety_standard}"};'
-
-  - platform: template
-    name: "Max Current Rating"
-    id: max_current_rating
-    lambda: 'return {"${max_current}"};'
-
-  - platform: wifi_info
-    ip_address:
-      name: "IP Address"
-      id: ip_address
-    ssid:
-      name: "Connected SSID"
-      id: wifi_ssid
-    mac_address:
-      name: "MAC Address"
-      id: mac_address
-
-  - platform: version
-    name: "ESPHome Version"
-
-  # Fault type reporting
-  - platform: template
-    name: "Last Fault Type"
-    id: last_fault_type_sensor
-    icon: "mdi:alert-circle"
-    lambda: |-
-      return id(last_fault_type);
+    - id: system_armed
+      type: bool
+      restore_value: no
+      initial_value: 'true'
 
 # Configurable parameters for easy tuning
 number:
-  - platform: template
-    name: "Detection Threshold (mm)"
-    id: detection_threshold
-    min_value: 50
-    max_value: 500
-    step: 10
-    initial_value: 150
-    restore_value: true
-    optimistic: true
+    - platform: template
+      name: Detection Threshold (mm)
+      id: detection_threshold
+      min_value: 50
+      max_value: 500
+      step: 10
+      initial_value: 150
+      restore_value: true
+      optimistic: true
 
-  - platform: template
-    name: "Vacuum Runtime (seconds)"
-    id: vacuum_runtime
-    min_value: 1
-    max_value: 30
-    step: 1
-    initial_value: 8
-    restore_value: true
-    optimistic: true
+    - platform: template
+      name: Vacuum Runtime (seconds)
+      id: vacuum_runtime
+      min_value: 1
+      max_value: 30
+      step: 1
+      initial_value: 8
+      restore_value: true
+      optimistic: true
 
-  - platform: template
-    name: "Cooldown Period (seconds)"
-    id: cooldown_period
-    min_value: 10
-    max_value: 300
-    step: 5
-    initial_value: 30
-    restore_value: true
-    optimistic: true
+    - platform: template
+      name: Cooldown Period (seconds)
+      id: cooldown_period
+      min_value: 10
+      max_value: 300
+      step: 5
+      initial_value: 30
+      restore_value: true
+      optimistic: true
+
+# System information sensors
+text_sensor:
+    - platform: template
+      name: System Voltage
+      id: system_voltage
+      lambda: return {"${line_voltage}"};
+
+    - platform: template
+      name: Line Frequency
+      id: system_frequency
+      lambda: return {"${line_frequency}"};
+
+    - platform: template
+      name: Safety Standard
+      id: system_safety_standard
+      lambda: return {"${safety_standard}"};
+
+    - platform: template
+      name: Max Current Rating
+      id: max_current_rating
+      lambda: return {"${max_current}"};
+
+    - platform: wifi_info
+      ip_address:
+          name: IP Address
+          id: ip_address
+      ssid:
+          name: Connected SSID
+          id: wifi_ssid
+      mac_address:
+          name: MAC Address
+          id: mac_address
+
+    - platform: version
+      name: ESPHome Version
+
+  # Fault type reporting
+    - platform: template
+      name: Last Fault Type
+      id: last_fault_type_sensor
+      icon: mdi:alert-circle
+      lambda: |-
+          return id(last_fault_type);
+
+# Deep sleep for thermal protection
+deep_sleep:
+    id: emergency_sleep
+    sleep_duration: 300s # 5 minute cooldown
+
+# Safety-critical startup sequence per NEC 422.31(B)
+interval:
+    - interval: 5s
+      then:
+          - if:
+                condition:
+                    lambda: return millis() < 5000; # First 5 seconds after boot
+                then:
+            # NEC 422.31(B): Ensure SSR is OFF during power-up (safety critical)
+                    - switch.turn_off: vacuum_relay
+                    - logger.log:
+                          format: 'Power-on sequencing: SSR disabled during boot (%s compliance)'
+                          args: ['${safety_standard}']
+
+  # NEC/IEC compliance monitoring
+    - interval: 60s
+      then:
+          - lambda: |-
+                // Log safety compliance status
+                ESP_LOGI("safety", "System running %s compliant at %s %s",
+                         "${safety_standard}",
+                         "${line_voltage}",
+                         "${line_frequency}");
+
+# Web server for local configuration
+web_server:
+    port: 80
+    version: 2
+    include_internal: true
+
+# OLED Display with Integrated Status (STEMMA QT)
+display:
+    - platform: ssd1306_i2c
+      model: SSD1306 128x64
+      address: 0x3C
+      update_interval: 1s
+      lambda: |-
+          // Header with voltage-specific system status
+          it.printf(0, 0, id(font_small), "Rat Trap %s %s", "${line_voltage}", "${safety_standard}");
+
+          // WiFi status indicator (top right)
+          if (id(wifi_component).is_connected()) {
+            it.printf(105, 0, id(font_small), "WiFi");
+          } else {
+            it.printf(100, 0, id(font_small), "No Net");
+          }
+
+          // Hybrid detection sensor status
+          it.printf(0, 12, id(font_medium), "Hybrid Detection:");
+
+          // Sensor status indicators (3 sensors)
+          int y_offset = 26;
+          if (id(apds_proximity).state > 50) {
+            it.printf(0, y_offset, id(font_small), "✓ APDS");
+          } else {
+            it.printf(0, y_offset, id(font_small), "○ APDS");
+          }
+
+          if (id(tof_distance).state < id(detection_threshold).state) {
+            it.printf(40, y_offset, id(font_small), "✓ ToF");
+          } else {
+            it.printf(40, y_offset, id(font_small), "○ ToF");
+          }
+
+          if (id(pir_motion).state) {
+            it.printf(70, y_offset, id(font_small), "✓ PIR");
+          } else {
+            it.printf(70, y_offset, id(font_small), "○ PIR");
+          }
+
+          // System status with visual highlighting
+          y_offset += 12;
+          if (id(emergency_stop).state) {
+            it.filled_rectangle(0, y_offset, 128, 12, COLOR_ON);
+            it.print(2, y_offset + 2, id(font_small), COLOR_OFF, ">> EMERGENCY STOP <<");
+          } else if (id(trap_triggered).state) {
+            it.filled_rectangle(0, y_offset, 128, 12, COLOR_ON);
+            it.print(2, y_offset + 2, id(font_small), COLOR_OFF, ">> VACUUM ACTIVE <<");
+          } else if (id(rodent_detected).state) {
+            it.rectangle(0, y_offset, 128, 12, COLOR_ON);
+            it.print(2, y_offset + 2, id(font_small), "* DETECTION ALERT *");
+          } else if (id(system_armed)) {
+            it.print(0, y_offset + 2, id(font_small), "Armed & Monitoring");
+            it.print(120, y_offset + 2, id(font_small), "●");
+          } else {
+            it.print(0, y_offset + 2, id(font_small), "System Disarmed");
+          }
+
+          // Capture statistics
+          it.printf(0, 54, id(font_small), "Captures: %.0f  Temp: %.1f°C",
+                    id(capture_count_sensor).state, id(esp32_temp).state);
+
+          // Thermal warning indicator
+          if (id(esp32_temp).has_state() && id(esp32_temp).state > 75.0) {
+            it.print(120, 56, id(font_small), "!");
+          }
+
+# Fonts for display
+font:
+    - file: gfonts://Roboto Mono
+      id: font_small
+      size: 8
+    - file: gfonts://Roboto Mono
+      id: font_medium
+      size: 12
 
 # EOF - End of ESPHome configuration
 #
@@ -751,5 +677,3 @@ number:
 # - Voltage-specific configurations for global deployment
 # - EMI compliance (FCC Part 15 / EN 55011 Class B)
 # - Mandatory GFCI/RCD protection for wet locations
-
-```

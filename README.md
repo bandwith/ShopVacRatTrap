@@ -1,11 +1,15 @@
-ShopVac Rat Trap - 2025 Optimized Design
-===========================================
+ShopVac Rat Trap - 2025 Design
+================================
 
-**Professional-grade ESP32 based IoT rat trap with ToF sensor detection, integrated status display, and simplified assembly.**
+**Professional-grade ESP32 based IoT rat trap with hybrid sensor detection, integrated status display, and simplified assembly.**
+
+## 🚀 August 2025 System Overview
+
+This project implements a modern IoT-based rodent control system using advanced STEMMA QT hybrid detection sensors and simplified assembly. The design eliminates complex wiring and provides a robust multi-sensor detection architecture.
 
 ## Key Features
 
-- **Smart Detection**: VL53L0X time-of-flight sensor with 2m range and millimeter precision
+- **Hybrid Detection System**: APDS9960 (primary) + VL53L0X (secondary) + PIR (tertiary) for maximum reliability
 - **5MP Camera System**: OV5640 STEMMA QT camera with autofocus and enhanced resolution
 - **High-Power Night Vision**: 10+ meter range IR illumination via STEMMA JST PH module
 - **Complete STEMMA Ecosystem**: Zero-solder assembly with plug-and-play modularity
@@ -28,14 +32,15 @@ The concept of a vacuum-based rodent trap may be subject to patent protection. C
 
 The authors and contributors of this project provide this design "as is" without any warranty, express or implied, and assume no liability for any damages or legal issues arising from its use.
 
-## 2025 STEMMA QT Upgrade Benefits
+## 🔧 System Architecture
 
-**Major Improvements Over ESP32-CAM:**
-- ✅ **5MP vs 2MP**: Higher resolution for better animal identification
-- ✅ **Extended IR range**: Improved night vision capabilities
-- ✅ **Zero-solder assembly**: Complete STEMMA QT/JST ecosystem
-- ✅ **Modular design**: Easy component replacement and upgrades
-- ✅ **Enhanced power management**: Optimized current draw with better thermal performance
+**Modern Design Improvements:**
+- ✅ **Simplified Wiring**: Single 500mm STEMMA QT cable: control box ↔ inlet sensors
+- ✅ **Zero-Solder Assembly**: Complete STEMMA QT/JST ecosystem for all detection components
+- ✅ **Centralized Detection**: All sensors optimally positioned at trap inlet
+- ✅ **Enhanced Weather Protection**: Dedicated IP65 inlet sensor assembly
+- ✅ **Modular Upgrades**: Inlet sensors independently replaceable/upgradeable
+- ✅ **Better Thermal Management**: Heat-generating components separated from sensors
 
 ## Hardware Configurations
 
@@ -47,13 +52,14 @@ The authors and contributors of this project provide this design "as is" without
 - Emergency stop switch for safety compliance
 - Power supply, SSR, and terminal blocks
 
-**Inlet Components** (Hybrid Detection Assembly):
-- APDS9960 proximity/gesture sensor for primary detection
+**Inlet Sensor Assembly** (NEW - Weatherproof hybrid detection):
+- APDS9960 proximity/gesture sensor for primary detection (offline)
 - VL53L0X ToF sensor for distance confirmation (secondary)
 - PIR motion sensor for backup motion detection (tertiary)
 - BME280 environmental sensor for monitoring conditions
-- STEMMA QT 5-Port Hub to minimize cable count (single 500mm cable to control box)
-- Weatherproof housing and mounting hardware
+- STEMMA QT 5-Port Hub for centralized sensor management
+- Single 500mm STEMMA QT cable to control box
+- Weatherproof IP65 enclosure and mounting hardware
 
 ### **STEMMA QT Camera System** (ESP32-S3 + OV5640) - `rat-trap-stemma-camera.yaml`
 **Control Box Components** (Same as standard):
@@ -62,15 +68,15 @@ The authors and contributors of this project provide this design "as is" without
 - Large arcade button and emergency stop switch
 - Power supply with sufficient capacity for camera system
 
-**Inlet Components** (Four-Sensor Hybrid Detection Assembly):
-- APDS9960 proximity/gesture sensor for primary detection (fully offline)
-- OV5640 5MP Camera for evidence capture and Home Assistant logging
-- PIR motion sensor for motion backup detection (secondary)
-- VL53L0X ToF sensor for distance confirmation (tertiary)
+**Inlet Sensor Assembly** (Enhanced with camera and IR):
+- APDS9960 proximity/gesture sensor for primary detection (offline)
+- VL53L0X ToF sensor for distance confirmation (secondary)
+- PIR motion sensor for motion backup detection (tertiary)
 - BME280 environmental sensor for monitoring conditions
+- OV5640 5MP Camera for evidence capture and Home Assistant logging
 - High-Power IR LED for night vision illumination
 - STEMMA QT 5-Port Hub for centralized sensor management
-- Single 500mm cable connection to control box
+- Single 500mm STEMMA QT cable to control box
 
 ## Detection Strategy - Enhanced Hybrid System
 
@@ -83,19 +89,19 @@ The authors and contributors of this project provide this design "as is" without
 
 **Camera Configuration:**
 - **Primary**: APDS9960 proximity/gesture detection (offline)
-- **Secondary**: PIR motion sensor backup
-- **Tertiary**: VL53L0X ToF distance confirmation
+- **Secondary**: VL53L0X ToF distance confirmation
+- **Tertiary**: PIR motion sensor backup
 - **Evidence**: OV5640 camera captures photo for Home Assistant logging
 - **Logic**: 2 of 3 detection sensors required for trigger
 
 **Benefits of Enhanced Hybrid Approach:**
 - ✅ **Fully offline operation** - No WiFi required for detection logic
 - ✅ **APDS9960 proximity detection** - Superior to computer vision for rodent detection
-- ✅ **Four-sensor redundancy** - Eliminates false positives from any single sensor failure
+- ✅ **Three-sensor redundancy** - Eliminates false positives from any single sensor failure
 - ✅ **Evidence capture** - Camera provides visual confirmation sent to Home Assistant
 - ✅ **Gesture detection capability** - APDS9960 can distinguish different movement patterns
 - ✅ **Ambient light awareness** - APDS9960 RGB sensor provides lighting context
-- ✅ **Proven reliability** - Based on upstream project's successful APDS9960 implementation
+- ✅ **Proven reliability** - Based on successful APDS9960 implementation
 
 ## Component Overview
 
@@ -115,29 +121,47 @@ The authors and contributors of this project provide this design "as is" without
 └─ ESP32-S3 Built-in 3.3V Regulation ← 5V from PSU
 ```
 
-### **Core System Architecture - STEMMA QT Enhanced**
+### **Core System Architecture - STEMMA QT Simplified**
 
 ```
 [120V/230V AC] → [Circuit Protection] → [Mean Well PSU] → [ESP32-S3 + Built-in 3.3V]
                                                             ↓
-[Shop Vacuum] ← [25A SSR] ← [GPIO5] ← [ESPHome Logic] ← [VL53L0X STEMMA QT]
+[Shop Vacuum] ← [25A SSR] ← [GPIO5] ← [ESPHome Logic] ← [Single 500mm STEMMA Cable]
                                                         ↓
-[5MP Camera (OV5640)] ← [Secondary I2C] ← [ESP32-S3] → [STEMMA QT Bus] → [BME280] → [OLED]
-                                         ↓                                              ↑
-[High-Power IR LED] ← [STEMMA JST PH] ← [GPIO6]                                      └─ [Daisy Chain]
+[INLET SENSOR ASSEMBLY] - Weatherproof IP65 Enclosure:
+├─ STEMMA QT 5-Port Hub (Adafruit 5625)
+├─ APDS9960 Proximity/Gesture (Adafruit 3595) - Primary Detection
+├─ VL53L0X ToF Distance (Adafruit 3317) - Secondary Confirmation
+├─ PIR Motion Sensor (Adafruit 4871) - Tertiary Backup
+├─ BME280 Environmental (Adafruit 4816) - Monitoring
+└─ [Camera Variant: OV5640 5MP + IR LED] - Evidence Capture
+
+[CONTROL BOX] - Side-Mount Enclosure:
+├─ ESP32-S3 Feather (Adafruit 5323) - Controller
+├─ OLED Display (Adafruit 326) - User Interface
+├─ Large Arcade Button (Adafruit 368) - Manual Control
+├─ Emergency Stop Switch - Safety Critical
+└─ Mean Well PSU + 25A SSR - Power & AC Switching
 ```
 
-### **STEMMA QT Power Management (Enhanced)**
+### **STEMMA QT Power Management (Optimized)**
 
 ```
 ESP32-S3 Built-in 3.3V Regulator (600mA capacity):
-├─ VL53L0X ToF Sensor: 30mA peak (STEMMA QT)
-├─ BME280 Environmental: 3.6mA active (STEMMA QT)
-├─ OLED Display: 25mA peak (STEMMA QT)
-├─ OV5640 Camera: 100mA capture, 20mA idle (secondary I2C)
-├─ High-Power IR LED: 200mA pulsed (STEMMA JST PH)
+├─ OLED Display: 25mA peak (Control Box - STEMMA QT)
 ├─ ESP32-S3 Core: 70mA WiFi active
-└─ Total Peak Load: 431mA (72% headroom for thermal derating) ✅ APPROVED
+└─ INLET SENSOR ASSEMBLY (via 500mm STEMMA QT cable):
+   ├─ APDS9960 Proximity: 15mA active
+   ├─ VL53L0X ToF Sensor: 30mA peak
+   ├─ PIR Motion Sensor: 5mA active
+   ├─ BME280 Environmental: 3.6mA active
+   ├─ STEMMA QT Hub: 5mA
+   └─ [Camera Variant]:
+      ├─ OV5640 Camera: 100mA capture, 20mA idle
+      └─ High-Power IR LED: 200mA pulsed
+
+Total Load Standard: 149mA (75% headroom) ✅ EXCELLENT
+Total Load Camera: 379mA peak capture (37% headroom) ✅ APPROVED
 ```
 
 ### **Safety Features (Code Compliant)**

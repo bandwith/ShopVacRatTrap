@@ -212,7 +212,7 @@ Test the ESP32 and sensors before assembly:
    - ✅ Camera and additional sensors can be added at inlet without new cable runs
    - ✅ All detection components accessible at inlet for maintenance
 
-   Alternative: STEMMA QT Daisy Chain Assembly (Legacy):
+   Alternative: STEMMA QT Daisy Chain Assembly (Alternative method):
    ESP32-S3 Feather STEMMA QT Port
       ↓ (100mm STEMMA QT cable)
    VL53L0X ToF Sensor (Adafruit 4210)

@@ -18,7 +18,6 @@ import json
 import time
 import requests
 import pandas as pd
-from typing import Dict, List, Optional
 from dataclasses import dataclass
 from datetime import datetime
 import logging
@@ -59,7 +58,7 @@ class MouserPart:
     manufacturer_part_number: str
     description: str
     availability: str
-    price_breaks: List[Dict]
+    price_breaks: list[dict]
     data_sheet_url: str
     product_detail_url: str
     image_url: str
@@ -226,7 +225,7 @@ class MouserAPIClient:
 
     def search_part_number(
         self, part_number: str, manufacturer: str = None
-    ) -> List[MouserPart]:
+    ) -> list[MouserPart]:
         """Search for exact part number match"""
         # Mouser API requires POST with JSON payload
         payload = {
@@ -268,7 +267,7 @@ class MouserAPIClient:
 
     def search_keyword(
         self, keyword: str, manufacturer: str = None, max_results: int = 10
-    ) -> List[MouserPart]:
+    ) -> list[MouserPart]:
         """Search by keyword/description"""
         params = {
             "keyword": keyword,
@@ -334,7 +333,7 @@ class MouserAPIClient:
             order_multiple=int(part_data.get("Mult", 1)),
         )
 
-    def get_best_price(self, part: MouserPart, quantity: int = 1) -> Optional[Dict]:
+    def get_best_price(self, part: MouserPart, quantity: int = 1) -> dict | None:
         """Get best price for specified quantity"""
         if not part.price_breaks:
             return None
@@ -374,7 +373,7 @@ class MouserBOMValidator:
 
     def validate_bom_file(
         self, bom_file: str, quantity_column: str = "Quantity"
-    ) -> Dict:
+    ) -> dict:
         """Validate entire BOM file"""
         logger.info(f"📋 Validating BOM file: {bom_file}")
 
@@ -490,7 +489,7 @@ class MouserBOMValidator:
             logger.error(f"❌ BOM validation failed: {e}")
             return {"error": str(e)}
 
-    def save_results(self, results: Dict, output_file: str):
+    def save_results(self, results: dict, output_file: str):
         """Save validation results to file"""
         timestamp = datetime.now().isoformat()
 

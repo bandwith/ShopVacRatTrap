@@ -4,12 +4,13 @@
 
 **UPDATED (August 2025)**: Automated purchase files using integrated BOM manager:
 
+- **Setup**: First activate the virtual environment: `source .venv/bin/activate`
 - **Run**: `python3 .github/scripts/bom_manager.py --bom-file BOM_CONSOLIDATED.csv --generate-purchase-files`
 - **Files Created**:
   - `BOM_MOUSER_TEMPLATE.xlsx` - **Official Mouser template format (RECOMMENDED)**
   - `BOM_MOUSER_TEMPLATE.csv` - CSV version for review
   - `BOM_MOUSER_ONLY.csv` - Mouser-only consolidated BOM
-  - `mouser_upload_consolidated_only.csv` - Legacy simple upload format
+  - `mouser_upload_consolidated_only.csv` - Simple upload format for compatibility
   - `PURCHASE_GUIDE.md` - Comprehensive purchase instructions
 
 **Benefits of New System**:
@@ -18,6 +19,8 @@
 - ✅ **Official Mouser template format** for direct upload
 - ✅ **Complete component data** (availability, datasheets, lifecycle)
 - ✅ **Single command** replaces multiple shell scripts
+
+**Requirements**: pandas and openpyxl (already in requirements.txt)
 
 **Bulk Ordering**: Upload BOM_MOUSER_TEMPLATE.xlsx to Mouser BOM tools for instant pricing and cart creation.
 
@@ -48,7 +51,7 @@
 **Primary**: BME280 Temperature/Humidity/Pressure Sensor - STEMMA QT
 **Adafruit 4816**: $14.95 - https://www.adafruit.com/product/4816
 **SparkFun SEN-15440**: $19.95 - https://www.sparkfun.com/products/15440
-**Alternative**: DHT22/AM2302 (legacy design) - $4.95
+**Alternative**: DHT22/AM2302 (previous generation) - $4.95
 **Note**: BME280 STEMMA QT provides professional no-solder assembly
 
 ### 3. Power Supply

@@ -104,7 +104,7 @@ jinja2==3.1.6
     # via esphome
 kconfiglib==13.7.1
     # via esphome
-markdown-it-py==3.0.0
+markdown-it-py==4.0.0
     # via rich
 markupsafe==3.0.2
     # via jinja2

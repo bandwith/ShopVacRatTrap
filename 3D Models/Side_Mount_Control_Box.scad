@@ -6,11 +6,18 @@
 // UV-RESISTANT DESIGN: For long-term outdoor field deployment
 // Author: Hardware Designer
 // Date: August 2025
-// Updated: Adapted for unified 3D printed trap tube design (no PVC)
+// Updated: Optimized for STEMMA QT hybrid detection system
 // Features: Universal mounting brackets, tool-free assembly, snap-fit lid, easy service access
 // Print Settings: Use PETG Carbon Fiber or ASA for UV resistance, 0.20mm layers, 25% infill
+//
+// ARCHITECTURE UPDATE - August 2025:
+// - Detection sensors (APDS9960, VL53L0X, PIR, BME280) relocated to INLET assembly
+// - Single 500mm STEMMA QT cable connects inlet sensors to ESP32-S3 in control box
+// - Only OLED display remains in control box for user interface
+// - Simplified wiring: ESP32-S3 → STEMMA QT hub at inlet → all detection sensors
+// - Camera variant: Additional OV5640 5MP camera and IR LED at inlet location
 
-// Customizable parameters - optimized for BOM components
+// Customizable parameters - optimized for current BOM components
 box_width = 200;        // mm - sized for Mean Well LRS-35-5 + ESP32-S3 Feather
 box_depth = 150;        // mm - adequate depth for all components
 box_height = 80;        // mm - increased for proper component clearance
@@ -32,51 +39,37 @@ snap_tolerance = 0.2;       // mm - clearance for smooth operation
 lid_overlap = 3;            // mm - how much lid overlaps base
 
 // Component mounting parameters - exact BOM component specifications
-// Standard ESP32-S3 configuration
-esp32_s3_width = 51;    // ESP32-S3 Feather dimensions (Adafruit 5323)
+// ESP32-S3 Feather (Adafruit 5323) - PRIMARY CONTROLLER (remains in control box)
+esp32_s3_width = 51;    // ESP32-S3 Feather dimensions
 esp32_s3_length = 23;
 esp32_s3_hole_spacing_x = 45.7;
 esp32_s3_hole_spacing_y = 17.8;
 
-// Hardware variant selection - Four-sensor hybrid detection system
-camera_variant = true;      // OV5640 5MP camera mounted at inlet (Adafruit 5945)
-four_sensor_variant = true; // APDS9960 + PIR + VL53L0X + OV5640 configuration
-
-// FOUR-SENSOR SYSTEM: STEMMA QT sensor parameters (Adafruit compatible)
-apds9960_width = 18;    // APDS9960 proximity/gesture sensor (Adafruit 3595) - PRIMARY
-apds9960_length = 18;
-pir_width = 25;         // PIR motion sensor width (generic module) - SECONDARY
-pir_length = 35;        // PIR motion sensor length
-vl53l0x_width = 18;     // VL53L0X ToF sensor board (Adafruit 3317) - TERTIARY
-vl53l0x_length = 18;
-ov5640_width = 38;      // OV5640 5MP camera module (Adafruit 5945) - EVIDENCE
-ov5640_length = 38;
-ov5640_thickness = 8;
-
-// STEMMA QT Hub parameters (centralized sensor management)
-qwiic_hub_width = 25.4;      // STEMMA QT 5-Port Hub (Adafruit 5625)
-qwiic_hub_length = 25.4;
-qwiic_hub_thickness = 1.6;
-
-// Display and environmental sensors
+// OLED Display (Adafruit 326) - USER INTERFACE (remains in control box)
+// All detection sensors moved to inlet assembly via STEMMA QT
 oled_width = 27;        // SSD1306 OLED STEMMA QT dimensions (Adafruit 326)
 oled_height = 27;
 oled_thickness = 4;
-bme280_width = 18;      // BME280 sensor board (Adafruit 4816)
-bme280_length = 18;
 
-// Camera parameters (when camera_variant = true)
-ov5640_width = 32;      // OV5640 5MP camera board (Adafruit 5945)
+// INLET SENSOR ASSEMBLY (connected via single 500mm STEMMA QT cable):
+// - APDS9960 Proximity/Gesture Sensor (Adafruit 3595) - Primary detection
+// - VL53L0X ToF Distance Sensor (Adafruit 3317) - Secondary confirmation
+// - PIR Motion Sensor (Adafruit 4871) - Tertiary backup detection
+// - BME280 Environmental Sensor (Adafruit 4816) - Environmental monitoring
+// - STEMMA QT 5-Port Hub (Adafruit 5625) - Central sensor connection hub
+
+// Camera variant additional components (when camera_variant = true):
+// - OV5640 5MP Camera (Adafruit 5945) - Evidence capture
+// - High-Power IR LED (Adafruit 5639) - Night vision illumination
+
+// Camera variant parameters (when using camera configuration)
+camera_variant = false;     // Set to true for camera configuration
+ov5640_width = 32;          // OV5640 5MP camera board (Adafruit 5945)
 ov5640_length = 32;
-ov5640_thickness = 8;   // Includes lens assembly
-
-// QWIIC Hub mounting parameters (Adafruit 5625) - NEW for simplified cabling
-hub_width = 25;         // QWIIC Hub board dimensions
-hub_length = 25;
-hub_thickness = 3;
+ov5640_thickness = 8;       // Includes lens assembly
 
 // Label parameters for component identification
-label_depth = 0.8;          // mm - depth of embossed text (slightly deeper for outdoor visibility)
+label_depth = 0.8;          // mm - depth of embossed text
 label_font_size = 5;        // mm - larger font size for control box labels
 label_font = "Liberation Sans:style=Bold"; // Font for clear visibility
 small_label_size = 3;       // mm - smaller font for detailed labels
@@ -172,7 +165,7 @@ module pipe_mounting_base() {
 // Trap tube clamp tabs for secure mounting
 module trap_tube_clamp_tabs() {
     for(x = [-30, 30]) {
-        translate([box_width/2 + x, -pipe_mount_radius - wall_thickness, pipe_mount_height/2])
+        translate([box_width/2 + x, -mount_radius - wall_thickness, tube_mount_height/2])
         rotate([90, 0, 0]) {
             difference() {
                 cylinder(d=16, h=8, $fn=16);
@@ -194,7 +187,7 @@ module control_box_enclosure() {
         pipe_mounting_base();
 
         // Main enclosure box
-        translate([0, 0, pipe_mount_height]) {
+        translate([0, 0, tube_mount_height]) {
             difference() {
                 // Main box body with rounded corners
                 translate([corner_radius, corner_radius, 0])
@@ -253,8 +246,11 @@ module front_panel_cutouts() {
     translate([emergency_switch_x, -1, emergency_switch_y])
     cylinder(d=6.5, h=wall_thickness+2);
 
-    // Note: Detection sensors (VL53L0X, BME280, OV5640 camera) are mounted at INLET location
-    // Single STEMMA QT cable runs from inlet hub to control box ESP32
+    // NOTE: Detection sensors relocated to inlet assembly in 2025 update:
+    // - APDS9960, VL53L0X, PIR, BME280 sensors mounted at inlet location
+    // - Single 500mm STEMMA QT cable connects inlet hub to ESP32-S3 in control box
+    // - Simplified control box contains only user interface elements
+    // - Camera variant adds OV5640 camera and IR LED at inlet (not control box)
 }
 
 // Component identification labels for control box
@@ -277,10 +273,10 @@ module control_box_labels() {
     rotate([90, 0, 0])
     component_label("RAT TRAP 2025");
 
-    // Four-sensor system identifier
+    // Hybrid detection system identifier
     translate([box_width/2, wall_thickness + label_depth, box_height - 25])
     rotate([90, 0, 0])
-    component_label("4-SENSOR HYBRID", small_label_size);
+    component_label("HYBRID DETECTION", small_label_size);
 
     // Side panel labels for internal components
     translate([wall_thickness + label_depth, box_depth/6, box_height/2])
@@ -291,14 +287,9 @@ module control_box_labels() {
     translate([wall_thickness + label_depth, 2*box_depth/6, box_height/2])
     rotate([0, 0, 90])
     rotate([90, 0, 0])
-    component_label("QWIIC HUB", small_label_size);
-
-    translate([wall_thickness + label_depth, 3*box_depth/6, box_height/2])
-    rotate([0, 0, 90])
-    rotate([90, 0, 0])
     component_label("POWER", small_label_size);
 
-    translate([wall_thickness + label_depth, 4*box_depth/6, box_height/2])
+    translate([wall_thickness + label_depth, 3*box_depth/6, box_height/2])
     rotate([0, 0, 90])
     rotate([90, 0, 0])
     component_label("SSR", small_label_size);
@@ -308,26 +299,14 @@ module control_box_labels() {
     rotate([90, 0, 0])
     component_label("120V AC", small_label_size);
 
-    // Four-sensor cable entry labels
-    translate([120, box_depth - wall_thickness - label_depth, 55])
+    // STEMMA QT cable entry label (single cable to inlet sensors)
+    translate([150, box_depth - wall_thickness - label_depth, 40])
     rotate([90, 0, 0])
-    component_label("APDS9960", small_label_size);
-
-    translate([135, box_depth - wall_thickness - label_depth, 50])
-    rotate([90, 0, 0])
-    component_label("PIR", small_label_size);
-
-    translate([150, box_depth - wall_thickness - label_depth, 45])
-    rotate([90, 0, 0])
-    component_label("VL53L0X", small_label_size);
-
-    translate([165, box_depth - wall_thickness - label_depth, 40])
-    rotate([90, 0, 0])
-    component_label("OV5640", small_label_size);
+    component_label("INLET SENSORS", small_label_size);
 
     translate([150, box_depth - wall_thickness - label_depth, 25])
     rotate([90, 0, 0])
-    component_label("SENSOR BUS", small_label_size);
+    component_label("STEMMA QT", small_label_size);
 }
 
 // OPTION A: Integrated IEC inlet with fuse and switch (RECOMMENDED)
@@ -481,21 +460,14 @@ module internal_supports() {
     translate([100+ssr_width, 80+ssr_length, wall_thickness])
     ssr_snap_mount();
 
-    // STEMMA QT sensor snap-fit mounts - LOCATION CLARIFICATION:
-    // VL53L0X ToF sensor: MOUNTED AT INLET for rodent detection
-    // BME280 environmental: MOUNTED AT INLET for environmental monitoring
-    // OV5640 5MP camera: MOUNTED AT INLET for computer vision detection
-    // OLED Display: MOUNTED IN CONTROL BOX for user interface (see front panel)
-    // STEMMA QT Hub: MOUNTED AT INLET to minimize cable count (single 500mm cable to control box)
-
     // OLED Display mount (remains in control box for user interface)
     translate([display_x, display_y, wall_thickness])
     oled_display_snap_mount();
 
-    // Single cable entry point for inlet hub connection
-    // Replaces multiple individual sensor cable entries
-    translate([qwiic_hub_x, qwiic_hub_y, wall_thickness])
-    cable_entry_mount(); // For 500mm cable to inlet hub
+    // Single cable entry point for inlet sensor connection
+    // STEMMA QT cable from ESP32 to inlet sensor hub
+    translate([160, 100, wall_thickness])
+    cable_entry_mount(); // For 500mm cable to inlet sensors
 
     // Terminal block snap-fit mount (Adafruit 4090)
     translate([20, 80, wall_thickness])
@@ -556,68 +528,13 @@ module ssr_snap_mount() {
     ssr_snap_clip();
 }
 
-// Sensor snap-fit mount for STEMMA QT boards
-module sensor_snap_mount() {
-    difference() {
-        cylinder(d=12, h=6);
-        translate([0, 0, -1])
-        cylinder(d=2.5, h=8);
-
-        // Cable routing groove
-        translate([-1, -8, 2])
-        cube([2, 16, 3]);
+// Flexible snap arm for component retention
+module snap_arm() {
+    hull() {
+        cylinder(d=1, h=1);
+        translate([snap_arm_length, 0, 0])
+        cylinder(d=2, h=0.5);
     }
-
-    // Sensor board retention clips
-    for(a = [45, 135, 225, 315]) {
-        rotate([0, 0, a])
-        translate([7, 0, 3])
-        sensor_snap_clip();
-    }
-}
-
-// QWIIC Hub snap-fit mount (Adafruit 5625) - NEW for simplified cabling
-module qwiic_hub_snap_mount() {
-    difference() {
-        cylinder(d=8, h=qwiic_hub_standoff_height);
-        translate([0, 0, -1])
-        cylinder(d=2.5, h=qwiic_hub_standoff_height+2);  // M2.5 mounting hole
-
-        // Cable routing groove for STEMMA QT connections
-        translate([-1, -6, qwiic_hub_standoff_height-2])
-        cube([2, 12, 3]);
-    }
-
-    // Hub PCB retention clips - smaller for 1" x 1" board
-    for(a = [45, 135, 225, 315]) {
-        rotate([0, 0, a])
-        translate([5, 0, qwiic_hub_standoff_height-1])
-        hub_snap_clip();
-    }
-}
-
-// Hub-specific snap clip (smaller than sensor clips)
-module hub_snap_clip() {
-    rotate([45, 0, 0])
-    cube([4, 1.5, 1.5], center=true);
-}
-
-// Cable entry mount for single inlet hub cable (replaces multiple sensor mounts)
-module cable_entry_mount() {
-    difference() {
-        cylinder(d=15, h=8);
-        translate([0, 0, -1])
-        cylinder(d=8, h=10);  // Cable entry hole for 500mm STEMMA QT cable
-
-        // Strain relief groove
-        translate([-2, -10, 4])
-        cube([4, 20, 6]);
-    }
-
-    // Cable retention clip
-    translate([0, 8, 4])
-    rotate([90, 0, 0])
-    cube([8, 3, 2], center=true);
 }
 
 // OLED display snap mount (remains in control box)
@@ -677,16 +594,6 @@ module ssr_snap_clip() {
         translate([1, 1.5, 1.5])
         rotate([0, 45, 0])
         cube([2, 4, 2], center=true);
-    }
-}
-
-// Sensor board retention clip
-module sensor_snap_clip() {
-    difference() {
-        cube([1.5, 2, 2]);
-        translate([0.75, 1, 1])
-        rotate([0, 30, 0])
-        cube([2, 3, 2], center=true);
     }
 }
 
@@ -811,14 +718,14 @@ module control_box_lid_labels() {
 
     // Version and date
     translate([box_width/2, box_depth/2 - 15, wall_thickness + label_depth])
-    component_label("2025 ESP32", small_label_size);
+    component_label("2025 ESP32-S3", small_label_size);
 
     // Warning labels
     translate([20, 20, wall_thickness + label_depth])
     component_label("⚠ 120V", small_label_size);
 
-    translate([box_width - 40, 20, wall_thickness + label_depth])
-    component_label("UV RESIST", small_label_size);
+    translate([box_width - 60, 20, wall_thickness + label_depth])
+    component_label("STEMMA QT", small_label_size);
 
     // Installation direction arrow
     translate([box_width/2, 20, wall_thickness + label_depth])
@@ -832,40 +739,22 @@ module control_box_lid_labels() {
     component_label("SNAP-FIT", small_label_size);
 }
 
-// Sensor housing update for VL53L1X
-module sensor_housing_vl53l1x() {
-    // Updated sensor housing for VL53L1X with weatherproofing
+// Cable entry mount for inlet sensor connection (single STEMMA QT cable)
+module cable_entry_mount() {
     difference() {
-        // Main housing body
-        cylinder(d=35, h=25);
-
-        // Sensor board cavity
-        translate([0, 0, 5])
-        cylinder(d=25, h=16);
-
-        // Sensor aperture (optimized for VL53L1X)
+        cylinder(d=15, h=8);
         translate([0, 0, -1])
-        cylinder(d=8, h=7);
+        cylinder(d=8, h=10);  // Cable entry hole for 500mm STEMMA QT cable
 
-        // Wire management slot
-        translate([-2, -15, 10])
-        cube([4, 30, 8]);
-
-        // Mounting holes
-        for(a = [0:120:240]) {
-            rotate([0, 0, a])
-            translate([12, 0, -1])
-            cylinder(d=3.2, h=27);
-        }
+        // Strain relief groove
+        translate([-2, -10, 4])
+        cube([4, 20, 6]);
     }
 
-    // Protective lens retainer
-    translate([0, 0, 21])
-    difference() {
-        cylinder(d=12, h=4);
-        translate([0, 0, -1])
-        cylinder(d=8, h=6);
-    }
+    // Cable retention clip
+    translate([0, 8, 4])
+    rotate([90, 0, 0])
+    cube([8, 3, 2], center=true);
 }
 
 // Print layout and module selection

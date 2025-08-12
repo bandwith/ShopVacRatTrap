@@ -170,6 +170,9 @@ gpio:
 
 ### ESPHome Development
 ```bash
+# PREREQUISITE: Activate virtual environment first
+source .venv/bin/activate
+
 # Test configuration without flashing
 esphome config rat-trap-2025.yaml
 
@@ -353,6 +356,14 @@ display:
 ```
 
 ## Testing & Validation Workflow
+
+### ⚠️ **VIRTUAL ENVIRONMENT REQUIREMENT** ⚠️
+**CRITICAL**: All testing commands require the Python virtual environment to be activated first:
+```bash
+cd /home/bandwith/ShopVacRatTrap
+source .venv/bin/activate
+```
+ESPHome and other Python tools will NOT work without the virtual environment active.
 
 ### ⚠️ **MANDATORY SAFETY TESTING** ⚠️
 

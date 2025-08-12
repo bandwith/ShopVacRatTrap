@@ -165,7 +165,7 @@ module complete_rat_trap_system() {
         complete_trap_tube_assembly();
 
         // Refillable bait cap (from imported file)
-        bait_cap_assembly();
+        refillable_bait_cap();
 
         // Control electronics housing
         control_electronics_housing();
