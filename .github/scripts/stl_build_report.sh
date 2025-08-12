@@ -13,6 +13,42 @@ echo "**Commit:** ${GITHUB_SHA:-$(git rev-parse HEAD)}" >> build_report.md
 echo "**Workflow:** STL Generation" >> build_report.md
 echo "" >> build_report.md
 
+# Check what triggered this build
+stl_count=0
+scad_count=0
+missing_count=0
+
+for stl_file in *.stl; do
+    if [ -f "$stl_file" ]; then
+        stl_count=$((stl_count + 1))
+    fi
+done
+
+for scad_file in *.scad; do
+    if [ -f "$scad_file" ]; then
+        scad_count=$((scad_count + 1))
+        base_name=$(basename "$scad_file" .scad)
+        stl_file="${base_name}.stl"
+
+        # Check if this STL was recently created (within last minute)
+        if [ -f "$stl_file" ]; then
+            # Check if file is very recent (likely just generated)
+            if [ $(find "$stl_file" -mmin -1 2>/dev/null | wc -l) -gt 0 ]; then
+                missing_count=$((missing_count + 1))
+            fi
+        fi
+    fi
+done
+
+echo "### Build Summary:" >> build_report.md
+echo "" >> build_report.md
+echo "- **Total SCAD source files:** $scad_count" >> build_report.md
+echo "- **Total STL files generated:** $stl_count" >> build_report.md
+if [ $missing_count -gt 0 ]; then
+    echo "- **Recently generated files:** $missing_count" >> build_report.md
+fi
+echo "" >> build_report.md
+
 echo "### Generated Files:" >> build_report.md
 echo "" >> build_report.md
 

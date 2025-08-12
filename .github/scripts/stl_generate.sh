@@ -81,19 +81,51 @@ if [ "$FORCE_REGENERATE" = "true" ]; then
     done
     echo -e "${BLUE}📊 Generated $success_count out of $total_count STL files${NC}"
 else
-    echo -e "${BLUE}📝 Processing changed SCAD files...${NC}"
-    echo "Changed files: $CHANGED_FILES"
+    echo -e "${BLUE}📝 Processing specified SCAD files...${NC}"
+    echo "Files to process: $CHANGED_FILES"
 
     if [ -n "$CHANGED_FILES" ]; then
         success_count=0
         total_count=0
+        processed_files=""
+
         for file_path in $CHANGED_FILES; do
             if [[ "$file_path" == *".scad" ]] && [[ "$file_path" == "3D Models"* ]]; then
                 # Extract just the filename from the full path
                 scad_filename=$(basename "$file_path")
                 if [ -f "$scad_filename" ]; then
+                    # Avoid processing the same file twice
+                    if [[ ! "$processed_files" =~ "$scad_filename" ]]; then
+                        processed_files="$processed_files $scad_filename"
+                        total_count=$((total_count + 1))
+                        echo -e "${BLUE}🔧 Processing $scad_filename...${NC}"
+                        if generate_stl "$scad_filename"; then
+                            success_count=$((success_count + 1))
+                        else
+                            echo -e "${YELLOW}⚠️  Continuing with next file...${NC}"
+                        fi
+                    else
+                        echo -e "${YELLOW}⏭️  Skipping duplicate: $scad_filename${NC}"
+                    fi
+                fi
+            fi
+        done
+        echo -e "${BLUE}📊 Generated $success_count out of $total_count STL files${NC}"
+    else
+        echo -e "${YELLOW}⚠️  No SCAD files to process${NC}"
+
+        # Fallback: Check for any missing STL files
+        echo -e "${BLUE}🔍 Checking for missing STL files as fallback...${NC}"
+        success_count=0
+        total_count=0
+        for scad_file in *.scad; do
+            if [ -f "$scad_file" ]; then
+                base_name=$(basename "$scad_file" .scad)
+                stl_file="${base_name}.stl"
+                if [ ! -f "$stl_file" ]; then
+                    echo -e "${YELLOW}📝 Found missing STL: $stl_file${NC}"
                     total_count=$((total_count + 1))
-                    if generate_stl "$scad_filename"; then
+                    if generate_stl "$scad_file"; then
                         success_count=$((success_count + 1))
                     else
                         echo -e "${YELLOW}⚠️  Continuing with next file...${NC}"
@@ -101,9 +133,11 @@ else
                 fi
             fi
         done
-        echo -e "${BLUE}📊 Generated $success_count out of $total_count STL files${NC}"
-    else
-        echo -e "${YELLOW}⚠️  No SCAD files changed${NC}"
+        if [ $total_count -gt 0 ]; then
+            echo -e "${BLUE}📊 Generated $success_count out of $total_count missing STL files${NC}"
+        else
+            echo -e "${GREEN}✅ All STL files are already present${NC}"
+        fi
     fi
 fi
 
