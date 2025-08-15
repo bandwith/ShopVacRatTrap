@@ -53,6 +53,25 @@ assert(box_height > 0, "Box height must be positive.");
 assert(wall_thickness > 0, "Wall thickness must be positive.");
 assert(latch_arm_thickness > 0, "Latch arm thickness must be positive.");
 assert(snap_arm_thickness > 0, "Snap arm thickness must be positive.");
+tube_contact_width = 100;      // mm - width of tube contact area
+tube_mount_height = 30;        // mm - height of curved mounting section
+flat_base_width = 80;          // mm - width of flat base for table mounting
+
+// Push-fit latching parameters for tube mounting
+latch_arm_length = 22;      // Length of the flexible arm
+latch_arm_thickness = 3;     // Thickness of the arm for flexibility and strength
+latch_width = 18;            // Width of the latch components
+latch_head_height = 6;       // Height of the catch
+latch_head_overhang = 2.5;   // Overhang of the catch to lock it in place
+latch_release_angle = 30;    // Angle of the release surface
+latch_insertion_angle = 45;  // Angle of the insertion ramp for smooth engagement
+
+// Snap-fit parameters for tool-free assembly
+snap_arm_length = 8;        // mm - length of snap arm
+snap_arm_thickness = 1.5;   // mm - thickness for flexibility
+snap_catch_height = 2;      // mm - height of catch feature
+snap_tolerance = 0.2;       // mm - clearance for smooth operation
+lid_overlap = 3;            // mm - how much lid overlaps base
 
 // Component mounting parameters - exact BOM component specifications
 // ESP32-S3 Feather (Adafruit 5323) - PRIMARY CONTROLLER (remains in control box)
