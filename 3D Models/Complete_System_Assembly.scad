@@ -23,139 +23,11 @@
 include <Complete_Trap_Tube_Assembly.scad>
 include <Refillable_Bait_Cap.scad>
 
-// ========== CONTROL ELECTRONICS ASSEMBLY ==========
-// The control electronics remain in a separate housing for serviceability
-// Connected to the main trap tube via a single weatherproof cable
-
-module control_electronics_housing() {
-    translate([400, 0, 0]) {  // Position next to trap tube
-        difference() {
-            union() {
-                // Main electronics enclosure
-                cube([180, 120, 80], center = true);
-
-                // Mounting ears for wall/post installation
-                for (x = [-90, 90]) {
-                    translate([x, 0, -40]) {
-                        cylinder(h = 10, d = 20, $fn = 24);
-                    }
-                }
-            }
-
-            // Internal electronics cavity
-            translate([0, 0, 4]) {
-                cube([170, 110, 72], center = true);
-            }
-
-            // Mounting holes in ears
-            for (x = [-90, 90]) {
-                translate([x, 0, -45]) {
-                    cylinder(h = 20, d = 8, $fn = 16);
-                }
-            }
-
-            // Cable entry from trap tube
-            translate([0, -60, 0]) {
-                rotate([90, 0, 0]) {
-                    cylinder(h = 15, d = 20, $fn = 24);
-                }
-            }
-
-            // Display cutout (front panel)
-            translate([0, 60, 20]) {
-                cube([30, 8, 20], center = true);
-            }
-
-            // Button cutouts (front panel)
-            translate([-40, 60, 0]) {
-                rotate([90, 0, 0]) {
-                    cylinder(h = 8, d = 16, $fn = 24);
-                }
-            }
-
-            translate([40, 60, 0]) {
-                rotate([90, 0, 0]) {
-                    cylinder(h = 8, d = 25, $fn = 24);
-                }
-            }
-
-            // Power entry (back panel)
-            translate([0, -60, -20]) {
-                cube([50, 8, 30], center = true);
-            }
-        }
-
-        // Control electronics labels
-        control_electronics_labels();
-    }
-}
-
-module control_electronics_labels() {
-    // Main system identification
-    translate([0, 65, 35]) {
-        rotate([90, 0, 0]) {
-            linear_extrude(height = 1) {
-                text("RAT TRAP 2025", size = 6, font = "Liberation Sans:style=Bold", halign = "center");
-            }
-        }
-    }
-
-    translate([0, 65, 25]) {
-        rotate([90, 0, 0]) {
-            linear_extrude(height = 1) {
-                text("CONTROL UNIT", size = 4, font = "Liberation Sans:style=Bold", halign = "center");
-            }
-        }
-    }
-
-    // Display label
-    translate([0, 65, 5]) {
-        rotate([90, 0, 0]) {
-            linear_extrude(height = 1) {
-                text("STATUS", size = 3, font = "Liberation Sans:style=Bold", halign = "center");
-            }
-        }
-    }
-
-    // Button labels
-    translate([-40, 65, -15]) {
-        rotate([90, 0, 0]) {
-            linear_extrude(height = 1) {
-                text("TEST", size = 3, font = "Liberation Sans:style=Bold", halign = "center");
-            }
-        }
-    }
-
-    translate([40, 65, -15]) {
-        rotate([90, 0, 0]) {
-            linear_extrude(height = 1) {
-                text("EMERGENCY", size = 3, font = "Liberation Sans:style=Bold", halign = "center");
-            }
-        }
-    }
-
-    // Power connection label
-    translate([0, -65, -35]) {
-        rotate([90, 0, 0]) {
-            rotate([0, 0, 180]) {
-                linear_extrude(height = 1) {
-                    text("120V AC", size = 4, font = "Liberation Sans:style=Bold", halign = "center");
-                }
-            }
-        }
-    }
-
-    // Connection cable label
-    translate([0, -65, 15]) {
-        rotate([90, 0, 0]) {
-            rotate([0, 0, 180]) {
-                linear_extrude(height = 1) {
-                    text("SENSOR BUS", size = 3, font = "Liberation Sans:style=Bold", halign = "center");
-                }
-            }
-        }
-    }
-}
+// ========== IMPORT MODULAR COMPONENTS ==========
+// August 2025 Update: All components are now modular and included from external files.
+// This top-level assembly file integrates them for visualization and validation.
+include <Side_Mount_Control_Box.scad>
+include <Inlet_Sensor_Assembly.scad>
 
 // ========== COMPLETE SYSTEM ASSEMBLY ==========
 
@@ -167,8 +39,17 @@ module complete_rat_trap_system() {
         // Refillable bait cap (from imported file)
         refillable_bait_cap();
 
-        // Control electronics housing
-        control_electronics_housing();
+        // Inlet Sensor Assembly (new modular component)
+        // Positioned at the entrance of the trap tube (z=0).
+        inlet_sensor_assembly();
+
+        // Side-Mount Control Box (new modular component)
+        // Positioned to align with the mounting receptacles on the trap tube.
+        // The tube file specifies `control_box_mount_position = 150`.
+        // This translation places it visually next to the mount point.
+        translate([80, 0, 115]) {
+            control_box_enclosure();
+        }
 
         // Connecting cable representation
         connecting_cable_guide();
@@ -224,14 +105,16 @@ if (which_part == "complete_system") {
 } else if (which_part == "trap_tube_only") {
     complete_trap_tube_assembly();
 } else if (which_part == "electronics_only") {
-    control_electronics_housing();
+    // Note: This uses the detailed model from the included file
+    control_box_enclosure();
 } else if (which_part == "bait_cap_only") {
     bait_cap_assembly();
 } else if (which_part == "print_layout") {
     // Layout all parts for individual printing
     complete_trap_tube_assembly();
-    translate([400, 0, 0]) control_electronics_housing();
-    translate([50, 120, 0]) bait_cap_assembly();
+    translate([300, 0, 0]) control_box_enclosure();
+    translate([50, 200, 0]) bait_cap_assembly();
+    translate([-150, 0, 0]) inlet_sensor_assembly();
 }
 
 // ========== ASSEMBLY CALL ==========

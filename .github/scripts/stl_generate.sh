@@ -1,11 +1,11 @@
 #!/bin/bash
 # STL Generation Script for ShopVac Rat Trap
-# Generates STL files from SCAD sources with proper error handling
+# Generates a single STL file from a single SCAD source.
+# Designed to be called from a GitHub Actions matrix build.
 
 set -e  # Exit on error
 
-CHANGED_FILES="$1"
-FORCE_REGENERATE="$2"
+SCAD_FILE_PATH="$1"
 
 # Colors for output
 GREEN='\033[0;32m'
@@ -14,8 +14,14 @@ RED='\033[0;31m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
-echo -e "${BLUE}🏗️ Starting STL generation...${NC}"
+if [ -z "$SCAD_FILE_PATH" ]; then
+    echo -e "${RED}❌ Error: No SCAD file path provided.${NC}"
+    exit 1
+fi
 
+echo -e "${BLUE}🏗️ Starting STL generation for $SCAD_FILE_PATH...${NC}"
+
+# The `generate_stl` function needs to run inside the `3D Models` directory.
 cd "3D Models"
 
 # Function to generate STL with error handling and timeout
@@ -64,81 +70,17 @@ generate_stl() {
     fi
 }
 
-# Process changed files or all files if force regenerate
-if [ "$FORCE_REGENERATE" = "true" ]; then
-    echo -e "${BLUE}🔄 Force regenerating all STL files...${NC}"
-    success_count=0
-    total_count=0
-    for scad_file in *.scad; do
-        if [ -f "$scad_file" ]; then
-            total_count=$((total_count + 1))
-            if generate_stl "$scad_file"; then
-                success_count=$((success_count + 1))
-            else
-                echo -e "${YELLOW}⚠️  Continuing with next file...${NC}"
-            fi
-        fi
-    done
-    echo -e "${BLUE}📊 Generated $success_count out of $total_count STL files${NC}"
-else
-    echo -e "${BLUE}📝 Processing specified SCAD files...${NC}"
-    echo "Files to process: $CHANGED_FILES"
-
-    if [ -n "$CHANGED_FILES" ]; then
-        success_count=0
-        total_count=0
-        processed_files=""
-
-        for file_path in $CHANGED_FILES; do
-            if [[ "$file_path" == *".scad" ]] && [[ "$file_path" == "3D Models"* ]]; then
-                # Extract just the filename from the full path
-                scad_filename=$(basename "$file_path")
-                if [ -f "$scad_filename" ]; then
-                    # Avoid processing the same file twice
-                    if [[ ! "$processed_files" =~ "$scad_filename" ]]; then
-                        processed_files="$processed_files $scad_filename"
-                        total_count=$((total_count + 1))
-                        echo -e "${BLUE}🔧 Processing $scad_filename...${NC}"
-                        if generate_stl "$scad_filename"; then
-                            success_count=$((success_count + 1))
-                        else
-                            echo -e "${YELLOW}⚠️  Continuing with next file...${NC}"
-                        fi
-                    else
-                        echo -e "${YELLOW}⏭️  Skipping duplicate: $scad_filename${NC}"
-                    fi
-                fi
-            fi
-        done
-        echo -e "${BLUE}📊 Generated $success_count out of $total_count STL files${NC}"
+# Generate the single STL file
+scad_filename=$(basename "$SCAD_FILE_PATH")
+if [ -f "$scad_filename" ]; then
+    if generate_stl "$scad_filename"; then
+        echo -e "${GREEN}✅ STL generation for $scad_filename completed successfully!${NC}"
+        exit 0
     else
-        echo -e "${YELLOW}⚠️  No SCAD files to process${NC}"
-
-        # Fallback: Check for any missing STL files
-        echo -e "${BLUE}🔍 Checking for missing STL files as fallback...${NC}"
-        success_count=0
-        total_count=0
-        for scad_file in *.scad; do
-            if [ -f "$scad_file" ]; then
-                base_name=$(basename "$scad_file" .scad)
-                stl_file="${base_name}.stl"
-                if [ ! -f "$stl_file" ]; then
-                    echo -e "${YELLOW}📝 Found missing STL: $stl_file${NC}"
-                    total_count=$((total_count + 1))
-                    if generate_stl "$scad_file"; then
-                        success_count=$((success_count + 1))
-                    else
-                        echo -e "${YELLOW}⚠️  Continuing with next file...${NC}"
-                    fi
-                fi
-            fi
-        done
-        if [ $total_count -gt 0 ]; then
-            echo -e "${BLUE}📊 Generated $success_count out of $total_count missing STL files${NC}"
-        else
-            echo -e "${GREEN}✅ All STL files are already present${NC}"
-        fi
+        echo -e "${RED}❌ STL generation for $scad_filename failed.${NC}"
+        exit 1
     fi
+else
+    echo -e "${RED}❌ Error: File not found: $scad_filename in $(pwd)${NC}"
+    exit 1
 fi
-
-echo -e "${GREEN}✅ STL generation completed!${NC}"
