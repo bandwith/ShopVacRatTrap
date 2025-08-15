@@ -17,32 +17,18 @@ on:
         type: boolean
 
 jobs:
-  generate-stl:
+  get-scad-files:
     runs-on: ubuntu-latest
-    timeout-minutes: 30     # Prevent workflow from hanging on complex geometries
     outputs:
-      artifacts_uploaded: ${{ steps.set-upload-status.outputs.artifacts_uploaded }}
+      scad_files: ${{ steps.set-scad-files.outputs.scad_files }}
+      should_run: ${{ steps.set-scad-files.outputs.should_run }}
+      should_commit: ${{ steps.set-scad-files.outputs.should_commit }}
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0         # Fetch full history for change detection
-          token: ${{ secrets.GITHUB_TOKEN }}         # Use GitHub token for pushing
-
-      - name: Cache apt packages
-        uses: actions/cache@v4
-        with:
-          path: /var/cache/apt/archives
-          key: ${{ runner.os }}-apt-openscad-${{ hashFiles('**/lockfiles') }}
-          restore-keys: |
-            ${{ runner.os }}-apt-openscad-
-
-      - name: Install OpenSCAD
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y openscad
-          openscad --version
+          fetch-depth: 0
 
       - name: Detect changed SCAD files
         id: changed-files
@@ -59,289 +45,127 @@ jobs:
         run: |
           cd "3D Models"
           missing_files=""
-          missing_count=0
-
-          echo "🔍 Checking for missing STL files..."
           for scad_file in *.scad; do
             if [ -f "$scad_file" ]; then
-              base_name=$(basename "$scad_file" .scad)
-              stl_file="${base_name}.stl"
-              if [ ! -f "$stl_file" ]; then
-                echo "Missing: $stl_file (source: $scad_file)"
-                if [ -n "$missing_files" ]; then
-                  missing_files="$missing_files 3D Models/$scad_file"
-                else
-                  missing_files="3D Models/$scad_file"
-                fi
-                missing_count=$((missing_count + 1))
-              else
-                echo "Found: $stl_file"
+              if [ ! -f "$(basename "$scad_file" .scad).stl" ]; then
+                missing_files="$missing_files 3D Models/$scad_file"
               fi
             fi
           done
-
           echo "missing_files=$missing_files" >> $GITHUB_OUTPUT
-          echo "has_missing=$( [ $missing_count -gt 0 ] && echo 'true' || echo 'false' )" >> $GITHUB_OUTPUT
-          echo "missing_count=$missing_count" >> $GITHUB_OUTPUT
 
-          if [ $missing_count -gt 0 ]; then
-            echo "📊 Found $missing_count missing STL files"
-          else
-            echo "✅ All STL files are present"
-          fi
-
-      - name: Make STL generation script executable
-        run: chmod +x .github/scripts/stl_*.sh
-
-      - name: Generate STL files
-        if: >
-          steps.changed-files.outputs.any_changed == 'true' ||
-          steps.missing-stl.outputs.has_missing == 'true' ||
-          github.event.inputs.force_regenerate == 'true'
+      - name: Combine file lists and set output
+        id: set-scad-files
         run: |
-          # Combine changed files and missing files
-          changed_files="${{ steps.changed-files.outputs.all_changed_files }}"
-          missing_files="${{ steps.missing-stl.outputs.missing_files }}"
-
           if [ "${{ github.event.inputs.force_regenerate }}" = "true" ]; then
-            all_files=""
-            force_flag="true"
+            # If forced, run for all SCAD files
+            all_files=$(find '3D Models' -name '*.scad' -printf '"%p",')
+            # Remove trailing comma and wrap in brackets for JSON
+            json_array="[${all_files%,}]"
+            should_run="true"
+            should_commit="true"
           else
-            all_files="$changed_files $missing_files"
-            force_flag="false"
+            # Combine changed and missing files, then get unique list
+            combined_files="${{ steps.changed-files.outputs.all_changed_files }} ${{ steps.missing-stl.outputs.missing_files }}"
+            unique_files=$(echo "$combined_files" | tr ' ' '\n' | sort -u | sed '/^$/d')
+
+            if [ -z "$unique_files" ]; then
+              json_array="[]"
+              should_run="false"
+            else
+              # Convert to JSON array format
+              json_array=$(echo "$unique_files" | sed 's/.*/"&"/' | tr '\n' ',' | sed 's/,$//' | sed 's/^/[/' | sed 's/$/]/')
+              should_run="true"
+            fi
+            # Only commit on push to main
+            should_commit="${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}"
           fi
 
-          ./.github/scripts/stl_generate.sh "$all_files" "$force_flag"
+          echo "scad_files=${json_array}" >> $GITHUB_OUTPUT
+          echo "should_run=${should_run}" >> $GITHUB_OUTPUT
+          echo "should_commit=${should_commit}" >> $GITHUB_OUTPUT
+          echo "Final JSON array: ${json_array}"
+          echo "Should run: ${should_run}"
 
-      - name: Generate build report
-        if: >
-          steps.changed-files.outputs.any_changed == 'true' ||
-          steps.missing-stl.outputs.has_missing == 'true' ||
-          github.event.inputs.force_regenerate == 'true'
-        run: ./.github/scripts/stl_build_report.sh
-
-      - name: Validate STL files
-        if: >
-          steps.changed-files.outputs.any_changed == 'true' ||
-          steps.missing-stl.outputs.has_missing == 'true' ||
-          github.event.inputs.force_regenerate == 'true'
-        run: ./.github/scripts/stl_validate.sh
-
-      - name: Check for changes in STL files
-        id: stl-changes
-        run: |
-          if git diff --quiet HEAD -- "3D Models/*.stl"; then
-            echo "has_changes=false" >> $GITHUB_OUTPUT
-          else
-            echo "has_changes=true" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Commit and push updated STL files
-        if: >
-          steps.stl-changes.outputs.has_changes == 'true' &&
-          (github.event_name == 'push' || github.event.inputs.force_regenerate == 'true')
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action STL Generator"
-
-          # Add all STL files and reports
-          git add "3D Models/*.stl"
-          git add "3D Models/PRINT_SETTINGS.md"
-          git add "3D Models/build_report.md"
-
-          # Add build report if it exists
-          if [ -f "3D Models/build_report.md" ]; then
-            git add "3D Models/build_report.md"
-          fi
-
-          # Create commit message based on what was generated
-          if [ "${{ github.event.inputs.force_regenerate }}" = "true" ]; then
-            commit_msg="🔄 Force regenerate all STL files from SCAD sources"
-          elif [ "${{ steps.missing-stl.outputs.has_missing }}" = "true" ] && \
-               [ "${{ steps.changed-files.outputs.any_changed }}" = "true" ]; then
-            commit_msg="🏗️ Auto-generate missing STL files and update changed SCAD sources"
-          elif [ "${{ steps.missing-stl.outputs.has_missing }}" = "true" ]; then
-            commit_msg="🏗️ Auto-generate missing STL files from SCAD sources"
-          else
-            commit_msg="🏗️ Auto-generate STL files from updated SCAD sources"
-          fi
-
-          git commit -m "$commit_msg
-
-          Generated by GitHub Actions on $(date -u '+%Y-%m-%d %H:%M:%S UTC')
-          Commit: ${{ github.sha }}
-
-          Files updated:
-          $(git diff --name-only HEAD~1 HEAD | grep '\.stl$' | sed 's/^/- /')"
-
-          git push
-
-      - name: Upload STL artifacts
-        id: upload-artifacts
-        if: >
-          steps.changed-files.outputs.any_changed == 'true' ||
-          steps.missing-stl.outputs.has_missing == 'true' ||
-          github.event.inputs.force_regenerate == 'true'
-        uses: actions/upload-artifact@v4
-        with:
-          name: stl-files-${{ github.sha }}
-          path: |
-            3D Models/*.stl
-            3D Models/PRINT_SETTINGS.md
-            3D Models/build_report.md
-          retention-days: 30
-
-      - name: Set artifact upload status
-        id: set-upload-status
-        run: |
-          if [ "${{ steps.upload-artifacts.outcome }}" = "success" ]; then
-            echo "artifacts_uploaded=true" >> $GITHUB_OUTPUT
-          else
-            echo "artifacts_uploaded=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Create PR comment with build results
-        if: >
-          github.event_name == 'pull_request' &&
-          (steps.changed-files.outputs.any_changed == 'true' ||
-           steps.missing-stl.outputs.has_missing == 'true' ||
-           github.event.inputs.force_regenerate == 'true')
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const fs = require('fs');
-
-            let comment = '## 🏗️ STL Generation Results\n\n';
-
-            // Add information about what was generated
-            if ('${{ steps.missing-stl.outputs.has_missing }}' === 'true') {
-              comment += '### 📁 Missing STL Files Generated\n';
-              comment += `Found and generated ${{ steps.missing-stl.outputs.missing_count }} missing STL files.\n\n`;
-            }
-
-            if ('${{ steps.changed-files.outputs.any_changed }}' === 'true') {
-              comment += '### 🔄 Updated STL Files\n';
-              comment += 'STL files were regenerated from modified SCAD sources.\n\n';
-            }
-
-            if (fs.existsSync('3D Models/build_report.md')) {
-              const report = fs.readFileSync('3D Models/build_report.md', 'utf8');
-              comment += report;
-            } else {
-              comment += 'STL files were generated successfully.\n';
-            }
-
-            comment += '\n\n💡 **Note**: STL files are automatically generated from SCAD sources. ';
-            comment += 'Download the artifacts from this workflow run to get the latest STL files.';
-
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: comment
-            });
-
-  validate-stl-quality:
+  generate-stl:
+    needs: get-scad-files
+    if: needs.get-scad-files.outputs.should_run == 'true'
     runs-on: ubuntu-latest
-    needs: generate-stl
-    if: always() && (needs.generate-stl.result == 'success')
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        scad_file: ${{ fromJson(needs.get-scad-files.outputs.scad_files) }}
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Download STL artifacts
-        id: download-artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: stl-files-${{ github.sha }}
-          path: ./
-        continue-on-error: true
-
-      - name: Check if artifacts were downloaded
-        id: check-artifacts
-        run: |
-          if [ "${{ steps.download-artifacts.outcome }}" = "success" ] && \
-             [ -d "3D Models" ] && \
-             [ "$(ls -A '3D Models'/*.stl 2>/dev/null | wc -l)" -gt 0 ]; then
-            echo "artifacts_available=true" >> $GITHUB_OUTPUT
-            echo "✅ STL artifacts downloaded successfully"
-          else
-            echo "artifacts_available=false" >> $GITHUB_OUTPUT
-            echo "❌ No STL artifacts available for validation"
-            echo "This is normal if no SCAD files were changed and no STL files were missing."
-          fi
-
-      - name: Cache apt packages for validation
-        if: steps.check-artifacts.outputs.artifacts_available == 'true'
+      - name: Cache apt packages
         uses: actions/cache@v4
         with:
           path: /var/cache/apt/archives
-          key: ${{ runner.os }}-apt-meshlab-${{ hashFiles('**/lockfiles') }}
-          restore-keys: |
-            ${{ runner.os }}-apt-meshlab-
+          key: ${{ runner.os }}-apt-openscad-${{ hashFiles('**/lockfiles') }}
 
-      - name: Install mesh validation tools
-        if: steps.check-artifacts.outputs.artifacts_available == 'true'
+      - name: Install OpenSCAD
         run: |
-          sudo apt-get update
-          sudo apt-get install -y meshlab
+          sudo apt-get update && sudo apt-get install -y openscad
+          openscad --version
 
-      - name: Validate STL mesh quality
-        if: steps.check-artifacts.outputs.artifacts_available == 'true'
+      - name: Make STL generation script executable
+        run: chmod +x .github/scripts/stl_generate.sh
+
+      - name: Generate single STL file
+        run: ./.github/scripts/stl_generate.sh "${{ matrix.scad_file }}"
+
+      - name: Upload STL artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: stl-file-${{ matrix.scad_file }}
+          path: 3D Models/$(basename "${{ matrix.scad_file }}" .scad).stl
+          retention-days: 1
+
+  commit-changes:
+    runs-on: ubuntu-latest
+    needs: [get-scad-files, generate-stl]
+    if: >
+      always() &&
+      needs.get-scad-files.outputs.should_run == 'true' &&
+      needs.get-scad-files.outputs.should_commit == 'true' &&
+      needs.generate-stl.result == 'success'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download all STL artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Move artifacts to correct location
         run: |
-          cd "3D Models"
+          find artifacts -name '*.stl' -exec bash -c 'mv "$0" "3D Models/"' {} \;
 
-          echo "🔍 Performing advanced STL validation..."
-          validation_failed=false
+      - name: Generate build report
+        run: ./.github/scripts/stl_build_report.sh
 
-          for stl_file in *.stl; do
-            if [ -f "$stl_file" ]; then
-              echo "Analyzing $stl_file..."
-
-              # Get basic file stats
-              file_size=$(stat -c%s "$stl_file")
-              echo "  File size: $file_size bytes"
-
-              # Use meshlab to validate (strict validation)
-              if command -v meshlabserver >/dev/null 2>&1; then
-                echo "  Running mesh validation..."
-                # Capture both stdout and stderr to detect any issues
-                validation_output=$(meshlabserver -i "$stl_file" -o "/tmp/test_${stl_file}" 2>&1)
-                validation_exit_code=$?
-
-                if [ $validation_exit_code -eq 0 ] && [ -f "/tmp/test_${stl_file}" ]; then
-                  echo "  ✅ Mesh structure is valid"
-                  rm -f "/tmp/test_${stl_file}"
-                else
-                  echo "  ❌ Mesh validation FAILED for $stl_file"
-                  echo "  Exit code: $validation_exit_code"
-                  if [ -n "$validation_output" ]; then
-                    echo "  Validation output: $validation_output"
-                  fi
-                  validation_failed=true
-                fi
-              else
-                echo "  ⚠️  meshlabserver not available, skipping advanced validation"
-              fi
-            fi
-          done
-
-          if [ "$validation_failed" = true ]; then
-            echo ""
-            echo "❌ STL mesh validation FAILED - some files have invalid geometry"
-            echo "🔧 This indicates issues in the SCAD source files that need to be fixed"
-            exit 1
+      - name: Check for changes
+        id: stl-changes
+        run: |
+          if git diff --quiet HEAD -- "3D Models/"; then
+            echo "has_changes=false" >> $GITHUB_OUTPUT
           else
-            echo ""
-            echo "✅ All STL files passed mesh validation"
+            echo "has_changes=true" >> $GITHUB_OUTPUT
           fi
 
-      - name: Report no validation needed
-        if: steps.check-artifacts.outputs.artifacts_available == 'false'
+      - name: Commit and push updated files
+        if: steps.stl-changes.outputs.has_changes == 'true'
         run: |
-          echo "ℹ️ No STL validation performed - no artifacts were generated"
-          echo "This is normal when:"
-          echo "  - No SCAD files were modified"
-          echo "  - All STL files are already present and up-to-date"
-          echo "  - The workflow was triggered without any changes requiring STL generation"
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action STL Generator"
+          git add "3D Models/*.stl" "3D Models/build_report.md"
+          git commit -m "ci: Auto-generate STL files and build report"
+          git push

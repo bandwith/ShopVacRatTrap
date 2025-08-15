@@ -162,24 +162,25 @@ module main_trap_tube_body() {
 
 // This module groups all the negative spaces (cutouts) together.
 module internal_cavities() {
-    // Main tube internal profile
-    internal_cavity_profile();
+    union() {
+        // Main tube internal profile
+        internal_cavity_profile();
 
-    // Push-fit receptacles for the control box
-    push_fit_receptacles();
+        // Push-fit receptacles for the control box
+        push_fit_receptacles();
 
-    // Sensor housing cavities
-    apds9960_housing(is_cavity=true);
-    pir_housing(is_cavity=true);
-    vl53l0x_housing(is_cavity=true);
-    if (camera_variant) {
-        ov5640_camera_housing(is_cavity=true);
-    }
+        // Sensor housing cavities
+        apds9960_housing(is_cavity=true);
+        pir_housing(is_cavity=true);
+        vl53l0x_housing(is_cavity=true);
+        if (camera_variant) {
+            ov5640_camera_housing(is_cavity=true);
+        }
 
-    // Bait compartment cavity
-    if (bait_compartment_enabled) {
-        modular_bait_holder_slot();
-    }
+        // Bait compartment cavity
+        if (bait_compartment_enabled) {
+            modular_bait_holder_slot();
+        }
 
         // STEMMA QT hub cavity
         qwiic_hub_cavity();
@@ -261,53 +262,6 @@ module internal_cavity_profile() {
 }
 
 // ========== PUSH-FIT RECEPTACLE FOR CONTROL BOX ==========
-module push_fit_receptacle() {
-    receptacle_opening_width = latch_width + 2 * receptacle_clearance;
-    receptacle_opening_height = latch_arm_thickness + 2 * receptacle_clearance;
-    catch_lip_height = latch_head_height - latch_arm_thickness;
-
-    difference() {
-        // A block representing part of the main tube wall (for subtraction)
-        cube([tube_wall_thickness + 15, receptacle_opening_width + 10, latch_head_height + 15]);
-
-        // The cutout for the latch arm to pass through
-        translate([-1, 5, 5])
-        cube([tube_wall_thickness + 2, receptacle_opening_width, receptacle_opening_height]);
-
-        // The cavity for the latch head
-        translate([tube_wall_thickness, 5, 5])
-        cube([latch_head_overhang + 5, receptacle_opening_width, latch_head_height]);
-
-        // Create the catch lip
-        translate([tube_wall_thickness, 5, 5 + receptacle_opening_height])
-        difference() {
-            cube([latch_head_overhang + 2, receptacle_opening_width, catch_lip_height]);
-            // Chamfer on the catch for better engagement
-            translate([latch_head_overhang+2, 0, 0])
-            rotate([0,-45,0])
-            translate([-catch_lip_height,0,0])
-            cube([catch_lip_height, receptacle_opening_width, catch_lip_height]);
-        }
-    }
-}
-
-module push_fit_receptacles() {
-    // Position the receptacles to match the latches on the control box
-    translate([0, 0, control_box_mount_position]) {
-        // Top receptacle
-        translate([0, trap_tube_diameter/2, 0])
-        rotate([90, 0, 0])
-        push_fit_receptacle();
-
-        // Bottom receptacle
-        translate([0, -trap_tube_diameter/2, 0])
-        rotate([-90, 0, 0])
-        push_fit_receptacle();
-    }
-}
-
-
-// ========== INTEGRATED SENSOR SYSTEMS ==========
 module push_fit_receptacle() {
     receptacle_opening_width = latch_width + 2 * receptacle_clearance;
     receptacle_opening_height = latch_arm_thickness + 2 * receptacle_clearance;
