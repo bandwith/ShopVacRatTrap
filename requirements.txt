@@ -148,6 +148,10 @@ pycparser==2.22
     # via cffi
 pyelftools==0.32
     # via platformio
+pytest==8.2.2
+    # via -r requirements.in
+pytest-mock==3.12.0
+    # via -r requirements.in
 pygments==2.19.2
     # via rich
 pyparsing==3.2.3

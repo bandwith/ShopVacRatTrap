@@ -107,57 +107,71 @@ bait_compartment_enabled = true; // Include refillable bait system
 // ========== MAIN ASSEMBLY MODULE ==========
 
 module complete_trap_tube_assembly() {
-    union() {
-        // Main trap tube with integrated sensors
-        main_trap_tube();
+    difference() {
+        union() {
+            // Main trap tube body
+            main_trap_tube_body();
 
-        // Stable base platform for mounting
-        base_mounting_platform();
+            // Stable base platform for mounting
+            base_mounting_platform();
 
-        // External bait compartment with refill access
-        if (bait_compartment_enabled) {
-            external_bait_compartment();
+            // External bait compartment
+            if (bait_compartment_enabled) {
+                bait_system();
+            }
+
+            // Sensor mounting reinforcements
+            sensor_mount_reinforcements();
+
+            // Component identification labels
+            complete_labeling_system();
         }
 
-        // Sensor mounting and protection systems
-        integrated_sensor_mounts();
+        // Subtract all internal cavities
+        internal_cavities();
+    }
+}
 
-        // Component identification labels throughout
-        complete_labeling_system();
+// ========== MAIN TRAP TUBE STRUCTURE ==========
+
+module main_trap_tube_body() {
+    difference() {
+        union() {
+            // Main tube body with tapered entrance and exit
+            main_tube_body_geometry();
+
+            // Reinforced entrance section (gnaw resistance)
+            reinforced_entrance_section();
+        }
+
+        // Subtract cavities for the tube itself
+        internal_cavity_profile();
 
         // Cable management integrated into structure
         integrated_cable_management();
     }
 }
 
-// ========== MAIN TRAP TUBE STRUCTURE ==========
+// This module groups all the negative spaces (cutouts) together.
+module internal_cavities() {
+    // Main tube internal profile
+    internal_cavity_profile();
 
-module main_trap_tube() {
-    difference() {
-        union() {
-            // Main tube body with tapered entrance and exit
-            main_tube_body();
+    // Push-fit receptacles for the control box
+    push_fit_receptacles();
 
-            // Reinforced entrance section (gnaw resistance)
-            reinforced_entrance_section();
+    // Sensor housing cavities
+    apds9960_housing(is_cavity=true);
+    pir_housing(is_cavity=true);
+    vl53l0x_housing(is_cavity=true);
+    if (camera_variant) {
+        ov5640_camera_housing(is_cavity=true);
+    }
 
-            // Sensor mounting reinforcements
-            sensor_mount_reinforcements();
-        }
-
-        // Add receptacles for the push-fit latches
-        push_fit_receptacles();
-
-        // Internal cavity with optimized geometry
-        internal_cavity_profile();
-
-        // Sensor housing cavities
-        all_sensor_cavities();
-
-        // Bait compartment cavity
-        if (bait_compartment_enabled) {
-            bait_compartment_cavity();
-        }
+    // Bait compartment cavity
+    if (bait_compartment_enabled) {
+        bait_system(is_cavity=true);
+    }
 
         // STEMMA QT hub cavity
         qwiic_hub_cavity();
@@ -170,7 +184,7 @@ module main_trap_tube() {
     }
 }
 
-module main_tube_body() {
+module main_tube_body_geometry() {
     // Create smooth tapered tube from entrance to exit
     hull() {
         // Entrance end
@@ -286,135 +300,107 @@ module push_fit_receptacles() {
 }
 
 
-// ========== INTEGRATED SENSOR SYSTEMS ==========
+// ========== MODULAR SENSOR & BAIT SYSTEMS ==========
 
-module all_sensor_cavities() {
-    // APDS9960 cavity (TOP of tube)
+module apds9960_housing(is_cavity=false) {
     translate([0, 0, apds_detection_position]) {
-        translate([0, 0, trap_tube_diameter/2 + tube_wall_thickness - sensor_housing_depth]) {
+        if (is_cavity) {
+            translate([0, 0, trap_tube_diameter/2 + tube_wall_thickness - sensor_housing_depth])
             cylinder(h = sensor_housing_depth + 2, d = sensor_housing_diameter, $fn = 32);
-        }
-    }
-
-    // PIR cavity (SIDE of tube)
-    translate([0, 0, pir_detection_position]) {
-        translate([trap_tube_diameter/2 + tube_wall_thickness - sensor_housing_depth, 0, 0]) {
-            rotate([0, 90, 0]) {
-                cylinder(h = sensor_housing_depth + 2, d = sensor_housing_diameter, $fn = 32);
-            }
-        }
-    }
-
-    // VL53L0X cavity (BOTTOM of tube)
-    translate([0, 0, tof_detection_position]) {
-        translate([0, 0, -trap_tube_diameter/2 - tube_wall_thickness + sensor_housing_depth]) {
-            cylinder(h = sensor_housing_depth + 2, d = sensor_housing_diameter, $fn = 32);
-        }
-    }
-
-    // OV5640 camera cavity (TOP of tube, offset from APDS9960)
-    if (camera_variant) {
-        translate([0, 0, camera_position]) {
-            translate([25, 0, trap_tube_diameter/2 + tube_wall_thickness - camera_housing_depth]) {
-                cylinder(h = camera_housing_depth + 2, d = camera_housing_diameter, $fn = 32);
-            }
-        }
-    }
-}
-
-module integrated_sensor_mounts() {
-    // APDS9960 mounting ring (TOP)
-    translate([0, 0, apds_detection_position]) {
-        translate([0, 0, trap_tube_diameter/2 + tube_wall_thickness - 2]) {
+        } else {
+            translate([0, 0, trap_tube_diameter/2 + tube_wall_thickness - 2])
             difference() {
                 cylinder(h = 6, d = sensor_housing_diameter + 12, $fn = 32);
                 cylinder(h = 8, d = sensor_housing_diameter, $fn = 32);
             }
         }
     }
+}
 
-    // PIR mounting ring (SIDE)
+module pir_housing(is_cavity=false) {
     translate([0, 0, pir_detection_position]) {
-        translate([trap_tube_diameter/2 + tube_wall_thickness - 2, 0, 0]) {
-            rotate([0, 90, 0]) {
-                difference() {
-                    cylinder(h = 6, d = sensor_housing_diameter + 12, $fn = 32);
-                    cylinder(h = 8, d = sensor_housing_diameter, $fn = 32);
-                }
-            }
-        }
-    }
-
-    // VL53L0X mounting ring (BOTTOM)
-    translate([0, 0, tof_detection_position]) {
-        translate([0, 0, -trap_tube_diameter/2 - tube_wall_thickness - 4]) {
+        if (is_cavity) {
+            translate([trap_tube_diameter/2 + tube_wall_thickness - sensor_housing_depth, 0, 0])
+            rotate([0, 90, 0])
+            cylinder(h = sensor_housing_depth + 2, d = sensor_housing_diameter, $fn = 32);
+        } else {
+            translate([trap_tube_diameter/2 + tube_wall_thickness - 2, 0, 0])
+            rotate([0, 90, 0])
             difference() {
                 cylinder(h = 6, d = sensor_housing_diameter + 12, $fn = 32);
                 cylinder(h = 8, d = sensor_housing_diameter, $fn = 32);
             }
         }
     }
+}
 
-    // OV5640 camera mounting ring (TOP, offset)
-    if (camera_variant) {
-        translate([0, 0, camera_position]) {
-            translate([25, 0, trap_tube_diameter/2 + tube_wall_thickness - 2]) {
-                difference() {
-                    cylinder(h = 8, d = camera_housing_diameter + 12, $fn = 32);
-                    cylinder(h = 10, d = camera_housing_diameter, $fn = 32);
-                }
+module vl53l0x_housing(is_cavity=false) {
+    translate([0, 0, tof_detection_position]) {
+        if (is_cavity) {
+            translate([0, 0, -trap_tube_diameter/2 - tube_wall_thickness + sensor_housing_depth])
+            cylinder(h = sensor_housing_depth + 2, d = sensor_housing_diameter, $fn = 32);
+        } else {
+            translate([0, 0, -trap_tube_diameter/2 - tube_wall_thickness - 4])
+            difference() {
+                cylinder(h = 6, d = sensor_housing_diameter + 12, $fn = 32);
+                cylinder(h = 8, d = sensor_housing_diameter, $fn = 32);
             }
         }
     }
 }
 
-// ========== EXTERNAL BAIT COMPARTMENT SYSTEM ==========
-
-module external_bait_compartment() {
-    translate([0, 0, bait_compartment_position]) {
-        translate([0, trap_tube_diameter/2 + tube_wall_thickness, 0]) {
+module ov5640_camera_housing(is_cavity=false) {
+    translate([0, 0, camera_position]) {
+        if (is_cavity) {
+            translate([25, 0, trap_tube_diameter/2 + tube_wall_thickness - camera_housing_depth])
+            cylinder(h = camera_housing_depth + 2, d = camera_housing_diameter, $fn = 32);
+        } else {
+            translate([25, 0, trap_tube_diameter/2 + tube_wall_thickness - 2])
             difference() {
-                union() {
-                    // Main bait compartment housing
-                    cylinder(h = bait_compartment_depth, d = bait_compartment_diameter + 8, $fn = 32);
+                cylinder(h = 8, d = camera_housing_diameter + 12, $fn = 32);
+                cylinder(h = 10, d = camera_housing_diameter, $fn = 32);
+            }
+        }
+    }
+}
 
-                    // External access port
-                    translate([0, 0, bait_compartment_depth - 10]) {
-                        cylinder(h = 20, d = bait_access_diameter + 4, $fn = 32);
+module bait_system(is_cavity=false) {
+    if (is_cavity) {
+        // Internal connection from bait compartment to main tube
+        translate([0, 0, bait_compartment_position]) {
+            translate([0, trap_tube_diameter/2 - 5, 0]) {
+                rotate([90, 0, 0]) {
+                    cylinder(h = 15, d = 20, $fn = 24);
+                }
+            }
+        }
+    } else {
+        // The external housing for the bait
+        translate([0, 0, bait_compartment_position]) {
+            translate([0, trap_tube_diameter/2 + tube_wall_thickness, 0]) {
+                difference() {
+                    union() {
+                        cylinder(h = bait_compartment_depth, d = bait_compartment_diameter + 8, $fn = 32);
+                        translate([0, 0, bait_compartment_depth - 10]) {
+                            cylinder(h = 20, d = bait_access_diameter + 4, $fn = 32);
+                        }
                     }
-                }
-
-                // Internal bait cavity
-                translate([0, 0, 4]) {
-                    cylinder(h = bait_compartment_depth - 4, d = bait_compartment_diameter, $fn = 32);
-                }
-
-                // Access port with threads
-                translate([0, 0, bait_compartment_depth - 5]) {
-                    cylinder(h = 25, d = bait_access_diameter, $fn = 32);
-                }
-
-                // Thread pattern for secure cap
-                for (thread_turn = [0:bait_cap_thread_pitch:20]) {
-                    translate([0, 0, bait_compartment_depth + thread_turn]) {
-                        rotate([0, 0, thread_turn * 360 / bait_cap_thread_pitch]) {
-                            translate([bait_access_diameter/2 - 1, 0, 0]) {
-                                cube([2, 1, 1], center = true);
+                    translate([0, 0, 4]) {
+                        cylinder(h = bait_compartment_depth - 4, d = bait_compartment_diameter, $fn = 32);
+                    }
+                    translate([0, 0, bait_compartment_depth - 5]) {
+                        cylinder(h = 25, d = bait_access_diameter, $fn = 32);
+                    }
+                    for (thread_turn = [0:bait_cap_thread_pitch:20]) {
+                        translate([0, 0, bait_compartment_depth + thread_turn]) {
+                            rotate([0, 0, thread_turn * 360 / bait_cap_thread_pitch]) {
+                                translate([bait_access_diameter/2 - 1, 0, 0]) {
+                                    cube([2, 1, 1], center = true);
+                                }
                             }
                         }
                     }
                 }
-            }
-        }
-    }
-}
-
-module bait_compartment_cavity() {
-    // Internal connection from bait compartment to main tube
-    translate([0, 0, bait_compartment_position]) {
-        translate([0, trap_tube_diameter/2 - 5, 0]) {
-            rotate([90, 0, 0]) {
-                cylinder(h = 15, d = 20, $fn = 24);
             }
         }
     }
