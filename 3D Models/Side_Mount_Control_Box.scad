@@ -31,6 +31,15 @@ tube_contact_width = 100;      // mm - width of tube contact area
 tube_mount_height = 30;        // mm - height of curved mounting section
 flat_base_width = 80;          // mm - width of flat base for table mounting
 
+// Push-fit latching parameters for tube mounting
+latch_arm_length = 22;      // Length of the flexible arm
+latch_arm_thickness = 3;     // Thickness of the arm for flexibility and strength
+latch_width = 18;            // Width of the latch components
+latch_head_height = 6;       // Height of the catch
+latch_head_overhang = 2.5;   // Overhang of the catch to lock it in place
+latch_release_angle = 30;    // Angle of the release surface
+latch_insertion_angle = 45;  // Angle of the insertion ramp for smooth engagement
+
 // Snap-fit parameters for tool-free assembly
 snap_arm_length = 8;        // mm - length of snap arm
 snap_arm_thickness = 1.5;   // mm - thickness for flexibility
@@ -112,33 +121,59 @@ module component_label(text, size=label_font_size) {
          halign="center", valign="center");
 }
 
-// Universal mounting base for Complete_Trap_Tube_Assembly with flat surface option
-module pipe_mounting_base() {
+// --- Push-Fit Latch Module (for mounting to trap tube) ---
+module push_fit_latch() {
+    union() {
+        // Base of the latch arm with a fillet for stress relief
+        difference() {
+            cube([5, latch_width, latch_arm_thickness]);
+            translate([5, -1, -1])
+            rotate([0, 90, 0])
+            cylinder(r=2, h=latch_width+2, $fn=32);
+        }
+
+        // The flexible arm
+        translate([2, 0, 0])
+        cube([latch_arm_length, latch_width, latch_arm_thickness]);
+
+        // The latching head with improved geometry
+        translate([latch_arm_length + 2, 0, 0]) {
+            difference() {
+                // Main body of the head
+                cube([latch_head_overhang + 4, latch_width, latch_head_height]);
+
+                // Angled surface for smooth insertion (insertion ramp)
+                translate([-1, -1, 0])
+                rotate([0, latch_insertion_angle, 0])
+                translate([-latch_head_height, 0, 0])
+                cube([latch_head_height + 2, latch_width + 2, latch_head_height + 2]);
+
+                // Angled surface for easy release
+                translate([latch_head_overhang + 4, -1, latch_head_height])
+                rotate([0, -latch_release_angle, 0])
+                translate([-latch_head_height, 0, -latch_head_height])
+                cube([latch_head_height + 2, latch_width + 2, latch_head_height + 2]);
+            }
+
+            // Add a textured grip for release
+            translate([latch_head_overhang + 2, 2, latch_head_height])
+            rotate([90,0,0])
+            linear_extrude(height=1)
+            text("|||", size=3, font="Liberation Sans:style=Bold");
+        }
+    }
+}
+
+// Mounting base with integrated push-fit latches
+module push_fit_mounting_base() {
     difference() {
+        // Main mounting body with curved surface
         union() {
-            // Curved section for trap tube mounting
             translate([box_width/2, 0, 0])
             intersection() {
                 cylinder(r=mount_radius + wall_thickness, h=tube_mount_height, $fn=64);
                 translate([-tube_contact_width/2, -mount_radius - wall_thickness, 0])
                 cube([tube_contact_width, mount_radius + wall_thickness, tube_mount_height]);
-            }
-
-            // Flat base section for table/surface mounting
-            translate([(box_width - flat_base_width)/2, 0, 0])
-            cube([flat_base_width, wall_thickness, tube_mount_height]);
-
-            // Transition from curved to flat base
-            translate([box_width/2, 0, 0])
-            for(i = [0:10]) {
-                angle = i * 18; // 180 degrees over 10 steps
-                x_offset = sin(angle) * (tube_contact_width/2 - flat_base_width/2) / 10;
-                translate([x_offset, 0, 0])
-                intersection() {
-                    cylinder(r=mount_radius + wall_thickness - i*0.5, h=tube_mount_height, $fn=32);
-                    translate([-5, -mount_radius - wall_thickness, 0])
-                    cube([10, mount_radius + wall_thickness, tube_mount_height]);
-                }
             }
         }
 
@@ -149,42 +184,25 @@ module pipe_mounting_base() {
             translate([-tube_contact_width/2, -mount_radius, 0])
             cube([tube_contact_width, mount_radius, tube_mount_height]);
         }
-
-        // Mounting bolt holes for trap tube clamps
-        for(x = [-40, 0, 40]) {
-            translate([box_width/2 + x, -mount_radius - wall_thickness - 1, tube_mount_height/2])
-            rotate([90, 0, 0])
-            cylinder(d=8, h=wall_thickness + 2, $fn=16);
-        }
     }
 
-    // Trap tube mounting clamp tabs
-    trap_tube_clamp_tabs();
-}
+    // Add push-fit latches to the mounting base
+    // Position two latches for secure mounting
+    translate([box_width/2 - latch_width/2, -mount_radius - wall_thickness - latch_arm_length - 5, tube_mount_height/2 - latch_arm_thickness/2])
+    rotate([0, 0, 180])
+    rotate([0, -90, 0])
+    push_fit_latch();
 
-// Trap tube clamp tabs for secure mounting
-module trap_tube_clamp_tabs() {
-    for(x = [-30, 30]) {
-        translate([box_width/2 + x, -mount_radius - wall_thickness, tube_mount_height/2])
-        rotate([90, 0, 0]) {
-            difference() {
-                cylinder(d=16, h=8, $fn=16);
-                translate([0, 0, -1])
-                cylinder(d=8, h=10, $fn=16);
-
-                // Slot for hose clamp or zip tie
-                translate([-1, -10, 2])
-                cube([2, 20, 4]);
-            }
-        }
-    }
+    translate([box_width/2 - latch_width/2, mount_radius + wall_thickness + 5, tube_mount_height/2 - latch_arm_thickness/2])
+    rotate([0, 90, 0])
+    push_fit_latch();
 }
 
 // Main enclosure module
 module control_box_enclosure() {
     union() {
-        // Curved pipe mounting base
-        pipe_mounting_base();
+        // Curved pipe mounting base with push-fit latches
+        push_fit_mounting_base();
 
         // Main enclosure box
         translate([0, 0, tube_mount_height]) {
