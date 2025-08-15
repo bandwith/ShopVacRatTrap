@@ -30,6 +30,14 @@ jobs:
           fetch-depth: 0         # Fetch full history for change detection
           token: ${{ secrets.GITHUB_TOKEN }}         # Use GitHub token for pushing
 
+      - name: Cache apt packages
+        uses: actions/cache@v4
+        with:
+          path: /var/cache/apt/archives
+          key: ${{ runner.os }}-apt-openscad-${{ hashFiles('**/lockfiles') }}
+          restore-keys: |
+            ${{ runner.os }}-apt-openscad-
+
       - name: Install OpenSCAD
         run: |
           sudo apt-get update
@@ -263,6 +271,15 @@ jobs:
             echo "❌ No STL artifacts available for validation"
             echo "This is normal if no SCAD files were changed and no STL files were missing."
           fi
+
+      - name: Cache apt packages for validation
+        if: steps.check-artifacts.outputs.artifacts_available == 'true'
+        uses: actions/cache@v4
+        with:
+          path: /var/cache/apt/archives
+          key: ${{ runner.os }}-apt-meshlab-${{ hashFiles('**/lockfiles') }}
+          restore-keys: |
+            ${{ runner.os }}-apt-meshlab-
 
       - name: Install mesh validation tools
         if: steps.check-artifacts.outputs.artifacts_available == 'true'

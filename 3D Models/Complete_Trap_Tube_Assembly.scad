@@ -77,6 +77,16 @@ base_mount_depth = 120;         // mm - base platform depth
 base_mount_height = 40;         // mm - base platform height
 vacuum_connection_diameter = 38; // mm - standard shop vacuum hose connection
 
+// Push-fit latching parameters for control box mounting
+// These must match the parameters in Side_Mount_Control_Box.scad
+latch_arm_length = 22;
+latch_arm_thickness = 3;
+latch_width = 18;
+latch_head_height = 6;
+latch_head_overhang = 2.5;
+receptacle_clearance = 0.5;
+control_box_mount_position = 150; // Z-axis position for the control box
+
 // Component identification parameters
 label_depth = 1.0;              // mm - deeper embossed text for durability
 label_font_size = 6;            // mm - larger font for outdoor visibility
@@ -134,6 +144,9 @@ module main_trap_tube() {
             // Sensor mounting reinforcements
             sensor_mount_reinforcements();
         }
+
+        // Add receptacles for the push-fit latches
+        push_fit_receptacles();
 
         // Internal cavity with optimized geometry
         internal_cavity_profile();
@@ -224,6 +237,54 @@ module internal_cavity_profile() {
         }
     }
 }
+
+// ========== PUSH-FIT RECEPTACLE FOR CONTROL BOX ==========
+
+module push_fit_receptacle() {
+    receptacle_opening_width = latch_width + 2 * receptacle_clearance;
+    receptacle_opening_height = latch_arm_thickness + 2 * receptacle_clearance;
+    catch_lip_height = latch_head_height - latch_arm_thickness;
+
+    difference() {
+        // A block representing part of the main tube wall (for subtraction)
+        cube([tube_wall_thickness + 15, receptacle_opening_width + 10, latch_head_height + 15]);
+
+        // The cutout for the latch arm to pass through
+        translate([-1, 5, 5])
+        cube([tube_wall_thickness + 2, receptacle_opening_width, receptacle_opening_height]);
+
+        // The cavity for the latch head
+        translate([tube_wall_thickness, 5, 5])
+        cube([latch_head_overhang + 5, receptacle_opening_width, latch_head_height]);
+
+        // Create the catch lip
+        translate([tube_wall_thickness, 5, 5 + receptacle_opening_height])
+        difference() {
+            cube([latch_head_overhang + 2, receptacle_opening_width, catch_lip_height]);
+            // Chamfer on the catch for better engagement
+            translate([latch_head_overhang+2, 0, 0])
+            rotate([0,-45,0])
+            translate([-catch_lip_height,0,0])
+            cube([catch_lip_height, receptacle_opening_width, catch_lip_height]);
+        }
+    }
+}
+
+module push_fit_receptacles() {
+    // Position the receptacles to match the latches on the control box
+    translate([0, 0, control_box_mount_position]) {
+        // Top receptacle
+        translate([0, trap_tube_diameter/2, 0])
+        rotate([90, 0, 0])
+        push_fit_receptacle();
+
+        // Bottom receptacle
+        translate([0, -trap_tube_diameter/2, 0])
+        rotate([-90, 0, 0])
+        push_fit_receptacle();
+    }
+}
+
 
 // ========== INTEGRATED SENSOR SYSTEMS ==========
 
