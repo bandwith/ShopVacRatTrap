@@ -33,37 +33,41 @@
 
 // ========== CORE PARAMETERS ==========
 
-// Complete trap tube dimensions (optimized for 3D printing)
-trap_tube_length = 250;      // mm - total length from entrance to vacuum connection
-trap_tube_diameter = 100;    // mm - internal diameter (4" equivalent)
-tube_wall_thickness = 6;     // mm - thick walls for gnaw resistance and sensor mounting
-entrance_diameter = 85;      // mm - funnel entrance diameter
-exit_diameter = 50;          // mm - tapered exit for maximum vacuum efficiency
+// [Hardware Variants]
+camera_variant = true;          // Include OV5640 5MP camera?
+bait_compartment_enabled = true; // Include refillable bait system?
 
-// Gnaw resistance parameters (critical for outdoor use)
-gnaw_guard_thickness = 8;    // mm - extra thick outer shell at vulnerable points
-anti_gnaw_texture_depth = 1; // mm - surface texture depth to discourage gnawing
-protective_ridge_spacing = 5; // mm - spacing of anti-gnaw ridges
-hardened_zone_length = 50;   // mm - length of extra-thick entrance section
+// [Tube Dimensions]
+trap_tube_length = 250;      // [mm] Total length from entrance to vacuum connection
+trap_tube_diameter = 100;    // [mm] Internal diameter (4" equivalent)
+tube_wall_thickness = 6;     // [mm] Thick walls for gnaw resistance and sensor mounting
+entrance_diameter = 85;      // [mm] Funnel entrance diameter
+exit_diameter = 50;          // [mm] Tapered exit for maximum vacuum efficiency
 
-// Four-sensor positioning (integrated into tube walls)
-apds_detection_position = 75;   // mm - APDS9960 position (primary detection)
-pir_detection_position = 100;   // mm - PIR position (secondary confirmation)
-tof_detection_position = 125;   // mm - VL53L0X position (tertiary backup)
-camera_position = 75;           // mm - OV5640 position (evidence capture)
+// [Gnaw Resistance]
+gnaw_guard_thickness = 8;    // [mm] Extra thick outer shell at vulnerable points
+anti_gnaw_texture_depth = 1; // [mm] Surface texture depth to discourage gnawing
+protective_ridge_spacing = 5; // [mm] Spacing of anti-gnaw ridges
+hardened_zone_length = 50;   // [mm] Length of extra-thick entrance section
 
-// Sensor housing parameters (integrated mounting)
-sensor_housing_diameter = 32;   // mm - housing for standard sensors
-sensor_housing_depth = 18;      // mm - depth for sensor and weatherproofing
-camera_housing_diameter = 45;   // mm - larger housing for OV5640 camera
-camera_housing_depth = 25;      // mm - depth for camera assembly and lens
+// [Sensor Positioning]
+apds_detection_position = 75;   // [mm] APDS9960 position (primary detection)
+pir_detection_position = 100;   // [mm] PIR position (secondary confirmation)
+tof_detection_position = 125;   // [mm] VL53L0X position (tertiary backup)
+camera_position = 75;           // [mm] OV5640 position (evidence capture)
 
-// Bait compartment parameters (externally refillable)
-bait_compartment_position = 50; // mm - position from entrance
-bait_compartment_diameter = 40; // mm - internal diameter
-bait_compartment_depth = 60;    // mm - depth into tube wall
-bait_access_diameter = 30;      // mm - external access port diameter
-bait_cap_thread_pitch = 2;      // mm - thread pitch for secure closure
+// [Sensor Housing]
+sensor_housing_diameter = 32;   // [mm] Housing for standard sensors
+sensor_housing_depth = 18;      // [mm] Depth for sensor and weatherproofing
+camera_housing_diameter = 45;   // [mm] Larger housing for OV5640 camera
+camera_housing_depth = 25;      // [mm] Depth for camera assembly and lens
+
+// [Modular Bait System]
+bait_holder_position = 50; // [mm] Z-axis position for the bait holder
+rail_width = 30;
+rail_thickness = 3;
+rail_tongue_thickness = 1.5;
+rail_groove_tolerance = 0.4;
 
 // STEMMA QT hub housing (centralized sensor management)
 qwiic_hub_position = 30;        // mm - position from entrance
@@ -99,12 +103,17 @@ snap_tolerance = 0.15;          // mm - tighter tolerance for better weather sea
 print_layer_height = 0.25;      // mm - recommended layer height for strength
 $fn = 64;                      // Higher resolution for smooth curves and threads
 
-// Hardware variant selection
-camera_variant = true;          // Include OV5640 5MP camera
-environmental_sensors = true;   // Include BME280 environmental monitoring
-bait_compartment_enabled = true; // Include refillable bait system
+// ========== PARAMETER VALIDATION ==========
+assert(trap_tube_diameter > exit_diameter, "Trap tube diameter must be greater than exit diameter.");
+assert(trap_tube_length > apds_detection_position, "APDS9960 sensor must be within the tube length.");
+assert(trap_tube_length > pir_detection_position, "PIR sensor must be within the tube length.");
+assert(trap_tube_length > tof_detection_position, "ToF sensor must be within the tube length.");
+assert(tube_wall_thickness > 0, "Tube wall thickness must be a positive value.");
+assert(entrance_diameter < trap_tube_diameter, "Entrance diameter must be smaller than tube diameter.");
 
 // ========== MAIN ASSEMBLY MODULE ==========
+
+include <Modular_Bait_Holder.scad>
 
 module complete_trap_tube_assembly() {
     difference() {
@@ -114,11 +123,6 @@ module complete_trap_tube_assembly() {
 
             // Stable base platform for mounting
             base_mounting_platform();
-
-            // External bait compartment
-            if (bait_compartment_enabled) {
-                bait_system();
-            }
 
             // Sensor mounting reinforcements
             sensor_mount_reinforcements();
@@ -170,7 +174,7 @@ module internal_cavities() {
 
     // Bait compartment cavity
     if (bait_compartment_enabled) {
-        bait_system(is_cavity=true);
+        modular_bait_holder_slot();
     }
 
         // STEMMA QT hub cavity
@@ -364,42 +368,24 @@ module ov5640_camera_housing(is_cavity=false) {
     }
 }
 
-module bait_system(is_cavity=false) {
-    if (is_cavity) {
-        // Internal connection from bait compartment to main tube
-        translate([0, 0, bait_compartment_position]) {
-            translate([0, trap_tube_diameter/2 - 5, 0]) {
-                rotate([90, 0, 0]) {
-                    cylinder(h = 15, d = 20, $fn = 24);
-                }
-            }
-        }
-    } else {
-        // The external housing for the bait
-        translate([0, 0, bait_compartment_position]) {
-            translate([0, trap_tube_diameter/2 + tube_wall_thickness, 0]) {
-                difference() {
-                    union() {
-                        cylinder(h = bait_compartment_depth, d = bait_compartment_diameter + 8, $fn = 32);
-                        translate([0, 0, bait_compartment_depth - 10]) {
-                            cylinder(h = 20, d = bait_access_diameter + 4, $fn = 32);
-                        }
-                    }
-                    translate([0, 0, 4]) {
-                        cylinder(h = bait_compartment_depth - 4, d = bait_compartment_diameter, $fn = 32);
-                    }
-                    translate([0, 0, bait_compartment_depth - 5]) {
-                        cylinder(h = 25, d = bait_access_diameter, $fn = 32);
-                    }
-                    for (thread_turn = [0:bait_cap_thread_pitch:20]) {
-                        translate([0, 0, bait_compartment_depth + thread_turn]) {
-                            rotate([0, 0, thread_turn * 360 / bait_cap_thread_pitch]) {
-                                translate([bait_access_diameter/2 - 1, 0, 0]) {
-                                    cube([2, 1, 1], center = true);
-                                }
-                            }
-                        }
-                    }
+module modular_bait_holder_slot() {
+    // This module creates the slot (groove) in the main tube for the bait holder to slide into.
+    translate([0, 0, bait_holder_position]) {
+        rotate(90, [0, 0, 1]) {
+            translate([-rail_width/2 - rail_groove_tolerance, trap_tube_diameter/2 - 5, 0]) {
+                // Main groove for the rail base
+                cube([
+                    rail_width + 2 * rail_groove_tolerance,
+                    rail_thickness + 5,
+                    base_plate_thickness + 2 * rail_groove_tolerance
+                ]);
+                // Groove for the rail tongue
+                translate([0, 0, base_plate_thickness]) {
+                    cube([
+                        rail_width + 2 * rail_groove_tolerance,
+                        rail_thickness + 5,
+                        rail_tongue_thickness + rail_groove_tolerance
+                    ]);
                 }
             }
         }
@@ -572,18 +558,10 @@ module sensor_position_labels() {
 }
 
 module bait_compartment_labels() {
-    translate([0, trap_tube_diameter/2 + tube_wall_thickness + 25, bait_compartment_position + 10]) {
+    translate([0, trap_tube_diameter/2 + tube_wall_thickness + 25, bait_holder_position + 10]) {
         rotate([90, 0, 0]) {
             linear_extrude(height = label_depth) {
-                text("BAIT", size = label_font_size, font = label_font, halign = "center");
-            }
-        }
-    }
-
-    translate([0, trap_tube_diameter/2 + tube_wall_thickness + 25, bait_compartment_position - 5]) {
-        rotate([90, 0, 0]) {
-            linear_extrude(height = label_depth) {
-                text("REFILLABLE", size = small_label_size, font = label_font, halign = "center");
+                text("MODULAR BAIT", size = label_font_size, font = label_font, halign = "center");
             }
         }
     }

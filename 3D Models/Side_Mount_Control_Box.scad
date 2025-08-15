@@ -17,35 +17,42 @@
 // - Simplified wiring: ESP32-S3 → STEMMA QT hub at inlet → all detection sensors
 // - Camera variant: Additional OV5640 5MP camera and IR LED at inlet location
 
-// Customizable parameters - optimized for current BOM components
-box_width = 200;        // mm - sized for Mean Well LRS-35-5 + ESP32-S3 Feather
-box_depth = 150;        // mm - adequate depth for all components
-box_height = 80;        // mm - increased for proper component clearance
-wall_thickness = 4;     // mm - increased for UV resistance and durability
-corner_radius = 8;      // mm - larger radius for stress distribution
+// [Enclosure Dimensions]
+box_width = 200;        // [mm] Sized for Mean Well LRS-35-5 + ESP32-S3 Feather
+box_depth = 150;        // [mm] Adequate depth for all components
+box_height = 80;        // [mm] Increased for proper component clearance
+wall_thickness = 4;     // [mm] Increased for UV resistance and durability
+corner_radius = 8;      // [mm] Larger radius for stress distribution
 
-// Universal mounting parameters for Complete_Trap_Tube_Assembly
-trap_tube_diameter = 114.3;    // mm - matches Complete_Trap_Tube_Assembly outer diameter
+// [Mounting Parameters]
+trap_tube_diameter = 114.3;    // [mm] Matches Complete_Trap_Tube_Assembly outer diameter
 mount_radius = trap_tube_diameter / 2;  // Radius for curved mounting surface
-tube_contact_width = 100;      // mm - width of tube contact area
-tube_mount_height = 30;        // mm - height of curved mounting section
-flat_base_width = 80;          // mm - width of flat base for table mounting
+tube_contact_width = 100;      // [mm] Width of tube contact area
+tube_mount_height = 30;        // [mm] Height of curved mounting section
 
-// Push-fit latching parameters for tube mounting
-latch_arm_length = 22;      // Length of the flexible arm
-latch_arm_thickness = 3;     // Thickness of the arm for flexibility and strength
-latch_width = 18;            // Width of the latch components
-latch_head_height = 6;       // Height of the catch
-latch_head_overhang = 2.5;   // Overhang of the catch to lock it in place
-latch_release_angle = 30;    // Angle of the release surface
-latch_insertion_angle = 45;  // Angle of the insertion ramp for smooth engagement
+// [Push-fit Latching]
+latch_arm_length = 22;      // [mm] Length of the flexible arm
+latch_arm_thickness = 3;     // [mm] Thickness of the arm for flexibility and strength
+latch_width = 18;            // [mm] Width of the latch components
+latch_head_height = 6;       // [mm] Height of the catch
+latch_head_overhang = 2.5;   // [mm] Overhang of the catch to lock it in place
+latch_release_angle = 30;    // [deg] Angle of the release surface
+latch_insertion_angle = 45;  // [deg] Angle of the insertion ramp for smooth engagement
 
-// Snap-fit parameters for tool-free assembly
-snap_arm_length = 8;        // mm - length of snap arm
-snap_arm_thickness = 1.5;   // mm - thickness for flexibility
-snap_catch_height = 2;      // mm - height of catch feature
-snap_tolerance = 0.2;       // mm - clearance for smooth operation
-lid_overlap = 3;            // mm - how much lid overlaps base
+// [Lid Snap-Fit]
+snap_arm_length = 8;        // [mm] Length of snap arm
+snap_arm_thickness = 1.5;   // [mm] Thickness for flexibility
+snap_catch_height = 2;      // [mm] Height of catch feature
+snap_tolerance = 0.2;       // [mm] Clearance for smooth operation
+lid_overlap = 3;            // [mm] How much lid overlaps base
+
+// ========== PARAMETER VALIDATION ==========
+assert(box_width > 0, "Box width must be positive.");
+assert(box_depth > 0, "Box depth must be positive.");
+assert(box_height > 0, "Box height must be positive.");
+assert(wall_thickness > 0, "Wall thickness must be positive.");
+assert(latch_arm_thickness > 0, "Latch arm thickness must be positive.");
+assert(snap_arm_thickness > 0, "Snap arm thickness must be positive.");
 
 // Component mounting parameters - exact BOM component specifications
 // ESP32-S3 Feather (Adafruit 5323) - PRIMARY CONTROLLER (remains in control box)
