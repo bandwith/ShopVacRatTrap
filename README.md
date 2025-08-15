@@ -42,6 +42,36 @@ The authors and contributors of this project provide this design "as is" without
 - ✅ **Modular Upgrades**: Inlet sensors independently replaceable/upgradeable
 - ✅ **Better Thermal Management**: Heat-generating components separated from sensors
 
+## Theory of Operation
+
+The reliability of the trap hinges on its multi-stage detection logic, which is designed to be both highly sensitive to rodents and resilient to false positives. The system operates entirely offline, meaning a WiFi connection is not required for the core detection and trapping functionality.
+
+The detection process unfolds in a sequence as a rodent enters the trap:
+
+1.  **Stage 1: Primary Detection (Proximity)**
+    *   **Sensor**: APDS9960 Proximity/Gesture Sensor
+    *   **Location**: Positioned at the top of the trap tube, looking down.
+    *   **Function**: This is the first line of detection. The APDS9960 emits infrared light and measures the reflection. When a rodent passes underneath, the reflected light intensity increases sharply, triggering the first detection flag. This sensor is highly effective for detecting the presence of a nearby object without being fooled by minor environmental changes.
+
+2.  **Stage 2: Secondary Confirmation (Distance)**
+    *   **Sensor**: VL53L0X Time-of-Flight (ToF) Sensor
+    *   **Location**: Positioned at the bottom of the trap tube, looking up.
+    *   **Function**: If the primary sensor is triggered, the system queries the ToF sensor. This sensor measures the exact distance to the object above it. A valid reading (e.g., a distance corresponding to the height of a rodent) confirms that a physical object is inside the tube, rather than just a shadow or a change in light. This provides a crucial secondary confirmation.
+
+3.  **Stage 3: Tertiary Backup (Motion)**
+    *   **Sensor**: PIR Motion Sensor
+    *   **Location**: Positioned on the side of the trap tube.
+    *   **Function**: The PIR sensor detects the infrared radiation (heat) emitted by a moving animal. It serves as a robust backup and a third data point. Its wide field of view ensures that any movement within the trap zone is detected.
+
+4.  **Trigger Logic: 2 of 3 Confirmation**
+    *   The vacuum is only activated when **at least two of the three** detection systems are triggered simultaneously. This "2 of 3" logic is the key to preventing false positives. A single sensor anomaly (e.g., a flash of light fooling the proximity sensor, or a warm draft affecting the PIR) will not trigger the trap. This redundancy ensures that the system is confident that a rodent is inside before activation.
+
+5.  **Evidence Capture (Camera Variant)**
+    *   **Sensor**: OV5640 5MP Camera
+    *   **Function**: If the camera variant is used, a high-resolution image is captured the moment the trap is triggered. This image is then sent to Home Assistant for logging and notification, providing visual confirmation of the capture.
+
+This layered, multi-sensor approach ensures that the trap is both effective and reliable, minimizing the chances of false alarms while maximizing the probability of a successful capture.
+
 ## Hardware Configurations
 
 ### **Standard Configuration** (ESP32-S3 Feather) - `rat-trap-2025.yaml`
