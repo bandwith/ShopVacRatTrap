@@ -38,10 +38,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements-dev.txt
 
-      - name: Run Python linter (flake8)
+      - name: Run linters
         run: |
-          flake8 .
-
-      - name: Run YAML linter (yamllint)
-        run: |
+          ruff check .
+          black --check .
+          isort --check-only .
           yamllint .

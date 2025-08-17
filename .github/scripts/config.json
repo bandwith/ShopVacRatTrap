@@ -1,0 +1,15 @@
+{
+    "VENDOR_PREFIXES": {
+        "Adafruit": "485",
+        "SparkFun": "474",
+        "Mean Well": "709",
+        "Schurter": "693",
+        "Leviton": "546",
+        "default": ""
+    },
+    "PRIORITY_COMPONENTS": [
+        "ESP32-S3-Feather",
+        "COM-13015",
+        "LRS-35-5"
+    ]
+}

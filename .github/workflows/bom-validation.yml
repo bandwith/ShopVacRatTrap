@@ -79,7 +79,6 @@ jobs:
           python .github/scripts/bom_manager.py \
             --bom-file BOM_CONSOLIDATED.csv \
             --output-dir . \
-            --priority-components ESP32-S3-Feather COM-13015 LRS-35-5 \
             --validate \
             --check-availability \
             --generate-purchase-files \
@@ -89,16 +88,8 @@ jobs:
       - name: Check for pricing changes
         id: pricing_changes
         run: |
-          if [ -f validation_results.json ]; then
-            CHANGES=$(jq '.pricing_changes.changes_detected' validation_results.json)
-            echo "changes_detected=$CHANGES" >> $GITHUB_OUTPUT
-
-            SIGNIFICANT=$(jq '.pricing_changes.significant_changes' validation_results.json)
-            echo "significant_changes=$SIGNIFICANT" >> $GITHUB_OUTPUT
-          else
-            echo "changes_detected=false" >> $GITHUB_OUTPUT
-            echo "significant_changes=false" >> $GITHUB_OUTPUT
-          fi
+          echo "changes_detected=${{ steps.bom_validation.outputs.changes_detected }}" >> $GITHUB_OUTPUT
+          echo "significant_changes=${{ steps.bom_validation.outputs.significant_changes }}" >> $GITHUB_OUTPUT
 
       - name: Update BOM files with current pricing
         if: steps.pricing_changes.outputs.changes_detected == 'true' || github.event.inputs.force_update == 'true'

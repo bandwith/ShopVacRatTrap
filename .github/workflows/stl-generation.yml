@@ -5,135 +5,80 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 3D Models/**.scad
   pull_request:
     paths:
-      - 3D Models/*.scad
+      - 3D Models/**.scad
   workflow_dispatch:
     inputs:
       force_regenerate:
         description: Force regenerate all STL files even if unchanged
         required: false
         default: false
-        type: boolean
 
 jobs:
-  get-scad-files:
+  generate-stl:
     runs-on: ubuntu-latest
     outputs:
-      scad_files: ${{ steps.set-scad-files.outputs.scad_files }}
-      should_run: ${{ steps.set-scad-files.outputs.should_run }}
-      should_commit: ${{ steps.set-scad-files.outputs.should_commit }}
-
+      should_commit: ${{ steps.generate.outputs.should_commit }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Detect changed SCAD files
-        id: changed-files
-        if: github.event_name != 'workflow_dispatch' || !github.event.inputs.force_regenerate
-        uses: tj-actions/changed-files@v41
+      - name: Set up Python
+        uses: actions/setup-python@v4
         with:
-          files: |
-            3D Models/*.scad
-          files_ignore: |
-            **/*.stl
+          python-version: '3.11'
 
-      - name: Check for missing STL files
-        id: missing-stl
+      - name: Install dependencies
         run: |
-          cd "3D Models"
-          missing_files=""
-          for scad_file in *.scad; do
-            if [ -f "$scad_file" ]; then
-              if [ ! -f "$(basename "$scad_file" .scad).stl" ]; then
-                missing_files="$missing_files 3D Models/$scad_file"
-              fi
-            fi
-          done
-          echo "missing_files=$missing_files" >> $GITHUB_OUTPUT
-
-      - name: Combine file lists and set output
-        id: set-scad-files
-        run: |
-          if [ "${{ github.event.inputs.force_regenerate }}" = "true" ]; then
-            # If forced, run for all SCAD files
-            all_files=$(find '3D Models' -name '*.scad' -printf '"%p",')
-            # Remove trailing comma and wrap in brackets for JSON
-            json_array="[${all_files%,}]"
-            should_run="true"
-            should_commit="true"
-          else
-            # Combine changed and missing files, then get unique list
-            combined_files="${{ steps.changed-files.outputs.all_changed_files }} ${{ steps.missing-stl.outputs.missing_files }}"
-            unique_files=$(echo "$combined_files" | tr ' ' '\n' | sort -u | sed '/^$/d')
-
-            if [ -z "$unique_files" ]; then
-              json_array="[]"
-              should_run="false"
-            else
-              # Convert to JSON array format
-              json_array=$(echo "$unique_files" | sed 's/.*/"&"/' | tr '\n' ',' | sed 's/,$//' | sed 's/^/[/' | sed 's/$/]/')
-              should_run="true"
-            fi
-            # Only commit on push to main
-            should_commit="${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}"
-          fi
-
-          echo "scad_files=${json_array}" >> $GITHUB_OUTPUT
-          echo "should_run=${should_run}" >> $GITHUB_OUTPUT
-          echo "should_commit=${should_commit}" >> $GITHUB_OUTPUT
-          echo "Final JSON array: ${json_array}"
-          echo "Should run: ${should_run}"
-
-  generate-stl:
-    needs: get-scad-files
-    if: needs.get-scad-files.outputs.should_run == 'true'
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    strategy:
-      fail-fast: false
-      matrix:
-        scad_file: ${{ fromJson(needs.get-scad-files.outputs.scad_files) }}
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Cache apt packages
-        uses: actions/cache@v4
-        with:
-          path: /var/cache/apt/archives
-          key: ${{ runner.os }}-apt-openscad-${{ hashFiles('**/lockfiles') }}
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
 
       - name: Install OpenSCAD
         run: |
           sudo apt-get update && sudo apt-get install -y openscad
-          openscad --version
 
-      - name: Make STL generation script executable
-        run: chmod +x .github/scripts/stl_generate.sh
+      - name: Generate STL files
+        id: generate
+        run: |
+          if [[ "${{ github.event.inputs.force_regenerate }}" == "true" ]]; then
+            scad_files=$(python .github/scripts/stl_generator_helper.py --get-all-files)
+          else
+            scad_files=$(python .github/scripts/stl_generator_helper.py --get-changed-files)
+          fi
 
-      - name: Generate single STL file
-        run: ./.github/scripts/stl_generate.sh "${{ matrix.scad_file }}"
+          if [[ -z "$scad_files" || "$scad_files" == "[]" ]]; then
+            echo "No SCAD files to process."
+            echo "should_commit=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
 
-      - name: Upload STL artifact
+          echo "should_commit=true" >> $GITHUB_OUTPUT
+
+          for file in $(echo "$scad_files" | jq -r '.[]'); do
+            openscad -o "3D Models/$(basename "$file" .scad).stl" "$file"
+          done
+
+      - name: Generate build report
+        if: steps.generate.outputs.should_commit == 'true'
+        run: |
+          python .github/scripts/stl_generator_helper.py --generate-report
+
+      - name: Upload STL artifacts
+        if: steps.generate.outputs.should_commit == 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: stl-file-${{ matrix.scad_file }}
-          path: 3D Models/$(basename "${{ matrix.scad_file }}" .scad).stl
-          retention-days: 1
+          name: stl-files
+          path: 3D Models/*.stl
 
   commit-changes:
     runs-on: ubuntu-latest
-    needs: [get-scad-files, generate-stl]
-    if: >
-      always() &&
-      needs.get-scad-files.outputs.should_run == 'true' &&
-      needs.get-scad-files.outputs.should_commit == 'true' &&
-      needs.generate-stl.result == 'success'
-
+    needs: generate-stl
+    if: needs.generate-stl.outputs.should_commit == 'true' && github.ref == 'refs/heads/main'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -143,29 +88,15 @@ jobs:
       - name: Download all STL artifacts
         uses: actions/download-artifact@v4
         with:
-          path: artifacts
-
-      - name: Move artifacts to correct location
-        run: |
-          find artifacts -name '*.stl' -exec bash -c 'mv "$0" "3D Models/"' {} \;
-
-      - name: Generate build report
-        run: ./.github/scripts/stl_build_report.sh
-
-      - name: Check for changes
-        id: stl-changes
-        run: |
-          if git diff --quiet HEAD -- "3D Models/"; then
-            echo "has_changes=false" >> $GITHUB_OUTPUT
-          else
-            echo "has_changes=true" >> $GITHUB_OUTPUT
-          fi
+          name: stl-files
+          path: 3D Models/
 
       - name: Commit and push updated files
-        if: steps.stl-changes.outputs.has_changes == 'true'
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action STL Generator"
           git add "3D Models/*.stl" "3D Models/build_report.md"
-          git commit -m "ci: Auto-generate STL files and build report"
-          git push
+          if ! git diff --staged --quiet; then
+            git commit -m "ci: Auto-generate STL files and build report"
+            git push
+          fi
