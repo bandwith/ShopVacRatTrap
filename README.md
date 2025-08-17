@@ -15,7 +15,7 @@ This project implements a modern IoT-based rodent control system using advanced 
 - **Complete STEMMA Ecosystem**: Zero-solder assembly with plug-and-play modularity
 - **Integrated Status Display**: 128x64 OLED with comprehensive system monitoring
 - **Enhanced Processing**: ESP32-S3 Feather with 8MB Flash for advanced image processing
-- **Modular Architecture**: All sensors connected via STEMMA QT/JST for easy maintenance
+- **Modular Architecture**: All sensors connected via STEMMA QT/JST for easy maintenance, with ESPHome configuration split into modular packages for improved readability and reusability., with ESPHome configuration split into modular packages for improved readability and reusability., with ESPHome configuration split into modular packages for improved readability and reusability., with ESPHome configuration split into modular packages for improved readability and reusability., with ESPHome configuration split into modular packages for improved readability and reusability., with ESPHome configuration split into modular packages for improved readability and reusability., with ESPHome configuration split into modular packages for improved readability and reusability., with ESPHome configuration split into modular packages for improved readability and reusability.
 - **Professional Controls**: Large arcade button emergency disable with visual feedback
 - **Safety Compliant**: NEC/IEC electrical standards with 15A circuit protection
 - **WiFi Connectivity**: ESPHome integration with Home Assistant automation
@@ -73,6 +73,9 @@ This layered, multi-sensor approach ensures that the trap is both effective and 
 ## Hardware Configurations
 
 ### **Standard Configuration** (ESP32-S3 Feather) - `rat-trap-2025.yaml`
+
+> **Note:** The ESPHome configuration for this variant is now modularized using packages in the `esphome/packages/` directory for improved maintainability and readability.
+
 **Electronics Enclosure** (Commercially available, user-supplied):
 - ESP32-S3 Feather controller
 - OLED display (128x64)
@@ -222,7 +225,8 @@ The project includes automated purchase links and bulk upload files for streamli
 | **[ELECTRICAL_DESIGN.md](ELECTRICAL_DESIGN.md)** | Complete BOM, wiring, safety standards |
 | **[INSTALLATION_GUIDE.md](INSTALLATION_GUIDE.md)** | Step-by-step assembly with safety protocols |
 | **README.md** | Project overview and design specifications |
-| **[esphome/rat-trap-2025.yaml](esphome/rat-trap-2025.yaml)** | Optimized ESP32 firmware configuration |
+| **[esphome/rat-trap-2025.yaml](esphome/rat-trap-2025.yaml)** | Main ESP32 firmware configuration (uses packages) |
+| **[esphome/packages/](esphome/packages/)** | Modular ESPHome configuration packages |
 
 ## System Operation
 

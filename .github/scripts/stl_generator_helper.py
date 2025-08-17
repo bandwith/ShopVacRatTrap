@@ -9,7 +9,7 @@ def get_changed_scad_files():
     result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
     changed_files = result.stdout.strip().split("\n")
     scad_files = [
-        f for f in changed_files if f.endswith(".scad") and f.startswith("3D Models/")
+        f for f in changed_files if f.endswith(".scad") and f.startswith("3d_models/")
     ]
     return scad_files
 
@@ -17,7 +17,7 @@ def get_changed_scad_files():
 def get_all_scad_files():
     """Get a list of all SCAD files."""
     scad_files = []
-    for root, _, files in os.walk("3D Models"):
+    for root, _, files in os.walk("3d_models"):
         for file in files:
             if file.endswith(".scad"):
                 scad_files.append(os.path.join(root, file))
@@ -27,7 +27,7 @@ def get_all_scad_files():
 def get_missing_stl_files():
     """Get a list of SCAD files that are missing their STL file."""
     missing_files = []
-    for root, _, files in os.walk("3D Models"):
+    for root, _, files in os.walk("3d_models"):
         for file in files:
             if file.endswith(".scad"):
                 scad_path = os.path.join(root, file)
@@ -43,12 +43,12 @@ def generate_build_report():
     report.append("# STL Build Report")
     report.append("| SCAD File | STL File |")
     report.append("|-----------|----------|")
-    for root, _, files in os.walk("3D Models"):
+    for root, _, files in os.walk("3d_models"):
         for file in files:
             if file.endswith(".stl"):
                 scad_file = file.replace(".stl", ".scad")
                 report.append(f"| {scad_file} | {file} |")
-    with open("3D Models/build_report.md", "w") as f:
+    with open("3d_models/build_report.md", "w") as f:
         f.write("\n".join(report))
 
 

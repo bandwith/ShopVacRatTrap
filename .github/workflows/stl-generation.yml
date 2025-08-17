@@ -7,7 +7,7 @@ on:
       - main
   pull_request:
     paths:
-      - 3D Models/**.scad
+      - 3d_models/**.scad
   workflow_dispatch:
     inputs:
       force_regenerate:
@@ -80,7 +80,7 @@ jobs:
 
           echo "should_commit=true" >> $GITHUB_OUTPUT
 
-          for file in $(echo "$scad_files" | jq -r '.[]'); do
+          echo "$scad_files" | jq -r '.[] | @sh' | while read -r file; do
             openscad -o "3D Models/$(basename "$file" .scad).stl" "$file"
           done
 
