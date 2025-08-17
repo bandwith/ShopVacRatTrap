@@ -35,12 +35,10 @@ The authors and contributors of this project provide this design "as is" without
 ## 🔧 System Architecture
 
 **Modern Design Improvements:**
-- ✅ **Simplified Wiring**: Single 500mm STEMMA QT cable: control box ↔ inlet sensors
-- ✅ **Zero-Solder Assembly**: Complete STEMMA QT/JST ecosystem for all detection components
-- ✅ **Centralized Detection**: All sensors optimally positioned at trap inlet
-- ✅ **Enhanced Weather Protection**: Dedicated IP65 inlet sensor assembly
-- ✅ **Modular Upgrades**: Inlet sensors independently replaceable/upgradeable
-- ✅ **Better Thermal Management**: Heat-generating components separated from sensors
+- ✅ **Horizontal & Modular Design**: Lays flat for stability and uses snap-fit connectors for easy, tool-free assembly.
+- ✅ **Large 4-Inch Opening**: Accommodates a wide variety of rodent sizes.
+- ✅ **Removable Bait Station**: Allows for easy baiting without disassembling the trap.
+- ✅ **All-in-One Electronics Enclosure**: All electronic components are housed in a single, commercially available enclosure for maximum safety, reliability, and code compliance.
 
 ## Theory of Operation
 
@@ -75,38 +73,30 @@ This layered, multi-sensor approach ensures that the trap is both effective and 
 ## Hardware Configurations
 
 ### **Standard Configuration** (ESP32-S3 Feather) - `rat-trap-2025.yaml`
-**Control Box Components** (Side-mounted enclosure):
-- ESP32-S3 Feather controller with WiFi connectivity
-- OLED display (128x64) for status monitoring and user interface
-- Large arcade button for manual trigger/reset
-- Emergency stop switch for safety compliance
+**Electronics Enclosure** (Commercially available, user-supplied):
+- ESP32-S3 Feather controller
+- OLED display (128x64)
+- Large arcade button
+- Emergency stop switch
 - Power supply, SSR, and terminal blocks
 
-**Inlet Sensor Assembly** (NEW - Weatherproof hybrid detection):
-- APDS9960 proximity/gesture sensor for primary detection (offline)
-- VL53L0X ToF sensor for distance confirmation (secondary)
-- PIR motion sensor for backup motion detection (tertiary)
-- BME280 environmental sensor for monitoring conditions
-- STEMMA QT 5-Port Hub for centralized sensor management
-- Single 500mm STEMMA QT cable to control box
-- Weatherproof IP65 enclosure and mounting hardware
+**Trap Assembly**:
+- `trap_entrance` with integrated APDS9960 and VL53L0X sensors
+- `trap_body_main` with integrated PIR sensor
+- `trap_funnel_adapter` to connect to a shop vacuum
+- `bait_station` (removable)
 
 ### **STEMMA QT Camera System** (ESP32-S3 + OV5640) - `rat-trap-stemma-camera.yaml`
-**Control Box Components** (Same as standard):
-- ESP32-S3 Feather controller with enhanced processing capability
-- OLED display for status and camera system monitoring
-- Large arcade button and emergency stop switch
-- Power supply with sufficient capacity for camera system
+**Electronics Enclosure** (Same as standard, with additional components):
+- All standard components
+- OV5640 5MP Camera
+- High-Power IR LED
 
-**Inlet Sensor Assembly** (Enhanced with camera and IR):
-- APDS9960 proximity/gesture sensor for primary detection (offline)
-- VL53L0X ToF sensor for distance confirmation (secondary)
-- PIR motion sensor for motion backup detection (tertiary)
-- BME280 environmental sensor for monitoring conditions
-- OV5640 5MP Camera for evidence capture and Home Assistant logging
-- High-Power IR LED for night vision illumination
-- STEMMA QT 5-Port Hub for centralized sensor management
-- Single 500mm STEMMA QT cable to control box
+**Trap Assembly** (Enhanced with camera and IR):
+- `trap_entrance` with integrated APDS9960, VL53L0X, and OV5640 camera
+- `trap_body_main` with integrated PIR sensor and high-power IR LED
+- `trap_funnel_adapter` to connect to a shop vacuum
+- `bait_station` (removable)
 
 ## Detection Strategy - Enhanced Hybrid System
 
@@ -151,27 +141,23 @@ This layered, multi-sensor approach ensures that the trap is both effective and 
 └─ ESP32-S3 Built-in 3.3V Regulation ← 5V from PSU
 ```
 
-### **Core System Architecture - STEMMA QT Simplified**
+### **Core System Architecture - All-in-One Enclosure**
 
 ```
-[120V/230V AC] → [Circuit Protection] → [Mean Well PSU] → [ESP32-S3 + Built-in 3.3V]
-                                                            ↓
-[Shop Vacuum] ← [25A SSR] ← [GPIO5] ← [ESPHome Logic] ← [Single 500mm STEMMA Cable]
-                                                        ↓
-[INLET SENSOR ASSEMBLY] - Weatherproof IP65 Enclosure:
-├─ STEMMA QT 5-Port Hub (Adafruit 5625)
-├─ APDS9960 Proximity/Gesture (Adafruit 3595) - Primary Detection
-├─ VL53L0X ToF Distance (Adafruit 3317) - Secondary Confirmation
-├─ PIR Motion Sensor (Adafruit 4871) - Tertiary Backup
-├─ BME280 Environmental (Adafruit 4816) - Monitoring
-└─ [Camera Variant: OV5640 5MP + IR LED] - Evidence Capture
+[COMMERCIAL ENCLOSURE (User-Supplied)]
+[120V/230V AC] → [IEC Inlet+CB] → [Mean Well PSU] → [25A SSR] → [Shop Vacuum Outlet]
+    │               └─ [E-Stop]         │               ↑
+    └────────────────────────────────── [ESP32-S3] ─────────┘
+                                          │
+                                          ├─ [OLED Display]
+                                          ├─ [Arcade Button]
+                                          └─ [STEMMA QT to Sensors]
 
-[CONTROL BOX] - Side-Mount Enclosure:
-├─ ESP32-S3 Feather (Adafruit 5323) - Controller
-├─ OLED Display (Adafruit 326) - User Interface
-├─ Large Arcade Button (Adafruit 368) - Manual Control
-├─ Emergency Stop Switch - Safety Critical
-└─ Mean Well PSU + 25A SSR - Power & AC Switching
+[TRAP ASSEMBLY (3D Printed, Snap-Fit)]
+[trap_entrance] ← [trap_body_main] ← [trap_funnel_adapter]
+    ├─ [APDS9960]
+    ├─ [VL53L0X]
+    └─ [PIR Sensor]
 ```
 
 ### **STEMMA QT Power Management (Optimized)**

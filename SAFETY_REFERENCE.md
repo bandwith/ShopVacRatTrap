@@ -158,6 +158,8 @@ If emergency stop is activated:
 
 ## 7. Component Safety Requirements
 
+**Note on Enclosures**: While 3D printed enclosures offer flexibility, they are typically not UL rated for electrical safety. For applications requiring UL compliance, a commercially certified enclosure must be used.
+
 ### Power Supply
 - **UL/CE Listing**: Mandatory for all AC-DC converters
 - **Isolation**: ≥4000V isolation recommended (e.g., LRS-35-5)

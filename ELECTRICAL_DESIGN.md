@@ -28,6 +28,9 @@ All sensors use standardized JST SH 4-pin connectors for assembly without solder
 - Hot-swappable sensors for easy maintenance
 - Professional cable management
 
+#### Electronics Enclosure
+For maximum safety and code compliance, all electronic components (both high and low voltage) should be housed in a single, commercially available, UL-listed (or equivalent) enclosure. The recommended enclosure for this project is the **Hammond PN-1334-C (8"x6"x4" ABS)**, which is already included in the BOM. This enclosure provides ample space for all components and ensures proper separation between high and low voltage circuits.
+
 ## Bill of Materials (BOM)
 
 **Total Project Cost: $146.10**
@@ -50,11 +53,15 @@ All sensors use standardized JST SH 4-pin connectors for assembly without solder
 
 | Qty | Component | Part Number | Description | Vendor | Price |
 |-----|-----------|-------------|-------------|--------|-------|
-| 1 | Power Supply | LRS-35-5 | Mean Well 5V/7A chassis mount | Mouser | $18.50 |
-| 1 | IEC Inlet with Switch | 4300.0030 | C14 inlet + rocker switch | Mouser | $12.80 |
-| 1 | AC Outlet | 5320-W | NEMA 5-15R 15A outlet | Mouser | $8.40 |
-| 1 | Emergency Stop Button | 368 | Large red arcade button | Adafruit | $4.95 |
-| 1 | Project Enclosure | PN-1334-C | ABS 8"x6"x4" box | Mouser | $16.20 |
+| 1 | Power Supply | LRS-35-5 | Mean Well 5V/7A chassis mount | Mouser | $11.80 |
+| 1 | IEC Inlet w/ CB & Switch | DF11.2078.0010.01 | C14 inlet + CB + switch | Mouser | $37.50 |
+| 1 | AC Outlet | 6600.3100 | Panel Mount IEC C13 Outlet | Mouser | $2.05 |
+| 1 | Emergency Stop Button | XB6ETN521P | 16mm Red E-Stop Switch | Mouser | $19.57 |
+| 1 | Current Transformer | PCS020-EE0502KS | 20A Split Core CT | Mouser | $3.46 |
+| 1 | Optocoupler | 4N35-X007 | General Purpose Optocoupler | Mouser | $0.58 |
+| 1 | PIR Motion Sensor | 4871 | PIR Motion Sensor | Adafruit | $7.50 |
+| 1 | Large Arcade Button | 368 | Large Arcade Button | Adafruit | $4.95 |
+| 1 | Thermal Pad | HSP-7 | Thermal Pad for Single Phase Panel Mount SSRs | Mouser | $1.38 |
 
 ### Cables & Hardware
 
@@ -73,16 +80,21 @@ All sensors use standardized JST SH 4-pin connectors for assembly without solder
 
 ### Regional Variants
 
+To ensure global compatibility, the design utilizes a universal IEC C13 outlet for connecting the shop vacuum. Users will need to source an appropriate IEC to regional plug adapter cable for their specific location.
+
+#### Universal IEC C13 Outlet
+- **Outlet**: IEC C13 (universal)
+- **Adapter Cable**: User-supplied IEC C13 to regional plug (e.g., NEMA 5-15P for North America, CEE 7/7 Schuko for Europe)
+
 #### 🇺🇸 North America (120V AC, 60Hz)
 - Wire Colors: Black=Hot, White=Neutral, Green=Ground
 - Protection: 15A circuit breaker
-- Outlet: NEMA 5-15R
+- Adapter Cable: IEC C13 to NEMA 5-15P
 
 #### 🇪🇺 Europe (230V AC, 50Hz)
 - Wire Colors: Brown=Line, Blue=Neutral, Green/Yellow=Earth
 - Protection: 10A MCB + 30mA RCD
-- Outlet: CEE 7/7 (Schuko)
-- IEC Inlet: 4300.0063 (230V rated)
+- Adapter Cable: IEC C13 to CEE 7/7 (Schuko)
 
 ### Power Budget Analysis - HYBRID DETECTION SYSTEM
 
@@ -188,12 +200,12 @@ Power Compliance:      ✅ APPROVED - Within ESP32-S3 limits
 
 #### AC Side (120V/230V)
 ```
-IEC Inlet with Switch (4300.0030)
-├─ Line → Mean Well PSU (AC Input) + SSR Common
-├─ Neutral → Mean Well PSU (AC Input) + Outlet Neutral
-└─ Ground → Outlet Ground + Enclosure Ground
+IEC Inlet with Integrated CB & Switch (DF11.2078.0010.01)
+├─ Line → Mean Well PSU (AC Input) + SSR Common + Current Transformer
+├─ Neutral → Mean Well PSU (AC Input) + IEC C13 Outlet Neutral
+└─ Ground → IEC C13 Outlet Ground + Enclosure Ground
 
-SSR Output → Outlet Line (Hot)
+SSR Output → IEC C13 Outlet Line (Hot)
 ```
 
 #### DC Side (5V/3.3V)
@@ -307,17 +319,23 @@ High-Power IR LED → GPIO6 (STEMMA JST PH)
 
 ### Component Layout
 
-**Enclosure Organization (8"x6"x4" ABS):**
+**Enclosure Organization (Hammond PN-1334-C 8"x6"x4" ABS):**
+
+The following layout is recommended to ensure proper safety clearances and thermal management.
+
 ```
 ┌─────────────────────────────┐
-│ [E-Stop] [OLED]    [Power]  │ ← Front Panel
+│ [E-Stop] [OLED]    [Power]  │ ← Front Panel (User Interface)
 │                     [PSU]   │
-│ [ESP32-S3]         [SSR]    │ ← Main Section
-│ [Sensors] [Term.Blocks]     │
+│ [ESP32-S3]         [SSR]    │ ← Main Section (Mounted on DIN rail or standoffs)
+│ [Term.Blocks]      [Outlet] │
 │                             │
-│ [IEC Inlet]    [AC Outlet]  │ ← Rear Panel
+│ [IEC Inlet]    [Cable Gland]│ ← Rear Panel (Power and Sensor Connections)
 └─────────────────────────────┘
 ```
+
+**Mounting:**
+The enclosure should be mounted to the `trap_body_main.scad` using the provided mounting plate. Use M4 screws, washers, and nuts for a secure connection.
 
 **Safety Zones:**
 - **High Voltage Zone**: Right side - PSU, SSR, AC connections
@@ -423,6 +441,5 @@ The BME280 sensor provides comprehensive environmental data for analytics and co
 - **[BOM_CONSOLIDATED.csv](BOM_CONSOLIDATED.csv)** - Complete parts list with vendor information
 - **[SAFETY_REFERENCE.md](SAFETY_REFERENCE.md)** - Comprehensive safety procedures
 - **[INSTALLATION_GUIDE.md](INSTALLATION_GUIDE.md)** - Step-by-step assembly instructions
-- **[3D Models/Side_Mount_Control_Box.scad](3D%20Models/Side_Mount_Control_Box.scad)** - Parametric side-mount enclosure design
 
 This electrical design provides a safe, reliable, and cost-effective foundation for the ShopVac Rat Trap while meeting international electrical safety standards.

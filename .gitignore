@@ -10,6 +10,7 @@ __pycache__/
 *$py.class
 *.so
 venv/
+.venv/
 
 # ESPHome secrets
 secrets.yaml

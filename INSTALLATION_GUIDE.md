@@ -106,21 +106,21 @@ curl -O https://raw.githubusercontent.com/bandwith/ShopVacRatTrap/main/ELECTRICA
 - [ ] **15A Fuses** (for proper protection)
 - [ ] Resistors: 2x 10kΩ for pull-up circuits
 
-#### **1.2 3D Print Enclosure Components**
+#### **1.2 3D Print Trap Components**
 ```bash
-# Print settings for PLA/PETG
+# Print settings for PETG/ASA
 Layer Height: 0.2mm
 Infill: 20%
-Supports: Yes (for overhangs >45°)
+Supports: Yes, for snap-fit clips and other overhangs
 Print Speed: 50 mm/s
-Temperature: PLA 200°C / PETG 240°C
+Temperature: PETG 240°C / ASA 250°C
 ```
 
 Print order:
-1. `Side_Mount_Control_Box.scad` - Side-mount electronics housing
-2. `Control_Box_Lid.scad` - Removable top
-3. `Sensor_Housing_VL53L0X.scad` - Updated sensor mount
-4. Existing files: `Rat_Trap_Mouth.stl`, `Vacuum_Hose_Adapter.stl`
+1. `trap_entrance.scad`
+2. `trap_body_main.scad`
+3. `trap_funnel_adapter.scad`
+4. `bait_station.scad`
 
 #### **1.3 Test Basic Components**
 
@@ -132,7 +132,47 @@ Test the ESP32 and sensors before assembly:
 - [ ] ESP32 temperature monitoring functional
 - [ ] ESP32-S3 3.3V output adequate for sensor load
 
-### **Phase 2: Electrical Assembly**
+### **Phase 2: Enclosure Assembly and Wiring**
+
+This phase covers the assembly of all electronic components inside the recommended **Hammond PN-1334-C** enclosure.
+
+#### **2.1 Enclosure Preparation**
+
+1.  **Mark Cutouts:** Carefully mark the locations for all external components on the enclosure. Use a ruler and fine-tip marker for precision.
+    *   **Front Panel:** OLED display, Emergency Stop button, Arcade button.
+    *   **Rear Panel:** IEC C14 power inlet, IEC C13 power outlet, and a cable gland for the sensor cable.
+2.  **Drill and Cut:**
+    *   Use a step drill bit for the round holes (buttons, connectors, cable gland).
+    *   Use a rotary tool with a cutting wheel or a small hand saw for the rectangular OLED display cutout.
+    *   **Pro Tip:** Drill pilot holes first, and use a slow speed to avoid cracking the ABS plastic.
+    *   Deburr all edges with a file or a deburring tool for a clean finish.
+
+#### **2.2 Component Mounting**
+
+1.  **Install External Components:**
+    *   Mount the IEC inlet, outlet, buttons, and display in their respective cutouts. Secure them with their included nuts or mounting hardware.
+2.  **Mount Internal Components:**
+    *   Use a DIN rail or M3 standoffs to mount the ESP32, SSR, and power supply.
+    *   Follow the layout recommended in the `ELECTRICAL_DESIGN.md` to ensure proper separation between high and low voltage components.
+    *   Attach the thermal pad to the back of the SSR before mounting it.
+
+#### **2.3 Wiring**
+
+**DANGER: Ensure all power is disconnected before wiring.**
+
+1.  **AC Wiring (High Voltage):**
+    *   Use 12 AWG wire for all AC connections.
+    *   Connect the IEC inlet to the power supply and SSR as shown in the wiring diagram in `ELECTRICAL_DESIGN.md`.
+    *   Connect the SSR output to the IEC outlet.
+    *   Ensure the ground connection is continuous from the inlet to the outlet and the enclosure itself (if using a metal enclosure).
+2.  **DC Wiring (Low Voltage):**
+    *   Connect the 5V output of the power supply to the VIN pin of the ESP32 Feather.
+    *   Connect the ESP32 to the other low-voltage components (OLED, buttons, sensors) using the STEMMA QT cables and the GPIO pins specified in `ELECTRICAL_DESIGN.md`.
+    *   Use the 4N35 optocoupler to isolate the ESP32 from the SSR.
+3.  **Sensor Cable:**
+    *   Route the STEMMA QT cable for the sensors through the cable gland on the rear panel. This will provide a secure and weather-resistant seal.
+
+### **Phase 3: Software Configuration**
 
 #### **2.1 AC Power Section Assembly**
 

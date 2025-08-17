@@ -24,6 +24,8 @@
 
 **Bulk Ordering**: Upload BOM_MOUSER_TEMPLATE.xlsx to Mouser BOM tools for instant pricing and cart creation.
 
+**Local Sourcing Note**: For certain common components like wire, terminal blocks, and some hardware, you may find more cost-effective options at local home improvement stores or general electronics retailers. However, ensure any locally sourced components meet the specified technical and safety requirements.
+
 ---
 
 ## Components Previously Not Found in Nexar - Updated Sources
