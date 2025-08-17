@@ -25,7 +25,7 @@ The project has two main parts: the OpenSCAD 3D models and the Python scripts fo
 
 #### OpenSCAD
 - **Installation**: Download and install [OpenSCAD](https://openscad.org/downloads.html) for your operating system.
-- **Usage**: You can open the `.scad` files in the `3D Models/` directory to view and modify the designs. The main assembly files are `Complete_System_Assembly.scad` (for visualization) and `Complete_Trap_Tube_Assembly.scad` (for the main printable part).
+- **Usage**: You can open the `.scad` files in the `3d_models/` directory to view and modify the designs. The main assembly files are `Complete_System_Assembly.scad` (for visualization) and `Complete_Trap_Tube_Assembly.scad` (for the main printable part).
 
 #### Python Scripts
 The Python scripts are used for BOM management and other automation tasks.

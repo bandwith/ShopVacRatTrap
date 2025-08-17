@@ -119,7 +119,7 @@ To run these scripts locally:
 5. **Run individual scripts as needed:**
    ```bash
    # STL generation
-   ./.github/scripts/stl_generate.sh "3D Models/Side_Mount_Control_Box.scad" "false"
+   ./.github/scripts/stl_generate.sh "3d_models/Side_Mount_Control_Box.scad" "false"
    ./.github/scripts/stl_validate.sh
    ./.github/scripts/stl_build_report.sh
 

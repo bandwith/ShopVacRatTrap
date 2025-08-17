@@ -53,7 +53,7 @@ Modern ESP32-based IoT rat trap with ToF sensor, OLED display, and Home Assistan
 ### Design Documentation Hierarchy
 1. `ELECTRICAL_DESIGN.md` - **Start here** for BOM and circuit design
 2. `INSTALLATION_GUIDE.md` - Safety procedures and assembly steps
-3. `3D Models/Side_Mount_Control_Box.scad` - Parametric side-mount enclosure design
+3. `3d_models/Side_Mount_Control_Box.scad` - Parametric side-mount enclosure design
 4. `SAFETY_REFERENCE.md` - Consolidated safety guidelines
 
 ## Project-Specific Development Patterns

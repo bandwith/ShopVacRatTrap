@@ -138,7 +138,7 @@ sensor:
       if (id(tof_distance).state < id(detection_threshold).state) detection_count++;
 
       // PIR motion detection
-      if (id(pir_motion).state) detection_count++;
+      if (id(pir_motion).is_on()) detection_count++;
 
       return detection_count;
     on_value:

@@ -68,9 +68,7 @@ esp32_camera:
   external_clock:
     pin: GPIO15
     frequency: 20MHz
-  i2c_pins:
-    sda: GPIO8
-    scl: GPIO9
+  i2c_id: bus_b
   data_pins: [GPIO32, GPIO35, GPIO34, GPIO5, GPIO39, GPIO18, GPIO36, GPIO19]
   vsync_pin: GPIO25
   href_pin: GPIO26
@@ -210,7 +208,7 @@ binary_sensor:
     name: PIR Motion Detection
     id: pir_detection
     lambda: |-
-      return id(pir_motion).state;
+      return id(pir_motion).is_on();
 
   # Tertiary detection: ToF distance confirmation
   - platform: template
@@ -229,9 +227,9 @@ binary_sensor:
       // Four-sensor hybrid system for maximum reliability
       int detection_count = 0;
 
-      if (id(apds_detection).state) detection_count++;
-      if (id(pir_detection).state) detection_count++;
-      if (id(tof_detection).state) detection_count++;
+      if (id(apds_detection).is_on()) detection_count++;
+      if (id(pir_detection).is_on()) detection_count++;
+      if (id(tof_detection).is_on()) detection_count++;
 
       // Require at least 2 of 3 sensors for positive detection
       bool detection_confirmed = (detection_count >= 2);
@@ -541,8 +539,8 @@ interval:
           condition:
             and:
               - lambda: return id(trap_distance).state < id(detection_threshold).state;
-              - lambda: return id(system_armed);
-              - lambda: return !id(trap_triggered).state;
+              - lambda: return id(system_armed).is_on();
+              - lambda: return !id(trap_triggered).is_on();
               - lambda: return (millis() - id(last_trigger_time)) > 60000;           # 1 minute cooldown
           then:
             - script.execute: activate_vacuum

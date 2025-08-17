@@ -361,6 +361,6 @@ qwiic_hub_y = 30;            // Midpoint between front and back
 ## Related Documents
 - `ELECTRICAL_DESIGN.md` - Complete electrical specifications
 - `INSTALLATION_GUIDE.md` - Step-by-step assembly procedures
-- `3D Models/Side_Mount_Control_Box.scad` - Enclosure design
+- `3d_models/Side_Mount_Control_Box.scad` - Enclosure design
 - `BOM_CONSOLIDATED.csv` - Complete bill of materials
 - `esphome/rat-trap-2025.yaml` - ESPHome configuration

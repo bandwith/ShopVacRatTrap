@@ -81,7 +81,7 @@ jobs:
           echo "should_commit=true" >> $GITHUB_OUTPUT
 
           echo "$scad_files" | jq -r '.[] | @sh' | while read -r file; do
-            openscad -o "3D Models/$(basename "$file" .scad).stl" "$file"
+            openscad -o "3d_models/$(basename "$file" .scad).stl" "$file"
           done
 
       - name: Generate build report
@@ -94,7 +94,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: stl-files
-          path: 3D Models/*.stl
+          path: 3d_models/*.stl
 
   commit-changes:
     runs-on: ubuntu-latest
@@ -110,13 +110,13 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: stl-files
-          path: 3D Models/
+          path: 3d_models/
 
       - name: Commit and push updated files
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action STL Generator"
-          git add "3D Models/*.stl" "3D Models/build_report.md"
+          git add "3d_models/*.stl" "3d_models/build_report.md"
           if ! git diff --staged --quiet; then
             git commit -m "ci: Auto-generate STL files and build report"
             git push
