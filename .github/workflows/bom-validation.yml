@@ -5,6 +5,9 @@ on:
   schedule:
     # Run weekly on Mondays at 9 AM UTC
     - cron: 0 9 * * 1
+  push:
+    branches:
+      - main
   workflow_dispatch:
     inputs:
       check_availability:
