@@ -80,7 +80,7 @@ jobs:
 
           echo "should_commit=true" >> $GITHUB_OUTPUT
 
-          echo "$scad_files" | jq -r '.[] | @sh' | while read -r file; do
+          echo "$scad_files" | jq -r '.[]' | while read -r file; do
             openscad -o "3d_models/$(basename "$file" .scad).stl" "$file"
           done
 
