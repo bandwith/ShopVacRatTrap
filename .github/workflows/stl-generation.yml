@@ -16,6 +16,7 @@ on:
         description: Force regenerate all STL files even if unchanged
         required: false
         default: false
+        type: boolean
 
 jobs:
   generate-stl:
