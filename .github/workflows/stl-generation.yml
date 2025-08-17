@@ -32,6 +32,18 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: Get pip cache dir
+        id: pip-cache
+        run: |
+          echo "dir=$(pip cache dir)" >> $GITHUB_OUTPUT
+      - name: Cache pip dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pip-cache.outputs.dir }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements-dev.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
@@ -40,6 +52,14 @@ jobs:
       - name: Install OpenSCAD
         run: |
           sudo apt-get update && sudo apt-get install -y openscad
+
+      - name: Cache apt packages
+        uses: actions/cache@v4
+        with:
+          path: /var/cache/apt/archives
+          key: ${{ runner.os }}-apt-openscad
+          restore-keys: |
+            ${{ runner.os }}-apt-openscad-
 
       - name: Generate STL files
         id: generate
