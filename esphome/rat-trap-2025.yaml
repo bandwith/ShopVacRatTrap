@@ -93,7 +93,7 @@ sensor:
           return x;
 
   # BME280 environmental sensor via STEMMA QT (I2C)
-  - platform: bme280
+  - platform: bme280_i2c
     address: 0x77   # Adafruit STEMMA QT BME280 default address
     temperature:
       name: Environmental Temperature
