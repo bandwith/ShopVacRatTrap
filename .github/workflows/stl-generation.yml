@@ -51,7 +51,7 @@ jobs:
           else
             changed_files=$(python .github/scripts/stl_generator_helper.py --get-changed-files)
             missing_files=$(python .github/scripts/stl_generator_helper.py --get-missing-files)
-            scad_files=$(echo "$changed_files" "$missing_files" | jq -s 'add | unique')
+            scad_files=$(jq -n --argjson a "$changed_files" --argjson b "$missing_files" '$a + $b | unique')
           fi
 
           if [[ -z "$scad_files" || "$scad_files" == "[]" ]]; then

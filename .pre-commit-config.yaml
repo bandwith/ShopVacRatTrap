@@ -37,7 +37,12 @@ repos:
     rev: v7.5.0
     hooks:
       - id: pip-compile
+        name: pip-compile requirements.txt
         files: ^requirements\.in$
+        args: [--rebuild, --upgrade, --allow-unsafe, --resolver=backtracking]
+      - id: pip-compile
+        name: pip-compile requirements-dev.txt
+        files: ^requirements-dev\.in$
         args: [--rebuild, --upgrade, --allow-unsafe, --resolver=backtracking]
 
   - repo: local
