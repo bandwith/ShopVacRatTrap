@@ -48,7 +48,8 @@ jobs:
 
           echo '🔍 Finding issues without labels...'
           NO_LABEL_ISSUES="$(gh issue list --repo "${GITHUB_REPOSITORY}" \
-            --search 'is:open is:issue no:label' --json number,title,body)"
+            --search 'is:open is:issue no:label' \
+            --json number,title,body)"
 
           echo '🏷️ Finding issues that need triage...'
           NEED_TRIAGE_ISSUES="$(gh issue list --repo "${GITHUB_REPOSITORY}" \
@@ -162,7 +163,8 @@ jobs:
             core.info(`Raw labels JSON: ${rawLabels}`);
             let parsedLabels;
             try {
-              const trimmedLabels = rawLabels.replace(/^```(?:json)?\s*/, '').replace(/\s*```$/, '').trim();
+              const trimmedLabels = rawLabels.replace(/^```(?:json)?\s*/, '')
+                                           .replace(/\s*```$/, '').trim();
               parsedLabels = JSON.parse(trimmedLabels);
               core.info(`Parsed labels JSON: ${JSON.stringify(parsedLabels)}`);
             } catch (err) {
@@ -186,7 +188,8 @@ jobs:
                   labels: entry.labels_to_set
                 });
                 const explanation = entry.explanation ? ` - ${entry.explanation}` : '';
-                core.info(`Successfully set labels for #${issueNumber}: ${entry.labels_to_set.join(', ')}${explanation}`);
+                core.info(`Successfully set labels for #${issueNumber}: ${entry.labels_to_set.join(', ')}` +
+                          `${explanation}`);
               } else {
                 // If no labels to set, leave the issue as is
                 core.info(`No labels to set for #${issueNumber}, leaving as is`);
