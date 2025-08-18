@@ -39,14 +39,13 @@ except ImportError:
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Mouser API Configuration
-MOUSER_API_BASE = "https://api.mouser.com/api/v1.0"
-MOUSER_SEARCH_ENDPOINT = f"{MOUSER_API_BASE}/search/partnumber"
-MOUSER_PART_ENDPOINT = MOUSER_SEARCH_ENDPOINT
 
-# Rate limiting configuration
-REQUESTS_PER_SECOND = 8  # Conservative limit (10 max)
-REQUESTS_PER_HOUR = 900  # Conservative limit (1000 max)
+# Mouser API Configuration
+@dataclass
+class PriceBreak:
+    quantity: int
+    price: float
+    currency: str
 
 
 @dataclass
@@ -58,7 +57,7 @@ class MouserPart:
     manufacturer_part_number: str
     description: str
     availability: str
-    price_breaks: list[dict]
+    price_breaks: list[PriceBreak]  # Updated to use PriceBreak
     data_sheet_url: str
     product_detail_url: str
     image_url: str
@@ -122,7 +121,7 @@ def retry_with_backoff(max_retries: int = 3, base_delay: float = 1.0):
                         time.sleep(delay)
                     else:
                         raise
-            return None
+            raise  # Re-raise the last exception if all retries fail
 
         return wrapper
 
@@ -131,6 +130,12 @@ def retry_with_backoff(max_retries: int = 3, base_delay: float = 1.0):
 
 class MouserAPIClient:
     """Mouser API client with rate limiting and error handling"""
+
+    MOUSER_API_BASE = "https://api.mouser.com/api/v1.0"
+    MOUSER_SEARCH_ENDPOINT = f"{MOUSER_API_BASE}/search/partnumber"
+
+    REQUESTS_PER_HOUR = 1000
+    REQUESTS_PER_SECOND = 10
 
     def __init__(self, api_key: str = None):
         """Initialize Mouser API client"""
@@ -165,14 +170,14 @@ class MouserAPIClient:
             self.hourly_reset_time = current_time + 3600
 
         # Check hourly limit
-        if self.hourly_request_count >= REQUESTS_PER_HOUR:
+        if self.hourly_request_count >= self.REQUESTS_PER_HOUR:
             raise MouserRateLimitError(
-                f"Hourly request limit ({REQUESTS_PER_HOUR}) exceeded"
+                f"Hourly request limit ({self.REQUESTS_PER_HOUR}) exceeded"
             )
 
         # Check per-second limit
         self.request_times = [t for t in self.request_times if current_time - t < 1.0]
-        if len(self.request_times) >= REQUESTS_PER_SECOND:
+        if len(self.request_times) >= self.REQUESTS_PER_SECOND:
             sleep_time = 1.0 - (current_time - self.request_times[0])
             if sleep_time > 0:
                 logger.info(f"🐌 Rate limiting: sleeping {sleep_time:.1f}s")
@@ -238,7 +243,9 @@ class MouserAPIClient:
         logger.info(f"🔍 Searching Mouser for part: {part_number}")
 
         try:
-            data = self._make_request(MOUSER_SEARCH_ENDPOINT, payload)
+            data = self._make_request(
+                self.MOUSER_SEARCH_ENDPOINT, payload
+            )  # Updated usage
 
             # Check for results in Mouser API response format
             if "SearchResults" not in data or not data["SearchResults"].get("Parts"):
@@ -281,9 +288,11 @@ class MouserAPIClient:
         logger.info(f"🔍 Keyword search on Mouser: {keyword}")
 
         try:
-            data = self._make_request(f"{MOUSER_SEARCH_ENDPOINT}/keyword", params)
+            data = self._make_request(
+                f"{self.MOUSER_SEARCH_ENDPOINT}/keyword", params
+            )  # Updated usage
 
-            if "SearchResults" not in data or not data["SearchResults"]["Parts"]:
+            if "SearchResults" not in data or not data["SearchResults"].get("Parts"):
                 logger.warning(f"⚠️ No keyword results found for {keyword}")
                 return []
 
@@ -301,18 +310,7 @@ class MouserAPIClient:
 
     def _parse_part_data(self, part_data: dict) -> MouserPart:
         """Parse Mouser API response into MouserPart object"""
-        # Parse price breaks
-        price_breaks = []
-        for price_break in part_data.get("PriceBreaks", []):
-            price_breaks.append(
-                {
-                    "quantity": int(price_break.get("Quantity", 0)),
-                    "price": float(
-                        price_break.get("Price", "0").replace("$", "").replace(",", "")
-                    ),
-                    "currency": price_break.get("Currency", "USD"),
-                }
-            )
+        price_breaks = self._parse_price_breaks(part_data.get("PriceBreaks", []))
 
         return MouserPart(
             mouser_part_number=part_data.get("MouserPartNumber", ""),
@@ -340,27 +338,48 @@ class MouserAPIClient:
 
         # Find the best applicable price break
         applicable_breaks = [
-            pb for pb in part.price_breaks if pb["quantity"] <= quantity
+            pb
+            for pb in part.price_breaks
+            if pb.quantity <= quantity  # Access quantity directly
         ]
         if not applicable_breaks:
             # Use minimum quantity if requested quantity is too low
-            min_break = min(part.price_breaks, key=lambda x: x["quantity"])
+            min_break = min(
+                part.price_breaks, key=lambda x: x.quantity
+            )  # Access quantity directly
             return {
-                "quantity": min_break["quantity"],
-                "unit_price": min_break["price"],
-                "total_price": min_break["price"] * min_break["quantity"],
-                "currency": min_break["currency"],
-                "note": f"Minimum order quantity: {min_break['quantity']}",
+                "quantity": min_break.quantity,
+                "unit_price": min_break.price,
+                "total_price": min_break.price * min_break.quantity,
+                "currency": min_break.currency,
+                "note": f"Minimum order quantity: {min_break.quantity}",
             }
 
-        best_break = max(applicable_breaks, key=lambda x: x["quantity"])
+        best_break = max(
+            applicable_breaks, key=lambda x: x.quantity
+        )  # Access quantity directly
         return {
             "quantity": quantity,
-            "unit_price": best_break["price"],
-            "total_price": best_break["price"] * quantity,
-            "currency": best_break["currency"],
-            "price_break_qty": best_break["quantity"],
+            "unit_price": best_break.price,
+            "total_price": best_break.price * quantity,
+            "currency": best_break.currency,
+            "price_break_qty": best_break.quantity,
         }
+
+    def _parse_price_breaks(self, raw_price_breaks: list[dict]) -> list[PriceBreak]:
+        """Parse raw price break data into a list of PriceBreak objects."""
+        parsed_price_breaks = []
+        for price_break in raw_price_breaks:
+            parsed_price_breaks.append(
+                PriceBreak(
+                    quantity=int(price_break.get("Quantity", 0)),
+                    price=float(
+                        price_break.get("Price", "0").replace("$", "").replace(",", "")
+                    ),
+                    currency=price_break.get("Currency", "USD"),
+                )
+            )
+        return parsed_price_breaks
 
 
 class MouserBOMValidator:

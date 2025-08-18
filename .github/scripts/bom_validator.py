@@ -1,4 +1,5 @@
 import csv
+import re
 from datetime import datetime
 from mouser_api import MouserAPIClient, MouserPartNotFoundError
 
@@ -105,21 +106,29 @@ class BOMValidator:
                 try:
                     parts = self.client.search_part_number(mpn, manufacturer)
                     if parts:
-                        part_result = parts[0]
+                        best_part = parts[0]
                         component_result["found"] = True
                         validation_results["found_components"] += 1
 
                         # Update with Mouser data
-                        component_result["availability"] = part_result.availability
-                        component_result["stock_qty"] = 0  # part_result.stock_qty
-                        component_result["in_stock"] = (
-                            False  # component_result["stock_qty"] > quantity
+                        component_result["availability"] = best_part.availability
+                        # Extract stock quantity from availability string
+                        stock_match = re.search(
+                            r"(\d+)\s+In Stock", best_part.availability
                         )
-                        component_result["datasheet"] = part_result.data_sheet_url
-                        component_result["product_url"] = part_result.product_detail_url
+                        if stock_match:
+                            component_result["stock_qty"] = int(stock_match.group(1))
+                        else:
+                            component_result["stock_qty"] = 0
+
+                        component_result["in_stock"] = (
+                            component_result["stock_qty"] >= quantity
+                        )
+                        component_result["datasheet"] = best_part.data_sheet_url
+                        component_result["product_url"] = best_part.product_detail_url
 
                         # Get pricing information
-                        pricing = self.client.get_best_price(part_result, quantity)
+                        pricing = self.client.get_best_price(best_part, quantity)
 
                         if pricing:
                             component_result["updated_price"] = pricing["unit_price"]

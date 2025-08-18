@@ -38,11 +38,11 @@
 
 ## 📦 Bulk Ordering Instructions
 ### Mouser
-1. Go to [Mouser BOM Tool](https://www.mouser.com/bom/)
+1. Go to [Mouser BOM Tool](<https://www.mouser.com/bom/>)
 2. Upload the `mouser_upload_consolidated.csv` file
 3. Review quantities and add all to cart
 
 ### Digi-Key
-1. Go to [Digi-Key BOM Manager](https://www.digikey.com/BOM)
+1. Go to [Digi-Key BOM Manager](<https://www.digikey.com/BOM>)
 2. Upload the `digikey_upload.csv` file
 3. Review quantities and add all to cart

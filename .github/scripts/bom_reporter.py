@@ -5,14 +5,20 @@ import os
 class BOMReporter:
     """Generates reports from BOM validation results."""
 
+    def _generate_report_header(self, title: str) -> list[str]:
+        """Generates a common report header."""
+        header = []
+        header.append(f"# {title}")
+        header.append(
+            f"*Generated on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}*\n"
+        )
+        return header
+
     def generate_pricing_report(self, validation_results: dict):
         """Generate pricing report from validation results"""
         report = []
 
-        report.append("# BOM Pricing Validation Report")
-        report.append(
-            f"*Generated on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}*\n"
-        )
+        report.extend(self._generate_report_header("BOM Pricing Validation Report"))
 
         # Overall summary
         report.append("## 📊 Overall Summary")
@@ -75,10 +81,7 @@ class BOMReporter:
         """Generate availability report from validation results"""
         report = []
 
-        report.append("# Component Availability Report")
-        report.append(
-            f"*Generated on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}*\n"
-        )
+        report.extend(self._generate_report_header("Component Availability Report"))
 
         # Overall summary
         issues = validation_results["availability_issues"]

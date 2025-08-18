@@ -60,6 +60,7 @@ repos:
     hooks:
       - id: yamllint
         args: [--strict]
+        exclude: ^.github/workflows/gemini-.*\.ya?ml$
 
   - repo: https://github.com/jumanjihouse/pre-commit-hook-yamlfmt
     rev: 0.2.3

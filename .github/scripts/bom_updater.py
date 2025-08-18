@@ -4,9 +4,29 @@ import csv
 class BOMUpdater:
     """Updates a BOM file with new data."""
 
+    def _find_column_indices(
+        self, header: list[str]
+    ) -> tuple[int | None, int | None, int | None]:
+        """Finds the column indices for unit price, MPN, and extended price."""
+        header_map = {col: idx for idx, col in enumerate(header)}
+
+        unit_price_col = next(
+            (idx for col, idx in header_map.items() if "unit price" in col.lower()),
+            None,
+        )
+        mpn_col = next(
+            (idx for col, idx in header_map.items() if "part number" in col.lower()),
+            None,
+        )
+        ext_price_col = next(
+            (idx for col, idx in header_map.items() if "extended price" in col.lower()),
+            None,
+        )
+        return unit_price_col, mpn_col, ext_price_col
+
     def update_bom_pricing(self, bom_file: str, validation_results: dict) -> bool:
         """Update BOM with current pricing from validation results"""
-        print(f"📝 Updating BOM pricing in {bom_file}...")
+        print(f"📝 Updating BOM pricing in {bom_file}...\n")
 
         try:
             # Read the original BOM to preserve structure
@@ -15,28 +35,7 @@ class BOMUpdater:
                 header = next(reader)
                 rows = list(reader)
 
-            # Map columns for easier access
-            header_map = {col: idx for idx, col in enumerate(header)}
-            unit_price_col = next(
-                (idx for col, idx in header_map.items() if "unit price" in col.lower()),
-                None,
-            )
-            mpn_col = next(
-                (
-                    idx
-                    for col, idx in header_map.items()
-                    if "part number" in col.lower()
-                ),
-                None,
-            )
-            ext_price_col = next(
-                (
-                    idx
-                    for col, idx in header_map.items()
-                    if "extended price" in col.lower()
-                ),
-                None,
-            )
+            unit_price_col, mpn_col, ext_price_col = self._find_column_indices(header)
 
             if not unit_price_col or not mpn_col:
                 print("❌ Could not find required columns in BOM file")

@@ -22,6 +22,20 @@ except ImportError:
     pass
 
 
+def _should_do_all(args: argparse.Namespace) -> bool:
+    """Determines if all operations should be performed."""
+    return args.all or not any(
+        [
+            args.validate,
+            args.check_availability,
+            args.update_pricing,
+            args.generate_purchase_files,
+            args.generate_mouser_template,
+            args.generate_mouser_only,
+        ]
+    )
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="BOM Manager - consolidated tool for BOM management"
@@ -62,17 +76,7 @@ def main():
 
     args = parser.parse_args()
 
-    # If no specific action is set, do all
-    do_all = args.all or not any(
-        [
-            args.validate,
-            args.check_availability,
-            args.update_pricing,
-            args.generate_purchase_files,
-            args.generate_mouser_template,
-            args.generate_mouser_only,
-        ]
-    )
+    do_all = _should_do_all(args)
 
     # Load priority components from config
     config_path = Path(__file__).parent / "config.json"
@@ -145,7 +149,12 @@ def main():
             updater.update_bom_pricing(args.bom_file, validation_results)
 
         # Generate purchase files
-        if do_all or args.generate_purchase_files:
+        if (
+            do_all
+            or args.generate_purchase_files
+            or args.generate_mouser_template
+            or args.generate_mouser_only
+        ):
             print("🛒 Generating comprehensive purchase files...")
 
             # Generate Mouser template (primary format)
@@ -184,18 +193,6 @@ def main():
    ✅ Official Mouser template format
    ✅ Complete component data (availability, datasheets)
 """)
-
-        # Generate Mouser template format (NEW - preferred format)
-        if do_all or args.generate_mouser_template:
-            purchase_file_generator.generate_mouser_template_file(
-                args.bom_file, args.output_dir
-            )
-
-        # Generate Mouser-only BOM
-        if do_all or args.generate_mouser_only:
-            purchase_file_generator.generate_mouser_only_bom(
-                args.bom_file, args.output_dir
-            )
 
         print("✅ BOM management operations complete")
         return 0

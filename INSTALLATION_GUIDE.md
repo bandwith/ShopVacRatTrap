@@ -93,7 +93,7 @@ mkdir -p ~/rat_trap_build
 cd ~/rat_trap_build
 
 # Download updated BOM
-curl -O https://raw.githubusercontent.com/bandwith/ShopVacRatTrap/main/ELECTRICAL_DESIGN.md
+curl -O <https://raw.githubusercontent.com/bandwith/ShopVacRatTrap/main/ELECTRICAL_DESIGN.md>
 ```
 
 **Required Components:**
@@ -337,7 +337,7 @@ pip3 install esphome
 #### **3.2 Configure Device**
 ```bash
 # Clone project repository
-git clone https://github.com/bandwith/ShopVacRatTrap.git
+git clone <https://github.com/bandwith/ShopVacRatTrap.git>
 cd ShopVacRatTrap/esphome
 
 # Update secrets.yaml with your settings
@@ -691,13 +691,13 @@ Solution: Replace SSR, check software configuration
 
 ### **Documentation**
 - Project repository: https://github.com/bandwith/ShopVacRatTrap
-- ESPHome documentation: https://esphome.io
-- Home Assistant: https://home-assistant.io
+- ESPHome documentation: <https://esphome.io>
+- Home Assistant: <https://home-assistant.io>
 
 ### **Community Support**
-- Home Assistant Community: https://community.home-assistant.io
-- ESPHome Discord: https://discord.gg/KhAMKrd
-- Reddit r/homeassistant: https://reddit.com/r/homeassistant
+- Home Assistant Community: <https://community.home-assistant.io>
+- ESPHome Discord: <https://discord.gg/KhAMKrd>
+- Reddit r/homeassistant: <https://reddit.com/r/homeassistant>
 
 ### **Professional Support**
 For electrical installation assistance, contact:

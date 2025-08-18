@@ -19,11 +19,6 @@ substitutions:
   max_current: 15A
   safety_standard: NEC/UL
 
-  # 🇪🇺 Europe (230V AC, 50Hz, IEC/CE compliant)
-  # line_voltage: "230V AC"
-  # line_frequency: "50Hz"
-  # max_current: "10A"
-  # safety_standard: "IEC/CE"
 
 # Enable logging
 logger:

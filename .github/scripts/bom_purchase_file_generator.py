@@ -7,8 +7,52 @@ from mouser_api import MouserAPIClient, MouserPartNotFoundError
 class BOMPurchaseFileGenerator:
     """Generates purchase files from a BOM."""
 
+    MOUSER_TEMPLATE_COLUMNS = [
+        "Mfr Part Number (Input)",
+        "Manufacturer Part Number",
+        "Mouser Part Number",
+        "Manufacturer Name",
+        "Description",
+        "Quantity 1",
+        "Unit Price 1",
+        "Quantity 2",
+        "Unit Price 2",
+        "Quantity 3",
+        "Unit Price 3",
+        "Quantity 4",
+        "Unit Price 4",
+        "Quantity 5",
+        "Unit Price 5",
+        "Order Quantity",
+        "Order Unit Price",
+        "Min./Mult.",
+        "Availability",
+        "Lead Time in Days",
+        "Lifecycle",
+        "NCNR",
+        "RoHS",
+        "Pb Free",
+        "Package Type",
+        "Datasheet URL",
+        "Product Image",
+        "Design Risk",
+    ]
+
     def __init__(self, client: MouserAPIClient):
         self.client = client
+
+    def _load_bom_components(self, bom_file: str) -> list[dict] | None:
+        """Loads BOM components from a CSV file."""
+        components = []
+        try:
+            with open(bom_file, newline="", encoding="utf-8") as csvfile:
+                reader = csv.DictReader(csvfile)
+                for row in reader:
+                    components.append(row)
+            return components
+        except Exception as e:
+            print(f"❌ Error reading BOM file: {e}")
+            return None
 
     def generate_mouser_template_file(self, bom_file: str, output_dir: str) -> str:
         """Generate BOM in official Mouser template format using dynamic lookup"""
@@ -17,53 +61,15 @@ class BOMPurchaseFileGenerator:
         # Ensure output directory exists
         os.makedirs(output_dir, exist_ok=True)
 
-        # Use the standard Mouser template column structure
-        mouser_columns = [
-            "Mfr Part Number (Input)",
-            "Manufacturer Part Number",
-            "Mouser Part Number",
-            "Manufacturer Name",
-            "Description",
-            "Quantity 1",
-            "Unit Price 1",
-            "Quantity 2",
-            "Unit Price 2",
-            "Quantity 3",
-            "Unit Price 3",
-            "Quantity 4",
-            "Unit Price 4",
-            "Quantity 5",
-            "Unit Price 5",
-            "Order Quantity",
-            "Order Unit Price",
-            "Min./Mult.",
-            "Availability",
-            "Lead Time in Days",
-            "Lifecycle",
-            "NCNR",
-            "RoHS",
-            "Pb Free",
-            "Package Type",
-            "Datasheet URL",
-            "Product Image",
-            "Design Risk",
-        ]
-        print(
-            f"📋 Using standard Mouser template structure: {len(mouser_columns)} columns"
-        )
-
-        # Load BOM data
-        components = []
-        try:
-            with open(bom_file, newline="", encoding="utf-8") as csvfile:
-                reader = csv.DictReader(csvfile)
-                for row in reader:
-                    components.append(row)
-        except Exception as e:
-            print(f"❌ Error reading BOM file: {e}")
+        components = self._load_bom_components(bom_file)
+        if components is None:
             return None
 
         print(f"📦 Processing {len(components)} components for Mouser template...")
+
+        print(
+            f"📋 Using standard Mouser template structure: {len(self.MOUSER_TEMPLATE_COLUMNS)} columns"
+        )
 
         # Create the migrated BOM data
         template_data = []
@@ -79,7 +85,7 @@ class BOMPurchaseFileGenerator:
             current_distributor = component.get("Distributor", "")
 
             # Initialize row with template structure
-            row_data = {col: "" for col in mouser_columns}
+            row_data = {col: "" for col in self.MOUSER_TEMPLATE_COLUMNS}
 
             # Set basic information
             row_data["Mfr Part Number (Input)"] = mpn
@@ -184,7 +190,9 @@ class BOMPurchaseFileGenerator:
             print("❌ pandas not available, saving CSV only")
             csv_file = os.path.join(output_dir, "BOM_MOUSER_TEMPLATE.csv")
             with open(csv_file, "w", newline="", encoding="utf-8") as csvfile:
-                writer = csv.DictWriter(csvfile, fieldnames=mouser_columns)
+                writer = csv.DictWriter(
+                    csvfile, fieldnames=self.MOUSER_TEMPLATE_COLUMNS
+                )
                 writer.writeheader()
                 writer.writerows(template_data)
 
@@ -193,17 +201,10 @@ class BOMPurchaseFileGenerator:
 
     def generate_mouser_only_bom(self, bom_file: str, output_dir: str) -> str:
         """Generate a consolidated BOM with only Mouser parts"""
-        print("🔄 Generating Mouser-only BOM...")
+        print("🔄 Generating Mouser-only BOM...\n")
 
-        # Read the consolidated BOM
-        components = []
-        try:
-            with open(bom_file, newline="", encoding="utf-8") as csvfile:
-                reader = csv.DictReader(csvfile)
-                for row in reader:
-                    components.append(row)
-        except Exception as e:
-            print(f"❌ Error reading BOM file: {e}")
+        components = self._load_bom_components(bom_file)
+        if components is None:
             return None
 
         # Convert all components to Mouser using dynamic lookup
@@ -293,23 +294,16 @@ class BOMPurchaseFileGenerator:
         self, bom_file: str, validation_results: dict = None, output_dir: str = "."
     ) -> str:
         """Generate purchase guide with direct links"""
-        print("📋 Generating purchase guide...")
+        print("📋 Generating purchase guide...\n")
 
-        # Load BOM data
-        components = []
-        try:
-            with open(bom_file, newline="") as csvfile:
-                reader = csv.DictReader(csvfile)
-                for row in reader:
-                    components.append(row)
-        except Exception as e:
-            print(f"❌ Error reading BOM file: {e}")
+        components = self._load_bom_components(bom_file)
+        if components is None:
             return None
 
         # Create purchase guide
         guide = []
         guide.append("# Component Purchase Guide")
-        guide.append(f"*Generated on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}*\n")
+        guide.append(f"*Generated on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
 
         # Add validation summary if available
         if validation_results:

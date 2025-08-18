@@ -32,40 +32,40 @@
 
 ### 1. STEMMA QT Camera System (NEW)
 **Primary**: OV5640 STEMMA Camera with PiCowBell Breakout
-**Adafruit 5949**: $24.95 - https://www.adafruit.com/product/5949
+**Adafruit 5949**: $24.95 - <https://www.adafruit.com/product/5949>
 **Features**: 5MP resolution, autofocus, built-in STEMMA QT connector
 **Alternative**: Generic camera modules for budget builds - lower resolution, requires soldering
 **Note**: Zero-solder assembly, future-proof modular design
 
 **High-Power IR LED System**:
-**Adafruit 5639**: $3.95 - https://www.adafruit.com/product/5639
+**Adafruit 5639**: $3.95 - <https://www.adafruit.com/product/5639>
 **Features**: 10+ meter range, STEMMA JST PH connector, thermal protection
 **Alternative**: Generic IR LEDs ($1-3) - lower range, requires soldering
 
 ### 2. Time-of-Flight Sensor
 **Primary**: VL53L0X ToF Sensor Module
-**Adafruit 3317**: $7.95 - https://www.adafruit.com/product/3317
-**SparkFun SEN-14722**: $9.95 - https://www.sparkfun.com/products/14722
+**Adafruit 3317**: $7.95 - <https://www.adafruit.com/product/3317>
+**SparkFun SEN-14722**: $9.95 - <https://www.sparkfun.com/products/14722>
 **Alternative**: Generic VL53L0X modules on Amazon ($3-5)
 **Note**: 4m range sufficient for rat detection, cost-optimized professional sensor
 
 ### 2. Environmental Sensor
 **Primary**: BME280 Temperature/Humidity/Pressure Sensor - STEMMA QT
-**Adafruit 4816**: $14.95 - https://www.adafruit.com/product/4816
-**SparkFun SEN-15440**: $19.95 - https://www.sparkfun.com/products/15440
+**Adafruit 4816**: $14.95 - <https://www.adafruit.com/product/4816>
+**SparkFun SEN-15440**: $19.95 - <https://www.sparkfun.com/products/15440>
 **Alternative**: DHT22/AM2302 (previous generation) - $4.95
 **Note**: BME280 STEMMA QT provides professional no-solder assembly
 
 ### 3. Power Supply
 **Primary**: Mean Well LRS-35-5 (5V/7A)
-**Mouser 709-LRS35-5**: $18.95 - https://www.mouser.com/ProductDetail/709-LRS35-5
+**Mouser 709-LRS35-5**: $18.95 - <https://www.mouser.com/ProductDetail/709-LRS35-5>
 **Digi-Key 1866-5012-ND**: $18.70
 **Newark 85AC4189**: $19.25
 **Alternative**: LRS-35-5 for higher capacity builds (7A vs 3A capacity)
 
 ### 4. Solid State Relay
 **Primary**: Sensata Crydom D2425-10 (25A, Zero-crossing)
-**Mouser 558-D2425-10**: $32.15 - https://www.mouser.com/ProductDetail/558-D2425-10
+**Mouser 558-D2425-10**: $32.15 - <https://www.mouser.com/ProductDetail/558-D2425-10>
 **Digi-Key 2057-D2425-10-ND**: $33.42
 **Alternative**: Omron G3NA-210B-DC5-24 - $28.50
 **Alternative**: Carlo Gavazzi RM1A23D25 - $30.75
@@ -73,7 +73,7 @@
 
 ### 5. Current Transformer
 **Primary**: YHDC SCT-013-020 (20A, split-core)
-**Amazon B07TXQBC1D**: $8.00 - https://amazon.com/dp/B07TXQBC1D
+**Amazon B07TXQBC1D**: $8.00 - <https://amazon.com/dp/B07TXQBC1D>
 **AliExpress**: $5-8 (direct from YHDC)
 **Alternative**: Magnelab SCT-0300-020 - $35 (US-made)
 **Alternative**: CR Magnetics CR5220-20 - $32
@@ -97,15 +97,15 @@
 
 ### 9. STEMMA QT Cables & Accessories
 **Primary**: STEMMA QT Cable - 100mm
-**Adafruit 4397**: $0.95 - https://www.adafruit.com/product/4397
+**Adafruit 4397**: $0.95 - <https://www.adafruit.com/product/4397>
 **Primary**: STEMMA JST PH Cable - 200mm
-**Adafruit 3893**: $1.25 - https://www.adafruit.com/product/3893
+**Adafruit 3893**: $1.25 - <https://www.adafruit.com/product/3893>
 **Alternative**: SparkFun Qwiic cables (compatible) - similar pricing
 **Note**: Zero-solder modular connections throughout system
 
 ### 10. Micro SD Card (for camera storage)
 **Primary**: SanDisk Ultra 8GB Class 10
-**Adafruit 1833**: $9.95 - https://www.adafruit.com/product/1833
+**Adafruit 1833**: $9.95 - <https://www.adafruit.com/product/1833>
 **Amazon**: $6-8 for equivalent Class 10 cards
 **Alternative**: Higher capacity (16GB+) for extended storage
 **Note**: Required for local image storage before Home Assistant upload
@@ -251,12 +251,12 @@ The GitHub Actions workflows now include intelligent quota management:
 
 **Required API Keys:**
 1. **Nexar API** (optional, but recommended):
-   - Register at [nexar.com/api](https://nexar.com/api)
+   - Register at <https://nexar.com/api>
    - Get `NEXAR_CLIENT_ID` and `NEXAR_CLIENT_SECRET`
    - Free tier: 100 parts/day
 
 2. **Mouser API** (recommended):
-   - Register at [Mouser API Hub](https://www.mouser.com/api-hub/)
+   - Register at <https://www.mouser.com/api-hub/>
    - Get `MOUSER_API_KEY`
    - Free tier: 1000 requests/hour
 

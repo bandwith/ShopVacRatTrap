@@ -7,7 +7,7 @@ This document provides guidelines for contributing to the project. Please read i
 ## How to Contribute
 
 We welcome contributions in several forms:
-- **Bug Reports**: If you find a bug in the design, code, or documentation, please [create an issue](https://github.com/your-repo/link/issues).
+- **Bug Reports**: If you find a bug in the design, code, or documentation, please [create an issue](<https://github.com/your-repo/link/issues>).
 - **Feature Requests**: If you have an idea for a new feature or an improvement to an existing one, please [create an issue](https://github.com/your-repo/link/issues) to discuss it first.
 - **Pull Requests**: If you've fixed a bug or implemented a new feature, we welcome pull requests.
 
@@ -24,7 +24,7 @@ cd ShopVac-Rat-Trap-2025
 The project has two main parts: the OpenSCAD 3D models and the Python scripts for automation.
 
 #### OpenSCAD
-- **Installation**: Download and install [OpenSCAD](https://openscad.org/downloads.html) for your operating system.
+- **Installation**: Download and install [OpenSCAD](<https://openscad.org/downloads.html>) for your operating system.
 - **Usage**: You can open the `.scad` files in the `3d_models/` directory to view and modify the designs. The main assembly files are `Complete_System_Assembly.scad` (for visualization) and `Complete_Trap_Tube_Assembly.scad` (for the main printable part).
 
 #### Python Scripts
@@ -49,7 +49,7 @@ The Python scripts are used for BOM management and other automation tasks.
 - **Naming**: Use descriptive names for variables and modules (e.g., `latch_arm_thickness` instead of `lat`).
 
 ### Python
-- **Style**: Follow the [PEP 8](https://www.python.org/dev/peps/pep-0008/) style guide.
+- **Style**: Follow the [PEP 8](<https://www.python.org/dev/peps/pep-0008/>) style guide.
 - **Type Hinting**: Use type hints for function arguments and return values.
 - **Docstrings**: Add docstrings to all modules, classes, and functions to explain their purpose.
 
