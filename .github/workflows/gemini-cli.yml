@@ -282,7 +282,8 @@ jobs:
                      2. Edit the comment with the updated checklist:
                         - For PRs: `gh pr comment --edit <comment-id> \
                           --body "<updated plan>"`
-                        - For Issues: `gh issue comment --edit <comment-id> --body "<updated plan>"`
+                        - For Issues: >
+                          `gh issue comment --edit <comment-id> --body "<updated plan>"`
                      3. The checklist should only be maintained as a comment on the issue or PR.
                         Do not track or update the checklist in code files.
                - If the fix requires code changes, determine which files and lines are affected. If clarification is needed, note any questions for the user.
@@ -301,7 +302,8 @@ jobs:
                    - `git add .`
                    - `git commit -m "feat: <describe the fix>"`
                    - `git push origin issue/${ISSUE_NUMBER}/my-fix`
-                   - After pushing, you can create a pull request: `gh pr create --title "Fixes #${ISSUE_NUMBER}: <short title>" --body "This PR addresses issue #${ISSUE_NUMBER}."`
+                   - After pushing, you can create a pull request: >
+                     `gh pr create --title "Fixes #${ISSUE_NUMBER}: <short title>" --body "This PR addresses issue #${ISSUE_NUMBER}."`
                - Summarize what was changed and why in a markdown file: `write_file("response.md", "<your response here>")`
                - Post the response as a comment:
                  - For PRs: `gh pr comment "${ISSUE_NUMBER}" --body-file response.md`

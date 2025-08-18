@@ -172,7 +172,8 @@ def main():
                 args.bom_file, validation_results, args.output_dir
             )
 
-            print("""
+            print(
+                """
 ✅ Purchase files generated successfully!
 
 📁 Generated Files:
@@ -192,7 +193,8 @@ def main():
    ✅ Dynamic part lookup (no hardcoded mappings)
    ✅ Official Mouser template format
    ✅ Complete component data (availability, datasheets)
-""")
+"""
+            )
 
         print("✅ BOM management operations complete")
         return 0

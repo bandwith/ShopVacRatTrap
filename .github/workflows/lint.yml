@@ -41,9 +41,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements-dev.txt
 
-      - name: Run linters
+      - name: Install pre-commit
         run: |
-          ruff check .
-          black --check .
-          isort --check-only .
-          yamllint .
+          pip install pre-commit
+
+      - name: Run pre-commit hooks
+        run: |
+          pre-commit run --all-files

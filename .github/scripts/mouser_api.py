@@ -467,17 +467,19 @@ class MouserBOMValidator:
                             "manufacturer": manufacturer,
                             "found": False,
                             "keyword_matches": len(keyword_parts),
-                            "suggestions": [
-                                {
-                                    "mpn": p.manufacturer_part_number,
-                                    "manufacturer": p.manufacturer,
-                                    "description": p.description,
-                                    "mouser_part": p.mouser_part_number,
-                                }
-                                for p in keyword_parts[:3]
-                            ]
-                            if keyword_parts
-                            else [],
+                            "suggestions": (
+                                [
+                                    {
+                                        "mpn": p.manufacturer_part_number,
+                                        "manufacturer": p.manufacturer,
+                                        "description": p.description,
+                                        "mouser_part": p.mouser_part_number,
+                                    }
+                                    for p in keyword_parts[:3]
+                                ]
+                                if keyword_parts
+                                else []
+                            ),
                         }
 
                         validation_results["not_found_components"] += 1
