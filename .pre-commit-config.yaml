@@ -33,6 +33,7 @@ repos:
       - id: detect-secrets
         args: [--baseline, .secrets.baseline]
         exclude: ^.github/workflows/esphome-compile.yml$
+        stages: [manual]
 
   - repo: https://github.com/jazzband/pip-tools
     rev: v7.5.0
