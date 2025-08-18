@@ -5,7 +5,7 @@ import json
 
 def get_changed_scad_files():
     """Get a list of changed SCAD files."""
-    cmd = "git diff --name-only --diff-filter=d HEAD^ HEAD"
+    cmd = "git diff --name-only --diff-filter=AMR HEAD^ HEAD"
     result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
     changed_files = result.stdout.strip().split("\n")
     scad_files = [
