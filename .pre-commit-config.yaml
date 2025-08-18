@@ -54,6 +54,7 @@ repos:
         language: system
         files: \.scad$
         pass_filenames: true
+        stages: [manual]
 
   - repo: https://github.com/adrienverge/yamllint.git
     rev: v1.21.0
