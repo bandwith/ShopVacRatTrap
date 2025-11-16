@@ -22,32 +22,10 @@ jobs:
     outputs:
       should_commit: ${{ steps.generate.outputs.should_commit }}
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - name: Setup Python Environment
+        uses: ./.github/actions/setup-python
         with:
           fetch-depth: 0
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
-
-      - name: Get pip cache dir
-        id: pip-cache
-        run: |
-          echo "dir=$(pip cache dir)" >> $GITHUB_OUTPUT
-      - name: Cache pip dependencies
-        uses: actions/cache@v4
-        with:
-          path: ${{ steps.pip-cache.outputs.dir }}
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements-dev.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements-dev.txt
 
       - name: Install OpenSCAD
         run: |
@@ -110,11 +88,10 @@ jobs:
           path: 3d_models/
 
       - name: Commit and push updated files
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action STL Generator"
-          git add "3d_models/*.stl" "3d_models/build_report.md"
-          if ! git diff --staged --quiet; then
-            git commit -m "ci: Auto-generate STL files and build report"
-            git push
-          fi
+        uses: ./.github/actions/git-config-and-commit
+        with:
+          user-email: action@github.com
+          user-name: GitHub Action STL Generator
+          commit-message: 'ci: Auto-generate STL files and build report'
+          files-to-add: 3d_models/*.stl 3d_models/build_report.md
+          push-branch: ${{ github.ref }}
