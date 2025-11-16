@@ -76,8 +76,7 @@ class MouserAPIError(Exception):
     pass
 
 
-class MouserRateLimitError(MouserAPIError):
-    """Raised when rate limit is exceeded"""
+
 
     pass
 
@@ -385,6 +384,7 @@ class MouserAPIClient:
                     currency=price_break.get("Currency", "USD"),
                 )
             )
+        return parsed_price_breaks
 
 
 class MouserBOMColumns:
