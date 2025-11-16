@@ -26,17 +26,20 @@ runs:
     - name: Configure Git User
       shell: bash
       run: |
+        set -e
         git config --local user.email "${{ inputs.user-email }}"
         git config --local user.name "${{ inputs.user-name }}"
 
     - name: Add files to Git
       shell: bash
       run: |
+        set -e
         git add ${{ inputs.files-to-add }}
 
     - name: Commit and Push Changes
       shell: bash
       run: |
+        set -e
         if ! git diff --staged --quiet; then
           git commit -m "${{ inputs.commit-message }}"
           git push origin ${{ inputs.push-branch }}
