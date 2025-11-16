@@ -44,14 +44,14 @@ sensor:
           send_every: 2
       - lambda: |-
           // Enhanced thermal protection
-          if (x > id(esp32_temp_critical_threshold)) {
+          if (x > id(esp32_temp_critical_threshold).state) {
             ESP_LOGW("thermal", "CRITICAL: ESP32 overheating: %.1f°C - initiating emergency shutdown", x);
             id(last_fault_type) = "THERMAL_CRITICAL";
             id(fault_count)++;
             id(thermal_shutdown_button).press();
             return x;
           }
-          if (x > id(esp32_temp_warning_threshold)) {
+          if (x > id(esp32_temp_warning_threshold).state) {
             ESP_LOGW("thermal", "WARNING: ESP32 temperature elevated: %.1f°C", x);
           }
           return x;
