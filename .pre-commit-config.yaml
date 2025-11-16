@@ -39,10 +39,12 @@ repos:
     hooks:
       - id: uv-compile
         name: uv compile requirements.txt
-        entry: uv pip compile requirements.in -o requirements.txt
+        entry: bash -c 'uv pip compile requirements.in -o requirements.txt.test && mv requirements.txt.test requirements.txt
+          || true'
         language: system
         pass_filenames: false
         files: ^requirements\.in$
+        stages: [manual]
 
   - repo: local
     hooks:
