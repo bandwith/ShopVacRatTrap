@@ -3,14 +3,24 @@
   "extends": [
     "config:best-practices",
     "mergeConfidence:all-badges",
-    "group:recommended",
-    "helpers:pinGitHubActionDigestsToSemver"
+    "group:recommended"
   ],
+  "pinDigests": false,
   "forkProcessing": "enabled",
   "schedule": ["before 4am on Monday"],
   "timezone": "America/New_York",
   "labels": ["dependencies"],
   "packageRules": [
+    {
+      "description": "Do not allow digest pinning updates anywhere",
+      "matchUpdateTypes": ["pinDigest"],
+      "enabled": false
+    },
+    {
+      "description": "Disallow SHA pinning for GitHub Actions and prefer SemVer tags",
+      "matchManagers": ["github-actions"],
+      "pinDigests": false
+    },
     {
       "description": "Automerge minor and patch updates with slight delay",
       "matchUpdateTypes": ["minor", "patch"],
@@ -47,6 +57,11 @@
       "matchDatasources": ["pypi", "github-releases"],
       "schedule": ["at any time"],
       "labels": ["security"]
+    },
+    {
+      "description": "Block starlette updates due to known ESPHome/PlatformIO compatibility issues",
+      "matchPackageNames": ["starlette"],
+      "enabled": false
     }
   ],
   "vulnerabilityAlerts": {

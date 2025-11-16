@@ -121,7 +121,7 @@ jobs:
 
       - name: Create alert for unavailable components
         if: steps.set_validation_outputs.outputs.unavailable_components == 'true'
-        uses: peter-evans/create-issue-from-file@v5
+        uses: peter-evans/create-issue-from-file@v6.0.0
         with:
           title: 🚨 Component Availability Alert - Critical Parts Low Stock
           content-filepath: availability_issue_body.md
@@ -149,7 +149,7 @@ jobs:
 
       - name: Create issue for significant price changes
         if: steps.set_validation_outputs.outputs.significant_changes == 'true'
-        uses: peter-evans/create-issue-from-file@v5
+        uses: peter-evans/create-issue-from-file@v6.0.0
         with:
           title: ⚠️ Significant BOM Price Changes Detected
           content-filepath: pricing_issue_body.md
@@ -157,7 +157,7 @@ jobs:
 
       - name: Commit and push changes
         if: steps.set_validation_outputs.outputs.changes_detected == 'true' || github.event.inputs.force_update == 'true'
-        uses: stefanzweifel/git-auto-commit-action@v5
+        uses: stefanzweifel/git-auto-commit-action@v7.0.0
         with:
           commit_user_email: action@github.com
           commit_user_name: GitHub Action

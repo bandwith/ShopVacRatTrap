@@ -102,7 +102,7 @@ jobs:
           path: 3d_models/
 
       - name: Commit and push updated files
-        uses: stefanzweifel/git-auto-commit-action@v5
+        uses: stefanzweifel/git-auto-commit-action@v7.0.0
         with:
           commit_user_email: action@github.com
           commit_user_name: GitHub Action STL Generator
