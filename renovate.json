@@ -16,6 +16,7 @@
   "prHourlyLimit": 2,
   "prConcurrentLimit": 10,
   "branchPrefix": "renovate/",
+  "description": "Simplified Renovate config with uv and SemVer enforcement",
 
   "allowedPostUpgradeCommands": [
     "^uv( |$)pip compile.*$",
