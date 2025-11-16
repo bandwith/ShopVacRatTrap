@@ -4,8 +4,12 @@ name: ESPHome Compile Test
 on:
   push:
     branches: [main]
+    tags:
+      - v*
   pull_request:
     branches: [main]
+  release:
+    types: [created]
 
 jobs:
   compile:
@@ -43,5 +47,69 @@ jobs:
 
       - name: Build ESPHome firmware
         uses: esphome/build-action@v4
+        id: esphome-build
         with:
           yaml-file: ${{ matrix.yaml-file }}
+
+      - name: Upload firmware artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: firmware-${{ matrix.yaml-file }}
+          path: |
+            ${{ steps.esphome-build.outputs.name }}/*.bin
+            ${{ steps.esphome-build.outputs.name }}/*.factory.bin
+            ${{ steps.esphome-build.outputs.name }}/*.ota.bin
+            ${{ steps.esphome-build.outputs.name }}/manifest.json
+          retention-days: 30
+          if-no-files-found: warn
+
+  release-firmware:
+    runs-on: ubuntu-latest
+    needs: compile
+    if: github.event_name == 'release'
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download all firmware artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: firmware-artifacts
+          pattern: firmware-*
+          merge-multiple: true
+
+      - name: Create firmware archive
+        run: |
+          cd firmware-artifacts
+          zip -r ../rat-trap-firmware-${{ github.ref_name }}.zip .
+          cd ..
+
+      - name: Upload firmware to release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: rat-trap-firmware-${{ github.ref_name }}.zip
+          fail_on_unmatched_files: true
+          body: |
+            ## 🔌 Firmware Files
+
+            This release includes pre-compiled firmware for:
+            - `rat-trap-2025.yaml` - Standard configuration with ToF sensor
+            - `rat-trap-stemma-camera.yaml` - Camera-enhanced configuration
+
+            ### 📥 Installation Methods
+
+            **Method 1: Web Flasher (Recommended for first install)**
+            1. Connect ESP32 via USB
+            2. Visit [ESPHome Web](https://web.esphome.io/)
+            3. Upload the `.factory.bin` file
+
+            **Method 2: OTA Update (For existing installations)**
+            1. Download the `.ota.bin` file
+            2. Use Home Assistant ESPHome dashboard
+            3. Click "Install" → "Manual download" → Select file
+
+            **Method 3: ESPHome CLI**
+            ```bash
+            esphome run rat-trap-2025.yaml --device /dev/ttyUSB0
+            ```
