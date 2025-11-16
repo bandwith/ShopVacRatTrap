@@ -3,6 +3,7 @@ import subprocess
 import json
 import argparse
 
+
 def get_changed_scad_files():
     """Get a list of changed SCAD files."""
     cmd = "git diff --name-only --diff-filter=AMR HEAD^ HEAD"

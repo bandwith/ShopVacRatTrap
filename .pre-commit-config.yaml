@@ -35,17 +35,20 @@ repos:
         exclude: ^.github/workflows/esphome-compile.yml$
         stages: [manual]
 
-  - repo: https://github.com/jazzband/pip-tools
-    rev: v7.5.0
+  - repo: local
     hooks:
-      - id: pip-compile
-        name: pip-compile requirements.txt
+      - id: uv-compile
+        name: uv compile requirements.txt
+        entry: uv pip compile requirements.in -o requirements.txt
+        language: system
+        pass_filenames: false
         files: ^requirements\.in$
-        args: [--rebuild, --upgrade, --allow-unsafe, --resolver=backtracking]
-      - id: pip-compile
-        name: pip-compile requirements-dev.txt
+      - id: uv-compile-dev
+        name: uv compile requirements-dev.txt
+        entry: uv pip compile requirements-dev.in -o requirements-dev.txt
+        language: system
+        pass_filenames: false
         files: ^requirements-dev\.in$
-        args: [--rebuild, --upgrade, --allow-unsafe, --resolver=backtracking]
 
   - repo: local
     hooks:

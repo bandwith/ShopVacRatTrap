@@ -70,7 +70,10 @@ jobs:
           else
             changed_files=$(python .github/scripts/build.py --get-changed-files)
             missing_files=$(python .github/scripts/build.py --get-missing-files)
-            scad_files_to_build_json=$(jq -n --argjson a "$changed_files" --argjson b "$missing_files" '$a + $b | unique')
+            scad_files_to_build_json=$(jq -n \
+            --argjson a "$changed_files" \
+            --argjson b "$missing_files" \
+            '$a + $b | unique')
           fi
 
           if [[ -z "$scad_files_to_build_json" || "$scad_files_to_build_json" == "[]" ]]; then
