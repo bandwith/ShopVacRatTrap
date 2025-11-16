@@ -3,20 +3,41 @@
 # Include common display settings
 !include display-common.yaml
 
+esphome:
+  includes:
+    - display_helpers.h
+
+globals:
+  - id: display_buffer_ptr
+    type: esphome::display::DisplayBuffer *
+    set_to_value: id(main_display)
+  - id: wifi_component_ptr
+    type: esphome::wifi::WiFiComponent *
+    set_to_value: id(wifi_component)
+  - id: trap_triggered_ptr
+    type: esphome::binary_sensor::BinarySensor *
+    set_to_value: id(trap_triggered)
+  - id: emergency_stop_ptr
+    type: esphome::binary_sensor::BinarySensor *
+    set_to_value: id(emergency_stop)
+  - id: system_armed_ptr
+    type: esphome::binary_sensor::BinarySensor *
+    set_to_value: id(system_armed)
+  - id: capture_count_ptr
+    type: esphome::number::Number *
+    set_to_value: id(capture_count)
+
   - id: main_display
     pages:
       - id: main_page
         lambda: |-
+          using namespace esphome::display;
           // Header
-          it.printf(id(display_header_x), id(display_header_y), id(font_small),
-                    "Rat Trap %s %s", "${line_voltage}", "${safety_standard}");
+          draw_common_header(id(display_header_x), id(display_header_y), id(font_small),
+                             "Rat Trap", "${line_voltage}", "${safety_standard}");
 
           // WiFi Status
-          if (id(wifi_component).is_connected()) {
-            it.printf(id(display_wifi_status_x), id(display_header_y), id(font_small), "WiFi");
-          } else {
-            it.printf(id(display_wifi_status_no_net_x), id(display_header_y), id(font_small), "No Net");
-          }
+          draw_wifi_status(id(display_wifi_status_x), id(display_wifi_status_no_net_x), id(display_header_y), id(font_small));
 
           // Sensor Status
           it.printf(id(display_apds_x), id(display_sensor_status_y), id(font_medium), "Hybrid Detection:");
@@ -30,25 +51,10 @@
                     "%s PIR", (id(pir_motion).state ? "✓" : "○"));
 
           // System Status
-          if (id(emergency_stop).state) {
-            it.filled_rectangle(id(display_apds_x), id(display_system_status_y), 128, 12, COLOR_ON);
-            it.print(2, id(display_system_status_text_y), id(font_small), COLOR_OFF, ">> EMERGENCY STOP <<");
-          } else if (id(trap_triggered).state) {
-            it.filled_rectangle(id(display_apds_x), id(display_system_status_y), 128, 12, COLOR_ON);
-            it.print(2, id(display_system_status_text_y), id(font_small), COLOR_OFF, ">> VACUUM ACTIVE <<");
-          } else if (id(rodent_detected).state) {
-            it.rectangle(id(display_apds_x), id(display_system_status_y), 128, 12, COLOR_ON);
-            it.print(2, id(display_system_status_text_y), id(font_small), "* DETECTION ALERT *");
-          } else if (id(system_armed).state) {
-            it.print(id(display_apds_x), id(display_system_status_text_y), id(font_small), "Armed & Monitoring");
-            it.print(120, id(display_system_status_text_y), id(font_small), "●");
-          } else {
-            it.print(id(display_apds_x), id(display_system_status_text_y), id(font_small), "System Disarmed");
-          }
+          draw_master_trigger_status(id(display_apds_x), id(display_system_status_y), id(font_small), COLOR_ON, COLOR_OFF);
 
           // Stats
-          it.printf(id(display_apds_x), id(display_stats_y), id(font_small),
-                    "Captures: %.0f", id(capture_count).state);
+          draw_capture_count(id(display_apds_x), id(display_stats_y), id(font_small));
           it.printf(id(display_stats_temp_x), id(display_stats_y), id(font_small),
                     "Temp: %.1f°C", id(esp32_temp).state);
           if (id(esp32_temp).has_state() && id(esp32_temp).state > id(esp32_temp_warning_threshold)) {
