@@ -55,7 +55,7 @@ cssselect2==0.8.0
     # via cairosvg
 defusedxml==0.7.1
     # via cairosvg
-esphome==2025.10.5
+esphome==2025.10.4
     # via -r requirements.in
 esphome-dashboard==20251013.0
     # via esphome
