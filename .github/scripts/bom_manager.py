@@ -6,11 +6,14 @@ import csv
 from datetime import datetime
 import re
 
+from mouser_api import MouserAPIClient, MouserPartNotFoundError, MouserBOMValidator
+
+
 class BOMManagerError(Exception):
     """Base exception for BOM Manager errors."""
+
     pass
 
-from mouser_api import MouserAPIClient, MouserPartNotFoundError, MouserBOMValidator
 
 # Load environment variables from .env file if it exists (for local development)
 try:
@@ -22,11 +25,6 @@ try:
         print(f"🔧 Loaded environment variables from {env_path}")
 except ImportError:
     # python-dotenv not available, continue with system environment variables
-    pass
-
-
-class BOMManagerError(Exception):
-    """Base exception for BOM Manager errors."""
     pass
 
 
@@ -156,417 +154,216 @@ class BOMValidator:
     def __init__(self, mouser_bom_validator: MouserBOMValidator):
         self.mouser_bom_validator = mouser_bom_validator
 
-        def validate_bom(
-
-            self, bom_file: str, priority_components: list[str] = None
-
-        ) -> dict:
-
-            """Validate entire BOM file with pricing and availability"""
-
-            print(f"📋 Validating BOM file: {bom_file}")
-
-
-
-            try:
-
-                # Read BOM file
-
-                components = []
-
-                with open(bom_file, newline="") as csvfile:
-
-                    reader = csv.DictReader(csvfile)
-
-                    for row in reader:
-
-                        components.append(row)
-
-
-
-                validation_results = self._initialize_validation_results(
-
-                    bom_file, len(components)
-
-                )
-
-
-
-                priority_set = set(priority_components or [])
-
-
-
-                # Process components with priority items first
-
-                sorted_components = sorted(
-
-                    components,
-
-                    key=lambda c: c.get(BOMColumns.MANUFACTURER_PART_NUMBER, "")
-
-                    in priority_set,
-
-                    reverse=True,
-
-                )
-
-
-
-                current_total_cost = 0.0
-
-                updated_total_cost = 0.0
-
-
-
-                for component in sorted_components:
-
-                    (
-
-                        component_result,
-
-                        current_extended_cost,
-
-                        updated_extended_cost,
-
-                    ) = self._process_component(
-
-                        component, priority_set, validation_results
-
-                    )
-
-                    current_total_cost += current_extended_cost
-
-                    updated_total_cost += updated_extended_cost
-
-                    validation_results["components"].append(component_result)
-
-
-
-                # Calculate overall cost change
-
-                if current_total_cost > 0:
-
-                    total_change_percent = (
-
-                        (updated_total_cost - current_total_cost) / current_total_cost
-
-                    ) * 100
-
-                    validation_results["pricing_changes"]["total_change_percent"] = (
-
-                        total_change_percent
-
-                    )
-
-
-
-                    # If total cost changed by more than 5%, mark as significant
-
-                    if abs(total_change_percent) >= self.SIGNIFICANT_PRICE_CHANGE_THRESHOLD:
-
-                        validation_results["pricing_changes"]["significant_changes"] = True
-
-
-
-                return validation_results
-
-
-
-            except Exception as e:
-
-                raise BOMManagerError(f"Error validating BOM: {e}") from e
-
-
-
-        def _initialize_validation_results(
-
-            self, bom_file: str, total_components: int
-
-        ) -> dict:
-
-            """Initializes the validation results dictionary."""
-
-            return {
-
-                "bom_file": bom_file,
-
-                "timestamp": datetime.now().isoformat(),
-
-                "total_components": total_components,
-
-                "found_components": 0,
-
-                "total_cost": 0.0,
-
-                "components": [],
-
-                "pricing_changes": {
-
-                    "changes_detected": False,
-
-                    "significant_changes": False,
-
-                    "total_change_percent": 0.0,
-
-                    "changed_components": 0,
-
-                },
-
-                "availability_issues": {
-
-                    "unavailable_components": 0,
-
-                    "low_stock_components": 0,
-
-                    "critical_availability": False,
-
-                },
-
-            }
-
-
-
-        def _process_component(
-
-            self, component: dict, priority_set: set, validation_results: dict
-
-        ) -> tuple[dict, float, float]:
-
-            """Processes a single component for validation."""
-
-            mpn = component.get(BOMColumns.MANUFACTURER_PART_NUMBER, "").strip()
-
-            manufacturer = component.get(BOMColumns.MANUFACTURER, "").strip()
-
-            description = component.get(BOMColumns.DESCRIPTION, "")
-
-
-
-            try:
-
-                quantity = int(component.get(BOMColumns.QUANTITY, 1))
-
-            except ValueError:
-
-                quantity = 1
-
-
-
-            try:
-
-                current_price = float(component.get(BOMColumns.UNIT_PRICE, 0))
-
-            except ValueError:
-
-                current_price = 0.0
-
-
-
-            # Calculate current cost
-
-            current_extended = current_price * quantity
-
-
-
-            # Skip empty or comment rows
-
-            if not mpn or mpn.startswith("#"):
-
-                return (
-
-                    {
-
-                        "mpn": mpn,
-
-                        "error": "Empty or comment row",
-
-                        "found": False,
-
-                        "is_priority": mpn in priority_set,
-
-                    },
-
-                    current_extended,
-
-                    0.0,
-
-                )
-
-
-
-            is_priority = mpn in priority_set
-
-
-
-            print(
-
-                f"🔍 Validating {mpn} ({manufacturer}) - {'⭐ Priority' if is_priority else 'Standard'}"
-
+    def validate_bom(
+        self, bom_file: str, priority_components: list[str] = None
+    ) -> dict:
+        """Validate entire BOM file with pricing and availability"""
+        print(f"📋 Validating BOM file: {bom_file}")
+
+        try:
+            # Read BOM file
+            components = []
+            with open(bom_file, newline="") as csvfile:
+                reader = csv.DictReader(csvfile)
+                for row in reader:
+                    components.append(row)
+
+            validation_results = self._initialize_validation_results(
+                bom_file, len(components)
             )
 
+            priority_set = set(priority_components or [])
 
-
-            component_result = {
-
-                "mpn": mpn,
-
-                "manufacturer": manufacturer,
-
-                "description": description,
-
-                "quantity": quantity,
-
-                "current_price": current_price,
-
-                "current_extended": current_extended,
-
-                "is_priority": is_priority,
-
-                "found": False,
-
-                "updated_price": None,
-
-                "price_change": 0.0,
-
-                "price_change_percent": 0.0,
-
-                "availability": "Unknown",
-
-                "stock_qty": 0,
-
-                "in_stock": False,
-
-            }
-
-
-
-            updated_extended = 0.0
-
-
-
-            # Delegate to MouserBOMValidator for single component validation
-
-            mouser_validation_data = self.mouser_bom_validator.validate_single_component(
-
-                mpn, manufacturer, quantity
-
+            # Process components with priority items first
+            sorted_components = sorted(
+                components,
+                key=lambda c: c.get(BOMColumns.MANUFACTURER_PART_NUMBER, "")
+                in priority_set,
+                reverse=True,
             )
 
+            current_total_cost = 0.0
+            updated_total_cost = 0.0
 
+            for component in sorted_components:
+                (
+                    component_result,
+                    current_extended_cost,
+                    updated_extended_cost,
+                ) = self._process_component(
+                    component, priority_set, validation_results
+                )
+                current_total_cost += current_extended_cost
+                updated_total_cost += updated_extended_cost
+                validation_results["components"].append(component_result)
 
-            if mouser_validation_data["found"]:
-
-                component_result["found"] = True
-
-                validation_results["found_components"] += 1
-
-
-
-                component_result["availability"] = mouser_validation_data["availability"]
-
-                stock_match = re.search(
-
-                    r"(\d+)\s+In Stock", mouser_validation_data["availability"]
-
+            # Calculate overall cost change
+            if current_total_cost > 0:
+                total_change_percent = (
+                    (updated_total_cost - current_total_cost) / current_total_cost
+                ) * 100
+                validation_results["pricing_changes"]["total_change_percent"] = (
+                    total_change_percent
                 )
 
-                if stock_match:
+                # If total cost changed by more than 5%, mark as significant
+                if abs(total_change_percent) >= self.SIGNIFICANT_PRICE_CHANGE_THRESHOLD:
+                    validation_results["pricing_changes"]["significant_changes"] = True
 
-                    component_result["stock_qty"] = int(stock_match.group(1))
+            return validation_results
 
-                else:
+        except Exception as e:
+            raise BOMManagerError(f"Error validating BOM: {e}") from e
 
-                    component_result["stock_qty"] = 0
+    def _initialize_validation_results(
+        self, bom_file: str, total_components: int
+    ) -> dict:
+        """Initializes the validation results dictionary."""
+        return {
+            "bom_file": bom_file,
+            "timestamp": datetime.now().isoformat(),
+            "total_components": total_components,
+            "found_components": 0,
+            "total_cost": 0.0,
+            "components": [],
+            "pricing_changes": {
+                "changes_detected": False,
+                "significant_changes": False,
+                "total_change_percent": 0.0,
+                "changed_components": 0,
+            },
+            "availability_issues": {
+                "unavailable_components": 0,
+                "low_stock_components": 0,
+                "critical_availability": False,
+            },
+        }
 
+    def _process_component(
+        self, component: dict, priority_set: set, validation_results: dict
+    ) -> tuple[dict, float, float]:
+        """Processes a single component for validation."""
+        mpn = component.get(BOMColumns.MANUFACTURER_PART_NUMBER, "").strip()
+        manufacturer = component.get(BOMColumns.MANUFACTURER, "").strip()
+        description = component.get(BOMColumns.DESCRIPTION, "")
 
+        try:
+            quantity = int(component.get(BOMColumns.QUANTITY, 1))
+        except ValueError:
+            quantity = 1
 
-                component_result["in_stock"] = (
+        try:
+            current_price = float(component.get(BOMColumns.UNIT_PRICE, 0))
+        except ValueError:
+            current_price = 0.0
 
-                    component_result["stock_qty"] >= quantity
+        # Calculate current cost
+        current_extended = current_price * quantity
 
-                )
+        # Skip empty or comment rows
+        if not mpn or mpn.startswith("#"):
+            return (
+                {
+                    "mpn": mpn,
+                    "error": "Empty or comment row",
+                    "found": False,
+                    "is_priority": mpn in priority_set,
+                },
+                current_extended,
+                0.0,
+            )
 
-                component_result["datasheet"] = mouser_validation_data["datasheet"]
+        is_priority = mpn in priority_set
 
-                component_result["product_url"] = mouser_validation_data["product_url"]
+        print(
+            f"🔍 Validating {mpn} ({manufacturer}) - {'⭐ Priority' if is_priority else 'Standard'}"
+        )
 
+        component_result = {
+            "mpn": mpn,
+            "manufacturer": manufacturer,
+            "description": description,
+            "quantity": quantity,
+            "current_price": current_price,
+            "current_extended": current_extended,
+            "is_priority": is_priority,
+            "found": False,
+            "updated_price": None,
+            "price_change": 0.0,
+            "price_change_percent": 0.0,
+            "availability": "Unknown",
+            "stock_qty": 0,
+            "in_stock": False,
+        }
 
+        updated_extended = 0.0
 
-                pricing = mouser_validation_data["pricing"]
+        # Delegate to MouserBOMValidator for single component validation
+        mouser_validation_data = self.mouser_bom_validator.validate_single_component(
+            mpn, manufacturer, quantity
+        )
 
-                if pricing:
+        if mouser_validation_data["found"]:
+            component_result["found"] = True
+            validation_results["found_components"] += 1
 
-                    component_result["updated_price"] = pricing["unit_price"]
+            component_result["availability"] = mouser_validation_data["availability"]
+            stock_match = re.search(
+                r"(\d+)\s+In Stock", mouser_validation_data["availability"]
+            )
+            if stock_match:
+                component_result["stock_qty"] = int(stock_match.group(1))
+            else:
+                component_result["stock_qty"] = 0
 
-                    component_result["updated_extended"] = pricing["total_price"]
+            component_result["in_stock"] = (
+                component_result["stock_qty"] >= quantity
+            )
+            component_result["datasheet"] = mouser_validation_data["datasheet"]
+            component_result["product_url"] = mouser_validation_data["product_url"]
 
-                    updated_extended = pricing["total_price"]
+            pricing = mouser_validation_data["pricing"]
+            if pricing:
+                component_result["updated_price"] = pricing["unit_price"]
+                component_result["updated_extended"] = pricing["total_price"]
+                updated_extended = pricing["total_price"]
 
+                if current_price > 0:
+                    price_change = pricing["unit_price"] - current_price
+                    price_change_percent = (price_change / current_price) * 100
 
+                    component_result["price_change"] = price_change
+                    component_result["price_change_percent"] = price_change_percent
 
-                    if current_price > 0:
-
-                        price_change = pricing["unit_price"] - current_price
-
-                        price_change_percent = (price_change / current_price) * 100
-
-
-
-                        component_result["price_change"] = price_change
-
-                        component_result["price_change_percent"] = price_change_percent
-
-
+                    if (
+                        abs(price_change_percent)
+                        >= self.SIGNIFICANT_PRICE_CHANGE_THRESHOLD
+                    ):
+                        validation_results["pricing_changes"]["changed_components"] += 1
+                        validation_results["pricing_changes"]["changes_detected"] = True
 
                         if (
-
                             abs(price_change_percent)
-
-                            >= self.SIGNIFICANT_PRICE_CHANGE_THRESHOLD
-
+                            >= self.CRITICAL_PRICE_CHANGE_THRESHOLD
+                            or (
+                                is_priority
+                                and abs(price_change_percent)
+                                >= self.SIGNIFICANT_PRICE_CHANGE_THRESHOLD
+                            )
                         ):
+                            validation_results["pricing_changes"][
+                                "significant_changes"
+                            ] = True
+        else:
+            component_result["error"] = mouser_validation_data["error"]
+            if mouser_validation_data.get("suggestions"):
+                component_result["suggestions"] = mouser_validation_data["suggestions"]
 
-                            validation_results["pricing_changes"]["changed_components"] += 1
-
-                            validation_results["pricing_changes"]["changes_detected"] = True
-
-
-
-                            if (
-
-                                abs(price_change_percent)
-
-                                >= self.CRITICAL_PRICE_CHANGE_THRESHOLD
-
-                                or (
-
-                                    is_priority
-
-                                    and abs(price_change_percent)
-
-                                    >= self.SIGNIFICANT_PRICE_CHANGE_THRESHOLD
-
-                                )
-
-                            ):
-
-                                validation_results["pricing_changes"][
-
-                                    "significant_changes"
-
-                                ] = True
-
-            else:
-
-                component_result["error"] = mouser_validation_data["error"]
-
-                if mouser_validation_data.get("suggestions"):
-
-                    component_result["suggestions"] = mouser_validation_data["suggestions"]
+        return component_result, current_extended, updated_extended
 
 
-
-            return component_result, current_extended, updated_extended
+class BOMReporter:
+    """Generates reports from BOM validation results."""
 
     def _generate_report_header(self, title: str) -> list[str]:
         """Generates a common report header."""
@@ -1271,3 +1068,4 @@ def main():
 
 if __name__ == "__main__":
     exit(main())
+
