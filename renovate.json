@@ -1,82 +1,64 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": [
-    "config:best-practices",
-    "mergeConfidence:all-badges",
-    "group:recommended"
-  ],
-  "pinDigests": false,
-  "forkProcessing": "enabled",
-  "schedule": ["before 4am on Monday"],
+  "extends": ["config:best-practices"],
   "timezone": "America/New_York",
-  "labels": ["dependencies"],
+  "schedule": ["before 4am on Monday"],
+  "pinDigests": false,
+  "osvVulnerabilityAlerts": true,
+  "vulnerabilityAlerts": { "enabled": true },
+
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": ["before 4am on Monday"]
+  },
+
+  "prHourlyLimit": 2,
+  "prConcurrentLimit": 10,
+  "branchPrefix": "renovate/",
+
+  "allowedPostUpgradeCommands": [
+    "^uv( |$)pip compile.*$",
+    "^uv( |$)pip install.*$",
+    "^uv( |$)pip check$"
+  ],
+
   "packageRules": [
     {
-      "description": "Do not allow digest pinning updates anywhere",
-      "matchUpdateTypes": ["pinDigest"],
-      "enabled": false
-    },
-    {
-      "description": "Disallow SHA pinning for GitHub Actions and prefer SemVer tags",
+      "description": "Prefer full SemVer tags for GitHub Actions and convert from commit SHAs",
       "matchManagers": ["github-actions"],
+      "versioning": "semver",
+      "rangeStrategy": "replace",
+      "pinVersions": true,
       "pinDigests": false
     },
     {
-      "description": "Automerge minor and patch updates with slight delay",
+      "description": "Automerge minor and patch updates after a short delay",
       "matchUpdateTypes": ["minor", "patch"],
       "automerge": true,
-      "automergeSchedule": ["after 1 hour"]
+      "stabilityDays": 1
     },
     {
-      "description": "Group GitHub Actions updates",
-      "matchManagers": ["github-actions"],
-      "groupName": "GitHub Actions",
-      "schedule": ["before 4am on Monday"]
-    },
-    {
-      "description": "Group Python dependency updates",
+      "description": "Python requirements via uv with stable and pre-release conflict checks",
       "matchManagers": ["pip_requirements"],
-      "groupName": "Python Dependencies",
-      "schedule": ["before 4am on Monday"]
-    },
-    {
-      "description": "Recompile requirements.txt from requirements.in with pip-compile",
-      "matchManagers": ["pip_requirements"],
-      "postUpdateOptions": ["pip-compile"]
-    },
-    {
-      "description": "Update ESPHome and related packages carefully",
-      "matchPackageNames": ["esphome", "aioesphomeapi", "esphome-dashboard", "esphome-glyphsets"],
       "ignoreUnstable": false,
-      "schedule": ["before 4am on the first day of the month"],
-      "labels": ["esphome", "critical"]
-    },
-    {
-      "description": "Security updates should be prioritized",
-      "matchUpdateTypes": ["patch"],
-      "matchDatasources": ["pypi", "github-releases"],
-      "schedule": ["at any time"],
-      "labels": ["security"]
+      "postUpgradeTasks": {
+        "commands": [
+          "uv pip compile -o requirements.txt requirements.in",
+          "uv pip compile --pre -o requirements-pre.txt requirements.in",
+          "uv pip install -r requirements.txt",
+          "uv pip check"
+        ],
+        "fileFilters": [
+          "requirements.in",
+          "requirements.txt",
+          "requirements-pre.txt"
+        ]
+      }
     },
     {
       "description": "Block starlette updates due to known ESPHome/PlatformIO compatibility issues",
       "matchPackageNames": ["starlette"],
       "enabled": false
     }
-  ],
-  "vulnerabilityAlerts": {
-    "enabled": true
-  },
-  "osvVulnerabilityAlerts": true,
-  "lockFileMaintenance": {
-    "enabled": true,
-    "schedule": ["before 4am on Monday"]
-  },
-  "prHourlyLimit": 2,
-  "prConcurrentLimit": 10,
-  "branchPrefix": "renovate/",
-  "commitMessagePrefix": "🤖 ",
-  "commitMessageTopic": "{{depName}}",
-  "commitMessageExtra": "to {{newVersion}}",
-  "prBodyTemplate": "{{{header}}}{{{table}}}{{{notes}}}{{{changelogs}}}{{{footer}}}"
+  ]
 }
