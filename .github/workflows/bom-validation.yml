@@ -35,6 +35,8 @@ jobs:
     steps:
       - name: Setup Python Environment
         uses: ./.github/actions/setup-python
+        with:
+          requirements-file: requirements.txt
 
       - name: Run unit tests
         run: |

@@ -18,6 +18,14 @@ jobs:
       - name: Setup Python Environment
         uses: ./.github/actions/setup-python
 
+      - name: Cache ESPHome build directory
+        uses: actions/cache@v3
+        with:
+          path: ~/.esphome
+          key: ${{ runner.os }}-esphome-${{ hashFiles('esphome/*.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-esphome-
+
       - name: Create dummy secrets.yaml
         run: |
           DUMMY_SECRETS=$(cat <<EOF

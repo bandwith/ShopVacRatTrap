@@ -31,12 +31,12 @@ module trap_entrance() {
         union() {
             // Main tube body
             translate([0,0,entrance_length/2]) {
-                tube(entrance_length);
+                tube(entrance_length, tube_outer_diameter, tube_wall_thickness);
             }
 
             // Flange at the connection end
             translate([0, 0, entrance_length]) {
-                flange();
+                flange(flange_diameter, flange_thickness, flange_screw_hole_diameter, flange_screw_hole_inset);
             }
 
             // Flat base for stability
