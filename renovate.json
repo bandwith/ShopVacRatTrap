@@ -30,8 +30,14 @@
       "schedule": ["before 4am on Monday"]
     },
     {
+      "description": "Recompile requirements.txt from requirements.in with pip-compile",
+      "matchManagers": ["pip_requirements"],
+      "postUpdateOptions": ["pip-compile"]
+    },
+    {
       "description": "Update ESPHome and related packages carefully",
       "matchPackageNames": ["esphome", "aioesphomeapi", "esphome-dashboard", "esphome-glyphsets"],
+      "allowPrereleases": true,
       "schedule": ["before 4am on the first day of the month"],
       "labels": ["esphome", "critical"]
     },

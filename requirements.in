@@ -7,8 +7,23 @@ xlrd>=2.0.1
 
 # Core application dependencies
 click>=8.1.0
-esphome==2025.10.4
+esphome>=2025.10.4
 rich>=13.0.0
+
+# Transitive deps used by ESPHome stack (allow newer versions)
+# Set minimums to Renovate-tested versions to reduce breakage
+# Keep compatible with current ESPHome (requires 41.16.1)
+aioesphomeapi>=41.16.1
+# ESPHome currently pins cryptography==45.0.1
+cryptography>=45.0.1
+# Keep compatible with current ESPHome (requires 13.7.1)
+kconfiglib>=13.7.1
+# PlatformIO 6.1.x requires marshmallow 3.*
+marshmallow>=3.26.1
+# ESPHome currently pins paho-mqtt==1.6.1
+paho-mqtt>=1.6.1
+# Current ESPHome pins Pillow==10.4.0; allow newer without forcing
+pillow>=10.4.0
 
 # Development and testing tools
 detect-secrets>=1.5.0
