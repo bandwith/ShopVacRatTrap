@@ -233,7 +233,9 @@ rich-click==1.9.4
 ruamel-yaml==0.18.15
     # via esphome
 ruamel-yaml-clib==0.2.12
-    # via esphome
+    # via
+    #   esphome
+    #   ruamel-yaml
 ruff==0.14.5
     # via -r requirements.in
 semantic-version==2.10.0
@@ -254,6 +256,8 @@ tinycss2==1.4.0
     #   cssselect2
 tornado==6.5.2
     # via esphome
+typing-extensions==4.15.0
+    # via anyio
 tzdata==2025.2
     # via
     #   esphome

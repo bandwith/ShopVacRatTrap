@@ -190,9 +190,7 @@ class BOMValidator:
                     component_result,
                     current_extended_cost,
                     updated_extended_cost,
-                ) = self._process_component(
-                    component, priority_set, validation_results
-                )
+                ) = self._process_component(component, priority_set, validation_results)
                 current_total_cost += current_extended_cost
                 updated_total_cost += updated_extended_cost
                 validation_results["components"].append(component_result)
@@ -316,9 +314,7 @@ class BOMValidator:
             else:
                 component_result["stock_qty"] = 0
 
-            component_result["in_stock"] = (
-                component_result["stock_qty"] >= quantity
-            )
+            component_result["in_stock"] = component_result["stock_qty"] >= quantity
             component_result["datasheet"] = mouser_validation_data["datasheet"]
             component_result["product_url"] = mouser_validation_data["product_url"]
 
@@ -342,14 +338,12 @@ class BOMValidator:
                         validation_results["pricing_changes"]["changed_components"] += 1
                         validation_results["pricing_changes"]["changes_detected"] = True
 
-                        if (
-                            abs(price_change_percent)
-                            >= self.CRITICAL_PRICE_CHANGE_THRESHOLD
-                            or (
-                                is_priority
-                                and abs(price_change_percent)
-                                >= self.SIGNIFICANT_PRICE_CHANGE_THRESHOLD
-                            )
+                        if abs(
+                            price_change_percent
+                        ) >= self.CRITICAL_PRICE_CHANGE_THRESHOLD or (
+                            is_priority
+                            and abs(price_change_percent)
+                            >= self.SIGNIFICANT_PRICE_CHANGE_THRESHOLD
                         ):
                             validation_results["pricing_changes"][
                                 "significant_changes"
