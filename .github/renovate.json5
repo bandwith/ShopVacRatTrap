@@ -1,0 +1,52 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended"
+  ],
+  "schedule": ["before 4am on Monday"],
+  "timezone": "America/New_York",
+  "labels": ["dependencies"],
+  "packageRules": [
+    {
+      "description": "Group GitHub Actions updates",
+      "matchManagers": ["github-actions"],
+      "groupName": "GitHub Actions",
+      "schedule": ["before 4am on Monday"]
+    },
+    {
+      "description": "Group Python dependency updates",
+      "matchManagers": ["pip_requirements"],
+      "groupName": "Python Dependencies",
+      "schedule": ["before 4am on Monday"]
+    },
+    {
+      "description": "Update ESPHome and related packages carefully",
+      "matchPackageNames": ["esphome", "aioesphomeapi", "esphome-dashboard", "esphome-glyphsets"],
+      "schedule": ["before 4am on first day of month"],
+      "labels": ["esphome", "critical"]
+    },
+    {
+      "description": "Security updates should be prioritized",
+      "matchUpdateTypes": ["patch"],
+      "matchDatasources": ["pypi", "github-releases"],
+      "schedule": ["at any time"],
+      "labels": ["security"]
+    }
+  ],
+  "vulnerabilityAlerts": {
+    "enabled": true
+  },
+  "osvVulnerabilityAlerts": true,
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": ["before 4am on Monday"]
+  },
+  "prHourlyLimit": 2,
+  "prConcurrentLimit": 10,
+  "branchPrefix": "renovate/",
+  "commitMessagePrefix": "🤖 ",
+  "commitMessageTopic": "{{depName}}",
+  "commitMessageExtra": "to {{newVersion}}",
+  "prBodyTemplate": "{{{header}}}{{{table}}}{{{notes}}}{{{changelogs}}}{{{footer}}}",
+  "prTitle": "{{#if isPin}}Pin{{else}}Update{{/if}} {{depName}} {{#if isMajor}}to{{else}}{{#if isSingleVersion}}to{{else}}from{{/if}}{{/if}} {{#if isMajor}}{{newVersionMajor}}{{else}}{{#if isSingleVersion}}{{newVersion}}{{else}}{{currentVersion}} to {{newVersion}}{{/if}}{{/if}}"
+}
