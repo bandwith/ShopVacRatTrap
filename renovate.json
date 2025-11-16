@@ -1,12 +1,23 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:recommended"
+    "config:best-practices",
+    "mergeConfidence:all-badges",
+    "security:openssf-scorecard",
+    "group:recommended",
+    "helpers:pinGitHubActionDigestsToSemver"
   ],
+  "forkProcessing": "enabled",
   "schedule": ["before 4am on Monday"],
   "timezone": "America/New_York",
   "labels": ["dependencies"],
   "packageRules": [
+    {
+      "description": "Automerge minor and patch updates with slight delay",
+      "matchUpdateTypes": ["minor", "patch"],
+      "automerge": true,
+      "automergeSchedule": ["after 1 hour"]
+    },
     {
       "description": "Group GitHub Actions updates",
       "matchManagers": ["github-actions"],
