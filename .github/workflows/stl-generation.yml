@@ -24,15 +24,11 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: Setup Python Environment
-        uses: ./.github/actions/setup-python
         with:
           fetch-depth: 0
 
-      - name: Install OpenSCAD
-        run: |
-          sudo apt-get update && sudo apt-get install -y openscad
+      - name: Setup Python Environment
+        uses: ./.github/actions/setup-python
 
       - name: Cache apt packages
         uses: actions/cache@v4
@@ -41,6 +37,10 @@ jobs:
           key: ${{ runner.os }}-apt-openscad
           restore-keys: |
             ${{ runner.os }}-apt-openscad-
+
+      - name: Install OpenSCAD
+        run: |
+          sudo apt-get update && sudo apt-get install -y openscad
 
       - name: Generate STL files
         id: generate
