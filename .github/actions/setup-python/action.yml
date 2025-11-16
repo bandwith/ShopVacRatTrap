@@ -3,6 +3,10 @@ name: Setup Python Environment
 description: Checks out repository, sets up Python, caches pip dependencies, and installs project dependencies.
 
 inputs:
+  fetch-depth:
+    description: Depth for git checkout
+    required: false
+    default: '1' # Default to 1 for efficiency, can be overridden to 0 for full history
   python-version:
     description: Python version to use
     required: false
@@ -17,6 +21,8 @@ runs:
   steps:
     - name: Checkout repository
       uses: actions/checkout@v4
+      with:
+        fetch-depth: ${{ inputs.fetch-depth }}
 
     - name: Set up Python ${{ inputs.python-version }}
       uses: actions/setup-python@v4
