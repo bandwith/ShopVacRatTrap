@@ -16,7 +16,7 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
 cd "$REPO_ROOT"
 
-PY_VERSION="${PY_VERSION:-3.14}"
+PY_VERSION="${PY_VERSION:-3.12}"
 VENV_DIR="${VENV_DIR:-.venv}"
 REQUIREMENTS_FILE="${REQUIREMENTS_FILE:-requirements.txt}"
 
@@ -24,6 +24,15 @@ have_cmd() { command -v "$1" >/dev/null 2>&1; }
 
 log() { printf "[start-dev] %s\n" "$*"; }
 warn() { printf "[start-dev][warn] %s\n" "$*" >&2; }
+
+# 0) If venv exists but is on Python 3.14, recreate (known build issues for some deps)
+if [[ -d "$VENV_DIR" ]]; then
+  EXISTING_PY_VER="$({ test -x "$VENV_DIR/bin/python" && "$VENV_DIR/bin/python" -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")' ; } 2>/dev/null || echo)"
+  if [[ "$EXISTING_PY_VER" == "3.14" && "${ALLOW_PY314:-0}" != "1" ]]; then
+    warn "Detected existing venv with Python 3.14; recreating with Python ${PY_VERSION} to avoid build failures (e.g., ruamel-yaml-clib)."
+    rm -rf "$VENV_DIR"
+  fi
+fi
 
 # 1) Create venv if missing (prefer uv)
 if [[ ! -d "$VENV_DIR" ]]; then
