@@ -38,7 +38,7 @@ module trap_funnel_adapter() {
 
             // Flange at the connection end
             translate([0, 0, 0]) {
-                flange();
+                flange(flange_diameter, flange_thickness, flange_screw_hole_diameter, flange_screw_hole_inset);
             }
 
             // Flat base for stability

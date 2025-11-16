@@ -37,7 +37,7 @@ module vacuum_funnel() {
 
         // Flange at the large opening
         translate([0,0,-funnel_height/2]) {
-            flange();
+            flange(flange_diameter, flange_thickness, flange_screw_hole_diameter, flange_screw_hole_inset);
         }
     }
 }

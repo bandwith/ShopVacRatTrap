@@ -35,13 +35,13 @@ module trap_body_main() {
         union() {
             // Main tube body
             translate([0,0,body_length/2]) {
-                tube(body_length);
+                tube(body_length, tube_outer_diameter, tube_wall_thickness);
             }
 
             // Flanges at both ends
             for (z_pos = [0, body_length]) {
                 translate([0, 0, z_pos]) {
-                    flange();
+                    flange(flange_diameter, flange_thickness, flange_screw_hole_diameter, flange_screw_hole_inset);
                 }
             }
 
