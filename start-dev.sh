@@ -63,8 +63,11 @@ log "Activated venv: ${VIRTUAL_ENV:-unknown}"
 # 3) Install dependencies
 if [[ -f "$REQUIREMENTS_FILE" ]]; then
   if have_cmd uv; then
-    log "Installing dependencies via uv pip (from $REQUIREMENTS_FILE)..."
-    uv pip install -r "$REQUIREMENTS_FILE"
+    log "Installing dependencies via uv pip sync (from $REQUIREMENTS_FILE)..."
+    # Use sync to install exact versions without re-resolving dependencies
+    # This respects our manually frozen requirements.txt where ESPHome metadata
+    # is strict but newer versions work in practice
+    uv pip sync "$REQUIREMENTS_FILE"
   else
     log "Installing dependencies via pip (from $REQUIREMENTS_FILE)..."
     python -m pip install --upgrade pip
@@ -92,7 +95,7 @@ cat <<EOF
 
 Tips:
 - To (re)activate later: source $VENV_DIR/bin/activate
-- To update deps quickly: uv pip install -r $REQUIREMENTS_FILE
+- To update deps quickly: uv pip sync $REQUIREMENTS_FILE
 - To run hooks now: pre-commit run -a
 
 EOF
