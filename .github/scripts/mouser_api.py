@@ -90,11 +90,13 @@ class MouserQuotaExceededError(MouserAPIError):
 
 class MouserPartNotFoundError(MouserAPIError):
     """Raised when part is not found"""
+
     pass
 
 
 class MouserBOMValidationError(MouserAPIError):
     """Raised when there's an error during BOM validation."""
+
     pass
 
 
@@ -383,12 +385,8 @@ class MouserAPIClient:
                     currency=price_break.get("Currency", "USD"),
                 )
             )
-        return parsed_price_breaks
 
 
-class MouserBOMValidationError(MouserAPIError):
-    """Raised when there's an error during BOM validation."""
-    pass
 
 
 class MouserBOMColumns:
@@ -418,7 +416,9 @@ class MouserBOMValidator:
             elif bom_file.endswith(".xlsx"):
                 df = pd.read_excel(bom_file)
             else:
-                raise MouserBOMValidationError("Unsupported file format. Use CSV or Excel.")
+                raise MouserBOMValidationError(
+                    "Unsupported file format. Use CSV or Excel."
+                )
 
             required_columns = [
                 MouserBOMColumns.MANUFACTURER,
@@ -426,7 +426,9 @@ class MouserBOMValidator:
             ]
             missing_columns = [col for col in required_columns if col not in df.columns]
             if missing_columns:
-                raise MouserBOMValidationError(f"Missing required columns: {missing_columns}")
+                raise MouserBOMValidationError(
+                    f"Missing required columns: {missing_columns}"
+                )
 
             # Validate each component
             validation_results = {
@@ -599,7 +601,9 @@ class MouserBOMValidator:
                     mpn, manufacturer, max_results=3
                 )
                 if keyword_parts:
-                    component_result["error"] = "Part not found by exact MPN, but keyword matches found."
+                    component_result["error"] = (
+                        "Part not found by exact MPN, but keyword matches found."
+                    )
                     component_result["keyword_matches"] = len(keyword_parts)
                     component_result["suggestions"] = [
                         {

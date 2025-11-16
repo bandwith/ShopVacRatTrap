@@ -166,7 +166,7 @@ class BOMValidator:
 
             print(f"📋 Validating BOM file: {bom_file}")
 
-    
+
 
             try:
 
@@ -182,7 +182,7 @@ class BOMValidator:
 
                         components.append(row)
 
-    
+
 
                 validation_results = self._initialize_validation_results(
 
@@ -190,11 +190,11 @@ class BOMValidator:
 
                 )
 
-    
+
 
                 priority_set = set(priority_components or [])
 
-    
+
 
                 # Process components with priority items first
 
@@ -210,13 +210,13 @@ class BOMValidator:
 
                 )
 
-    
+
 
                 current_total_cost = 0.0
 
                 updated_total_cost = 0.0
 
-    
+
 
                 for component in sorted_components:
 
@@ -240,7 +240,7 @@ class BOMValidator:
 
                     validation_results["components"].append(component_result)
 
-    
+
 
                 # Calculate overall cost change
 
@@ -258,7 +258,7 @@ class BOMValidator:
 
                     )
 
-    
+
 
                     # If total cost changed by more than 5%, mark as significant
 
@@ -266,17 +266,17 @@ class BOMValidator:
 
                         validation_results["pricing_changes"]["significant_changes"] = True
 
-    
+
 
                 return validation_results
 
-    
+
 
             except Exception as e:
 
                 raise BOMManagerError(f"Error validating BOM: {e}") from e
 
-    
+
 
         def _initialize_validation_results(
 
@@ -324,7 +324,7 @@ class BOMValidator:
 
             }
 
-    
+
 
         def _process_component(
 
@@ -340,7 +340,7 @@ class BOMValidator:
 
             description = component.get(BOMColumns.DESCRIPTION, "")
 
-    
+
 
             try:
 
@@ -350,7 +350,7 @@ class BOMValidator:
 
                 quantity = 1
 
-    
+
 
             try:
 
@@ -360,13 +360,13 @@ class BOMValidator:
 
                 current_price = 0.0
 
-    
+
 
             # Calculate current cost
 
             current_extended = current_price * quantity
 
-    
+
 
             # Skip empty or comment rows
 
@@ -392,11 +392,11 @@ class BOMValidator:
 
                 )
 
-    
+
 
             is_priority = mpn in priority_set
 
-    
+
 
             print(
 
@@ -404,7 +404,7 @@ class BOMValidator:
 
             )
 
-    
+
 
             component_result = {
 
@@ -438,11 +438,11 @@ class BOMValidator:
 
             }
 
-    
+
 
             updated_extended = 0.0
 
-    
+
 
             # Delegate to MouserBOMValidator for single component validation
 
@@ -452,7 +452,7 @@ class BOMValidator:
 
             )
 
-    
+
 
             if mouser_validation_data["found"]:
 
@@ -460,7 +460,7 @@ class BOMValidator:
 
                 validation_results["found_components"] += 1
 
-    
+
 
                 component_result["availability"] = mouser_validation_data["availability"]
 
@@ -478,7 +478,7 @@ class BOMValidator:
 
                     component_result["stock_qty"] = 0
 
-    
+
 
                 component_result["in_stock"] = (
 
@@ -490,7 +490,7 @@ class BOMValidator:
 
                 component_result["product_url"] = mouser_validation_data["product_url"]
 
-    
+
 
                 pricing = mouser_validation_data["pricing"]
 
@@ -502,7 +502,7 @@ class BOMValidator:
 
                     updated_extended = pricing["total_price"]
 
-    
+
 
                     if current_price > 0:
 
@@ -510,13 +510,13 @@ class BOMValidator:
 
                         price_change_percent = (price_change / current_price) * 100
 
-    
+
 
                         component_result["price_change"] = price_change
 
                         component_result["price_change_percent"] = price_change_percent
 
-    
+
 
                         if (
 
@@ -530,7 +530,7 @@ class BOMValidator:
 
                             validation_results["pricing_changes"]["changes_detected"] = True
 
-    
+
 
                             if (
 
@@ -564,7 +564,7 @@ class BOMValidator:
 
                     component_result["suggestions"] = mouser_validation_data["suggestions"]
 
-    
+
 
             return component_result, current_extended, updated_extended
 
