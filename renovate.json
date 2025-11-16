@@ -32,7 +32,7 @@
     {
       "description": "Update ESPHome and related packages carefully",
       "matchPackageNames": ["esphome", "aioesphomeapi", "esphome-dashboard", "esphome-glyphsets"],
-      "schedule": ["before 4am on first day of month"],
+      "schedule": ["before 4am on the first day of the month"],
       "labels": ["esphome", "critical"]
     },
     {
@@ -57,6 +57,5 @@
   "commitMessagePrefix": "🤖 ",
   "commitMessageTopic": "{{depName}}",
   "commitMessageExtra": "to {{newVersion}}",
-  "prBodyTemplate": "{{{header}}}{{{table}}}{{{notes}}}{{{changelogs}}}{{{footer}}}",
-  "prTitle": "{{#if isPin}}Pin{{else}}Update{{/if}} {{depName}} {{#if isMajor}}to{{else}}{{#if isSingleVersion}}to{{else}}from{{/if}}{{/if}} {{#if isMajor}}{{newVersionMajor}}{{else}}{{#if isSingleVersion}}{{newVersion}}{{else}}{{currentVersion}} to {{newVersion}}{{/if}}{{/if}}"
+  "prBodyTemplate": "{{{header}}}{{{table}}}{{{notes}}}{{{changelogs}}}{{{footer}}}"
 }
