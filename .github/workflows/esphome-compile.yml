@@ -19,7 +19,7 @@ jobs:
         uses: ./.github/actions/setup-python
 
       - name: Cache ESPHome build directory
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.esphome
           key: ${{ runner.os }}-esphome-${{ hashFiles('esphome/*.yaml') }}

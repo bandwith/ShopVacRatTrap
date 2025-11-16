@@ -20,7 +20,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Cache pre-commit hooks
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.cache/pre-commit
           key: ${{ runner.os }}-pre-commit-${{ hashFiles('.pre-commit-config.yaml') }}
