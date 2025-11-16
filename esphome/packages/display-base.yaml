@@ -33,11 +33,11 @@ globals:
         lambda: |-
           using namespace esphome::display;
           // Header
-          draw_common_header(id(display_header_x), id(display_header_y), id(font_small),
+          draw_common_header(it, id(display_header_x), id(display_header_y), id(font_small),
                              "Rat Trap", "${line_voltage}", "${safety_standard}");
 
           // WiFi Status
-          draw_wifi_status(id(display_wifi_status_x), id(display_wifi_status_no_net_x), id(display_header_y), id(font_small));
+          draw_wifi_status(it, id(display_wifi_status_x), id(display_wifi_status_no_net_x), id(display_header_y), id(font_small));
 
           // Sensor Status
           it.printf(id(display_apds_x), id(display_sensor_status_y), id(font_medium), "Hybrid Detection:");
@@ -51,10 +51,10 @@ globals:
                     "%s PIR", (id(pir_motion).state ? "✓" : "○"));
 
           // System Status
-          draw_master_trigger_status(id(display_apds_x), id(display_system_status_y), id(font_small), COLOR_ON, COLOR_OFF);
+          draw_master_trigger_status(it, id(display_apds_x), id(display_system_status_y), id(font_small), COLOR_ON, COLOR_OFF);
 
           // Stats
-          draw_capture_count(id(display_apds_x), id(display_stats_y), id(font_small));
+          draw_capture_count(it, id(display_apds_x), id(display_stats_y), id(font_small));
           it.printf(id(display_stats_temp_x), id(display_stats_y), id(font_small),
                     "Temp: %.1f°C", id(esp32_temp).state);
           if (id(esp32_temp).has_state() && id(esp32_temp).state > id(esp32_temp_warning_threshold)) {
