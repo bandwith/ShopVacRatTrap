@@ -8,9 +8,6 @@
   "osvVulnerabilityAlerts": true,
   "vulnerabilityAlerts": { "enabled": true },
   "transitiveRemediation": true,
-  "vulnerabilityAlertsOptions": {
-    "minimumSeverity": "low"
-  },
 
   "lockFileMaintenance": {
     "enabled": true,
@@ -22,12 +19,6 @@
   "branchPrefix": "renovate/",
   "description": "Simplified Renovate config with uv and SemVer enforcement",
 
-  "allowedCommands": [
-    "^uv( |$)pip compile.*$",
-    "^uv( |$)pip install.*$",
-    "^uv( |$)pip check$"
-  ],
-
   "packageRules": [
     {
       "description": "Prioritize security updates - no approval needed",
@@ -38,14 +29,6 @@
       "automerge": true,
       "minimumReleaseAge": "0 days",
       "prPriority": 10
-    },
-    {
-      "description": "Critical/high severity vulnerabilities - immediate action",
-      "vulnerabilitySeverity": ["CRITICAL", "HIGH"],
-      "labels": ["security", "critical"],
-      "automerge": false,
-      "prPriority": 20,
-      "schedule": ["at any time"]
     },
     {
       "description": "Prefer full SemVer tags for GitHub Actions and convert from commit SHAs",
