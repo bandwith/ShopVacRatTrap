@@ -3,7 +3,6 @@
   "extends": [
     "config:best-practices",
     "mergeConfidence:all-badges",
-    "security:openssf-scorecard",
     "group:recommended",
     "helpers:pinGitHubActionDigestsToSemver"
   ],
