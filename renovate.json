@@ -1,51 +1,72 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["config:best-practices"],
+  "extends": [
+    "config:best-practices"
+  ],
   "forkProcessing": "enabled",
   "timezone": "America/New_York",
-  "schedule": ["before 4am on Monday"],
+  "schedule": [
+    "before 4am on Monday"
+  ],
   "pinDigests": false,
   "osvVulnerabilityAlerts": true,
-  "vulnerabilityAlerts": { "enabled": true },
-  "transitiveRemediation": true,
-
+  "vulnerabilityAlerts": {
+    "enabled": true
+  },
   "lockFileMaintenance": {
     "enabled": true,
-    "schedule": ["before 4am on Monday"]
+    "schedule": [
+      "before 4am on Monday"
+    ]
   },
-
   "prHourlyLimit": 2,
   "prConcurrentLimit": 10,
   "branchPrefix": "renovate/",
   "description": "Simplified Renovate config with uv and SemVer enforcement",
-
   "packageRules": [
     {
       "description": "Prioritize security updates - no approval needed",
-      "matchUpdateTypes": ["patch"],
+      "matchUpdateTypes": [
+        "patch"
+      ],
       "matchCurrentVersion": "!/^0/",
-      "matchDatasources": ["pypi", "npm", "github-releases", "github-tags"],
-      "labels": ["security", "dependencies"],
+      "matchDatasources": [
+        "pypi",
+        "npm",
+        "github-releases",
+        "github-tags"
+      ],
+      "labels": [
+        "security",
+        "dependencies"
+      ],
       "automerge": true,
       "minimumReleaseAge": "0 days",
       "prPriority": 10
     },
     {
       "description": "Prefer full SemVer tags for GitHub Actions and convert from commit SHAs",
-      "matchManagers": ["github-actions"],
+      "matchManagers": [
+        "github-actions"
+      ],
       "versioning": "semver",
       "rangeStrategy": "replace",
       "pinDigests": false
     },
     {
       "description": "Automerge minor and patch updates after a short delay",
-      "matchUpdateTypes": ["minor", "patch"],
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ],
       "automerge": true,
       "minimumReleaseAge": "1 day"
     },
     {
       "description": "Python requirements via uv with stable and pre-release conflict checks",
-      "matchManagers": ["pip_requirements"],
+      "matchManagers": [
+        "pip_requirements"
+      ],
       "ignoreUnstable": false,
       "postUpgradeTasks": {
         "commands": [
@@ -63,7 +84,9 @@
     },
     {
       "description": "Block starlette updates due to known ESPHome/PlatformIO compatibility issues",
-      "matchPackageNames": ["starlette"],
+      "matchPackageNames": [
+        "starlette"
+      ],
       "enabled": false
     }
   ]
