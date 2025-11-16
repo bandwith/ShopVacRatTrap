@@ -37,7 +37,7 @@
     {
       "description": "Update ESPHome and related packages carefully",
       "matchPackageNames": ["esphome", "aioesphomeapi", "esphome-dashboard", "esphome-glyphsets"],
-      "allowPrereleases": true,
+      "ignoreUnstable": false,
       "schedule": ["before 4am on the first day of the month"],
       "labels": ["esphome", "critical"]
     },
