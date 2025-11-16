@@ -1,7 +1,7 @@
 import os
 import subprocess
 import json
-
+import argparse
 
 def get_changed_scad_files():
     """Get a list of changed SCAD files."""
@@ -52,9 +52,20 @@ def generate_build_report():
         f.write("\n".join(report))
 
 
-if __name__ == "__main__":
-    import argparse
+def build_stl_files(scad_files):
+    """Generate STL files from a list of SCAD files."""
+    for scad_file in scad_files:
+        stl_file = scad_file.replace(".scad", ".stl")
+        print(f"Generating {stl_file} from {scad_file}...")
+        subprocess.run(
+            ["openscad", "-o", stl_file, scad_file],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
 
+
+if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="STL Generator Helper")
     parser.add_argument(
         "--get-changed-files", action="store_true", help="Get changed SCAD files"
@@ -70,6 +81,11 @@ if __name__ == "__main__":
     parser.add_argument(
         "--generate-report", action="store_true", help="Generate build report"
     )
+    parser.add_argument(
+        "--build",
+        nargs="*",
+        help="Build STL files from a list of SCAD files. If no files are provided, all SCAD files will be built.",
+    )
 
     args = parser.parse_args()
 
@@ -83,4 +99,11 @@ if __name__ == "__main__":
         files = get_missing_stl_files()
         print(json.dumps(files))
     elif args.generate_report:
+        generate_build_report()
+    elif args.build is not None:
+        if not args.build:
+            scad_files = get_all_scad_files()
+        else:
+            scad_files = args.build
+        build_stl_files(scad_files)
         generate_build_report()
