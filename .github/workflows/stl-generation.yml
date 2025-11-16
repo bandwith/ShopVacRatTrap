@@ -23,20 +23,20 @@ jobs:
       should_commit: ${{ steps.generate.outputs.should_commit }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
           fetch-depth: 0
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@5a7eac68fb9809dea845d802897dc5c723910fa3 # v7.1.3
         with:
           enable-cache: true
           cache-dependency-glob: requirements.txt
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c # v6.0.0
         with:
-          python-version: '3.11'
+          python-version: '3.14'
 
       - name: Install dependencies
         run: uv pip install --system -r requirements.txt
@@ -80,7 +80,7 @@ jobs:
 
       - name: Upload STL artifacts
         if: steps.generate.outputs.should_commit == 'true'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
         with:
           name: stl-files
           path: 3d_models/*.stl
@@ -91,21 +91,20 @@ jobs:
     if: needs.generate-stl.outputs.should_commit == 'true' && github.ref == 'refs/heads/main'
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Download all STL artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6.0.0
         with:
           name: stl-files
           path: 3d_models/
 
       - name: Commit and push updated files
-        uses: ./.github/actions/git-config-and-commit
+        uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          user-email: action@github.com
-          user-name: GitHub Action STL Generator
-          commit-message: 'ci: Auto-generate STL files and build report'
-          files-to-add: 3d_models/*.stl 3d_models/build_report.md
-          push-branch: ${{ github.ref }}
+          commit_user_email: action@github.com
+          commit_user_name: GitHub Action STL Generator
+          commit_message: 'ci: Auto-generate STL files and build report'
+          file_pattern: 3d_models/*.stl 3d_models/build_report.md
