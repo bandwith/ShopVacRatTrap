@@ -20,30 +20,33 @@ binary_sensor:
       - delayed_off: 100ms
     on_press:
       - logger.log: EMERGENCY STOP ACTIVATED - All operations halted
+      - script.execute: safety_disarm
+
+script:
+  # Reusable safety disarm procedure
+  - id: safety_disarm
+    mode: single
+    then:
+      - logger.log: System safety disarm initiated
       - switch.turn_off: vacuum_relay
       - binary_sensor.template.publish:
           id: trap_triggered
           state: off
       - input_boolean.turn_off: system_armed
 
-script:
   # Thermal shutdown script
   - id: thermal_shutdown
     mode: single
     then:
       - logger.log: THERMAL SHUTDOWN ACTIVATED
-      - switch.turn_off: vacuum_relay
-      - binary_sensor.template.publish:
-          id: trap_triggered
-          state: off
-      - input_boolean.turn_off: system_armed
+      - script.execute: safety_disarm
       - deep_sleep.enter:
           id: emergency_sleep
-          sleep_duration: 300s       # 5 minute cooldown
+          sleep_duration: ${emergency_sleep_duration}       # 5 minute cooldown
 
 deep_sleep:
   id: emergency_sleep
-  sleep_duration: 300s   # 5 minute cooldown
+  sleep_duration: ${emergency_sleep_duration}   # 5 minute cooldown
 
 interval:
   - interval: 5s

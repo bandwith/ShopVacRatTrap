@@ -6,7 +6,11 @@ import csv
 from datetime import datetime
 import re
 
-from mouser_api import MouserAPIClient, MouserPartNotFoundError
+class BOMManagerError(Exception):
+    """Base exception for BOM Manager errors."""
+    pass
+
+from mouser_api import MouserAPIClient, MouserPartNotFoundError, MouserBOMValidator
 
 # Load environment variables from .env file if it exists (for local development)
 try:
@@ -21,6 +25,35 @@ except ImportError:
     pass
 
 
+class BOMManagerError(Exception):
+    """Base exception for BOM Manager errors."""
+    pass
+
+
+def load_bom_components(bom_file: str) -> list[dict]:
+    """Loads BOM components from a CSV file."""
+    components = []
+    try:
+        with open(bom_file, newline="", encoding="utf-8") as csvfile:
+            reader = csv.DictReader(csvfile)
+            for row in reader:
+                components.append(row)
+        return components
+    except Exception as e:
+        raise BOMManagerError(f"Error reading BOM file: {e}") from e
+
+
+class BOMColumns:
+    UNIT_PRICE = "Unit Price"
+    MANUFACTURER_PART_NUMBER = "Manufacturer Part Number"
+    EXTENDED_PRICE = "Extended Price"
+    MANUFACTURER = "Manufacturer"
+    DESCRIPTION = "Description"
+    QUANTITY = "Quantity"
+    DISTRIBUTOR = "Distributor"
+    DISTRIBUTOR_PART_NUMBER = "Distributor Part Number"
+
+
 class BOMUpdater:
     """Updates a BOM file with new data."""
 
@@ -31,15 +64,27 @@ class BOMUpdater:
         header_map = {col: idx for idx, col in enumerate(header)}
 
         unit_price_col = next(
-            (idx for col, idx in header_map.items() if "unit price" in col.lower()),
+            (
+                idx
+                for col, idx in header_map.items()
+                if BOMColumns.UNIT_PRICE.lower() in col.lower()
+            ),
             None,
         )
         mpn_col = next(
-            (idx for col, idx in header_map.items() if "part number" in col.lower()),
+            (
+                idx
+                for col, idx in header_map.items()
+                if BOMColumns.MANUFACTURER_PART_NUMBER.lower() in col.lower()
+            ),
             None,
         )
         ext_price_col = next(
-            (idx for col, idx in header_map.items() if "extended price" in col.lower()),
+            (
+                idx
+                for col, idx in header_map.items()
+                if BOMColumns.EXTENDED_PRICE.lower() in col.lower()
+            ),
             None,
         )
         return unit_price_col, mpn_col, ext_price_col
@@ -58,8 +103,7 @@ class BOMUpdater:
             unit_price_col, mpn_col, ext_price_col = self._find_column_indices(header)
 
             if not unit_price_col or not mpn_col:
-                print("❌ Could not find required columns in BOM file")
-                return False
+                raise BOMManagerError("Could not find required columns in BOM file")
 
             # Create a lookup for validated components
             validated_components = {}
@@ -100,201 +144,429 @@ class BOMUpdater:
             return True
 
         except Exception as e:
-            print(f"❌ Error updating BOM pricing: {e}")
-            return False
+            raise BOMManagerError(f"Error updating BOM pricing: {e}") from e
 
 
 class BOMValidator:
     """Validates a BOM file using the Mouser API."""
 
-    def __init__(self, client: MouserAPIClient):
-        self.client = client
+    SIGNIFICANT_PRICE_CHANGE_THRESHOLD = 5.0  # Percentage
+    CRITICAL_PRICE_CHANGE_THRESHOLD = 10.0  # Percentage
 
-    def validate_bom(
-        self, bom_file: str, priority_components: list[str] = None
-    ) -> dict:
-        """Validate entire BOM file with pricing and availability"""
-        print(f"📋 Validating BOM file: {bom_file}")
+    def __init__(self, mouser_bom_validator: MouserBOMValidator):
+        self.mouser_bom_validator = mouser_bom_validator
 
-        try:
-            # Read BOM file
-            components = []
-            with open(bom_file, newline="") as csvfile:
-                reader = csv.DictReader(csvfile)
-                for row in reader:
-                    components.append(row)
+        def validate_bom(
 
-            validation_results = {
+            self, bom_file: str, priority_components: list[str] = None
+
+        ) -> dict:
+
+            """Validate entire BOM file with pricing and availability"""
+
+            print(f"📋 Validating BOM file: {bom_file}")
+
+    
+
+            try:
+
+                # Read BOM file
+
+                components = []
+
+                with open(bom_file, newline="") as csvfile:
+
+                    reader = csv.DictReader(csvfile)
+
+                    for row in reader:
+
+                        components.append(row)
+
+    
+
+                validation_results = self._initialize_validation_results(
+
+                    bom_file, len(components)
+
+                )
+
+    
+
+                priority_set = set(priority_components or [])
+
+    
+
+                # Process components with priority items first
+
+                sorted_components = sorted(
+
+                    components,
+
+                    key=lambda c: c.get(BOMColumns.MANUFACTURER_PART_NUMBER, "")
+
+                    in priority_set,
+
+                    reverse=True,
+
+                )
+
+    
+
+                current_total_cost = 0.0
+
+                updated_total_cost = 0.0
+
+    
+
+                for component in sorted_components:
+
+                    (
+
+                        component_result,
+
+                        current_extended_cost,
+
+                        updated_extended_cost,
+
+                    ) = self._process_component(
+
+                        component, priority_set, validation_results
+
+                    )
+
+                    current_total_cost += current_extended_cost
+
+                    updated_total_cost += updated_extended_cost
+
+                    validation_results["components"].append(component_result)
+
+    
+
+                # Calculate overall cost change
+
+                if current_total_cost > 0:
+
+                    total_change_percent = (
+
+                        (updated_total_cost - current_total_cost) / current_total_cost
+
+                    ) * 100
+
+                    validation_results["pricing_changes"]["total_change_percent"] = (
+
+                        total_change_percent
+
+                    )
+
+    
+
+                    # If total cost changed by more than 5%, mark as significant
+
+                    if abs(total_change_percent) >= self.SIGNIFICANT_PRICE_CHANGE_THRESHOLD:
+
+                        validation_results["pricing_changes"]["significant_changes"] = True
+
+    
+
+                return validation_results
+
+    
+
+            except Exception as e:
+
+                raise BOMManagerError(f"Error validating BOM: {e}") from e
+
+    
+
+        def _initialize_validation_results(
+
+            self, bom_file: str, total_components: int
+
+        ) -> dict:
+
+            """Initializes the validation results dictionary."""
+
+            return {
+
                 "bom_file": bom_file,
+
                 "timestamp": datetime.now().isoformat(),
-                "total_components": len(components),
+
+                "total_components": total_components,
+
                 "found_components": 0,
+
                 "total_cost": 0.0,
+
                 "components": [],
+
                 "pricing_changes": {
+
                     "changes_detected": False,
+
                     "significant_changes": False,
+
                     "total_change_percent": 0.0,
+
                     "changed_components": 0,
+
                 },
+
                 "availability_issues": {
+
                     "unavailable_components": 0,
+
                     "low_stock_components": 0,
+
                     "critical_availability": False,
+
                 },
+
             }
 
-            priority_set = set(priority_components or [])
+    
 
-            # Process components with priority items first
-            sorted_components = sorted(
-                components,
-                key=lambda c: c.get("Manufacturer Part Number", "") in priority_set,
-                reverse=True,
+        def _process_component(
+
+            self, component: dict, priority_set: set, validation_results: dict
+
+        ) -> tuple[dict, float, float]:
+
+            """Processes a single component for validation."""
+
+            mpn = component.get(BOMColumns.MANUFACTURER_PART_NUMBER, "").strip()
+
+            manufacturer = component.get(BOMColumns.MANUFACTURER, "").strip()
+
+            description = component.get(BOMColumns.DESCRIPTION, "")
+
+    
+
+            try:
+
+                quantity = int(component.get(BOMColumns.QUANTITY, 1))
+
+            except ValueError:
+
+                quantity = 1
+
+    
+
+            try:
+
+                current_price = float(component.get(BOMColumns.UNIT_PRICE, 0))
+
+            except ValueError:
+
+                current_price = 0.0
+
+    
+
+            # Calculate current cost
+
+            current_extended = current_price * quantity
+
+    
+
+            # Skip empty or comment rows
+
+            if not mpn or mpn.startswith("#"):
+
+                return (
+
+                    {
+
+                        "mpn": mpn,
+
+                        "error": "Empty or comment row",
+
+                        "found": False,
+
+                        "is_priority": mpn in priority_set,
+
+                    },
+
+                    current_extended,
+
+                    0.0,
+
+                )
+
+    
+
+            is_priority = mpn in priority_set
+
+    
+
+            print(
+
+                f"🔍 Validating {mpn} ({manufacturer}) - {'⭐ Priority' if is_priority else 'Standard'}"
+
             )
 
-            current_total_cost = 0.0
-            updated_total_cost = 0.0
+    
 
-            for component in sorted_components:
-                mpn = component.get("Manufacturer Part Number", "").strip()
-                manufacturer = component.get("Manufacturer", "").strip()
-                description = component.get("Description", "")
+            component_result = {
 
-                try:
-                    quantity = int(component.get("Quantity", 1))
-                except ValueError:
-                    quantity = 1
+                "mpn": mpn,
 
-                try:
-                    current_price = float(component.get("Unit Price", 0))
-                except ValueError:
-                    current_price = 0.0
+                "manufacturer": manufacturer,
 
-                # Calculate current cost
-                current_extended = current_price * quantity
-                current_total_cost += current_extended
+                "description": description,
 
-                # Skip empty or comment rows
-                if not mpn or mpn.startswith("#"):
-                    continue
+                "quantity": quantity,
 
-                is_priority = mpn in priority_set
+                "current_price": current_price,
 
-                print(
-                    f"🔍 Validating {mpn} ({manufacturer}) - {'⭐ Priority' if is_priority else 'Standard'}"
+                "current_extended": current_extended,
+
+                "is_priority": is_priority,
+
+                "found": False,
+
+                "updated_price": None,
+
+                "price_change": 0.0,
+
+                "price_change_percent": 0.0,
+
+                "availability": "Unknown",
+
+                "stock_qty": 0,
+
+                "in_stock": False,
+
+            }
+
+    
+
+            updated_extended = 0.0
+
+    
+
+            # Delegate to MouserBOMValidator for single component validation
+
+            mouser_validation_data = self.mouser_bom_validator.validate_single_component(
+
+                mpn, manufacturer, quantity
+
+            )
+
+    
+
+            if mouser_validation_data["found"]:
+
+                component_result["found"] = True
+
+                validation_results["found_components"] += 1
+
+    
+
+                component_result["availability"] = mouser_validation_data["availability"]
+
+                stock_match = re.search(
+
+                    r"(\d+)\s+In Stock", mouser_validation_data["availability"]
+
                 )
 
-                component_result = {
-                    "mpn": mpn,
-                    "manufacturer": manufacturer,
-                    "description": description,
-                    "quantity": quantity,
-                    "current_price": current_price,
-                    "current_extended": current_extended,
-                    "is_priority": is_priority,
-                    "found": False,
-                    "updated_price": None,
-                    "price_change": 0.0,
-                    "price_change_percent": 0.0,
-                    "availability": "Unknown",
-                    "stock_qty": 0,
-                    "in_stock": False,
-                }
+                if stock_match:
 
-                # Search part in Mouser
-                try:
-                    parts = self.client.search_part_number(mpn, manufacturer)
-                    if parts:
-                        best_part = parts[0]
-                        component_result["found"] = True
-                        validation_results["found_components"] += 1
+                    component_result["stock_qty"] = int(stock_match.group(1))
 
-                        # Update with Mouser data
-                        component_result["availability"] = best_part.availability
-                        # Extract stock quantity from availability string
-                        stock_match = re.search(
-                            r"(\d+)\s+In Stock", best_part.availability
-                        )
-                        if stock_match:
-                            component_result["stock_qty"] = int(stock_match.group(1))
-                        else:
-                            component_result["stock_qty"] = 0
+                else:
 
-                        component_result["in_stock"] = (
-                            component_result["stock_qty"] >= quantity
-                        )
-                        component_result["datasheet"] = best_part.data_sheet_url
-                        component_result["product_url"] = best_part.product_detail_url
+                    component_result["stock_qty"] = 0
 
-                        # Get pricing information
-                        pricing = self.client.get_best_price(best_part, quantity)
+    
 
-                        if pricing:
-                            component_result["updated_price"] = pricing["unit_price"]
-                            component_result["updated_extended"] = pricing[
-                                "total_price"
-                            ]
-                            updated_total_cost += pricing["total_price"]
+                component_result["in_stock"] = (
 
-                            # Calculate price changes
-                            if current_price > 0:
-                                price_change = pricing["unit_price"] - current_price
-                                price_change_percent = (
-                                    price_change / current_price
-                                ) * 100
+                    component_result["stock_qty"] >= quantity
 
-                                component_result["price_change"] = price_change
-                                component_result["price_change_percent"] = (
-                                    price_change_percent
+                )
+
+                component_result["datasheet"] = mouser_validation_data["datasheet"]
+
+                component_result["product_url"] = mouser_validation_data["product_url"]
+
+    
+
+                pricing = mouser_validation_data["pricing"]
+
+                if pricing:
+
+                    component_result["updated_price"] = pricing["unit_price"]
+
+                    component_result["updated_extended"] = pricing["total_price"]
+
+                    updated_extended = pricing["total_price"]
+
+    
+
+                    if current_price > 0:
+
+                        price_change = pricing["unit_price"] - current_price
+
+                        price_change_percent = (price_change / current_price) * 100
+
+    
+
+                        component_result["price_change"] = price_change
+
+                        component_result["price_change_percent"] = price_change_percent
+
+    
+
+                        if (
+
+                            abs(price_change_percent)
+
+                            >= self.SIGNIFICANT_PRICE_CHANGE_THRESHOLD
+
+                        ):
+
+                            validation_results["pricing_changes"]["changed_components"] += 1
+
+                            validation_results["pricing_changes"]["changes_detected"] = True
+
+    
+
+                            if (
+
+                                abs(price_change_percent)
+
+                                >= self.CRITICAL_PRICE_CHANGE_THRESHOLD
+
+                                or (
+
+                                    is_priority
+
+                                    and abs(price_change_percent)
+
+                                    >= self.SIGNIFICANT_PRICE_CHANGE_THRESHOLD
+
                                 )
 
-                                # Track significant price changes
-                                if (
-                                    abs(price_change_percent) >= 5.0
-                                ):  # 5% threshold for significance
-                                    validation_results["pricing_changes"][
-                                        "changed_components"
-                                    ] += 1
-                                    validation_results["pricing_changes"][
-                                        "changes_detected"
-                                    ] = True
+                            ):
 
-                                    if abs(price_change_percent) >= 10.0 or (
-                                        is_priority and abs(price_change_percent) >= 5.0
-                                    ):
-                                        validation_results["pricing_changes"][
-                                            "significant_changes"
-                                        ] = True
-                    else:
-                        component_result["error"] = "Part not found"
-                except MouserPartNotFoundError:
-                    component_result["error"] = "Part not found"
+                                validation_results["pricing_changes"][
 
-                validation_results["components"].append(component_result)
+                                    "significant_changes"
 
-            # Calculate overall cost change
-            if current_total_cost > 0:
-                total_change_percent = (
-                    (updated_total_cost - current_total_cost) / current_total_cost
-                ) * 100
-                validation_results["pricing_changes"]["total_change_percent"] = (
-                    total_change_percent
-                )
+                                ] = True
 
-                # If total cost changed by more than 5%, mark as significant
-                if abs(total_change_percent) >= 5.0:
-                    validation_results["pricing_changes"]["significant_changes"] = True
+            else:
 
-            return validation_results
+                component_result["error"] = mouser_validation_data["error"]
 
-        except Exception as e:
-            print(f"❌ Error validating BOM: {e}")
-            return {"error": str(e)}
+                if mouser_validation_data.get("suggestions"):
 
+                    component_result["suggestions"] = mouser_validation_data["suggestions"]
 
-class BOMReporter:
-    """Generates reports from BOM validation results."""
+    
+
+            return component_result, current_extended, updated_extended
 
     def _generate_report_header(self, title: str) -> list[str]:
         """Generates a common report header."""
@@ -337,7 +609,8 @@ class BOMReporter:
         for component in validation_results["components"]:
             if (
                 component.get("found")
-                and abs(component.get("price_change_percent", 0)) >= 5.0
+                and abs(component.get("price_change_percent", 0))
+                >= BOMValidator.SIGNIFICANT_PRICE_CHANGE_THRESHOLD
             ):
                 significant_changes.append(component)
 
@@ -477,19 +750,6 @@ class BOMPurchaseFileGenerator:
     def __init__(self, client: MouserAPIClient):
         self.client = client
 
-    def _load_bom_components(self, bom_file: str) -> list[dict] | None:
-        """Loads BOM components from a CSV file."""
-        components = []
-        try:
-            with open(bom_file, newline="", encoding="utf-8") as csvfile:
-                reader = csv.DictReader(csvfile)
-                for row in reader:
-                    components.append(row)
-            return components
-        except Exception as e:
-            print(f"❌ Error reading BOM file: {e}")
-            return None
-
     def generate_mouser_template_file(self, bom_file: str, output_dir: str) -> str:
         """Generate BOM in official Mouser template format using dynamic lookup"""
         print("🛒 Generating Mouser template format file...")
@@ -497,7 +757,7 @@ class BOMPurchaseFileGenerator:
         # Ensure output directory exists
         os.makedirs(output_dir, exist_ok=True)
 
-        components = self._load_bom_components(bom_file)
+        components = load_bom_components(bom_file)
         if components is None:
             return None
 
@@ -512,13 +772,13 @@ class BOMPurchaseFileGenerator:
 
         for i, component in enumerate(components, 1):
             print(
-                f"🔍 [{i}/{len(components)}] Processing: {component['Description'][:50]}..."
+                f"🔍 [{i}/{len(components)}] Processing: {component[BOMColumns.DESCRIPTION][:50]}..."
             )
 
-            manufacturer = component.get("Manufacturer", "")
-            mpn = component.get("Manufacturer Part Number", "")
-            quantity = int(component.get("Quantity", 1))
-            current_distributor = component.get("Distributor", "")
+            manufacturer = component.get(BOMColumns.MANUFACTURER, "")
+            mpn = component.get(BOMColumns.MANUFACTURER_PART_NUMBER, "")
+            quantity = int(component.get(BOMColumns.QUANTITY, 1))
+            current_distributor = component.get(BOMColumns.DISTRIBUTOR, "")
 
             # Initialize row with template structure
             row_data = {col: "" for col in self.MOUSER_TEMPLATE_COLUMNS}
@@ -527,13 +787,13 @@ class BOMPurchaseFileGenerator:
             row_data["Mfr Part Number (Input)"] = mpn
             row_data["Manufacturer Part Number"] = mpn
             row_data["Manufacturer Name"] = manufacturer
-            row_data["Description"] = component.get("Description", "")
+            row_data["Description"] = component.get(BOMColumns.DESCRIPTION, "")
             row_data["Order Quantity"] = quantity
 
             # If already from Mouser, use existing data
             if current_distributor.lower() == "mouser":
-                mouser_part = component.get("Distributor Part Number", "")
-                unit_price = component.get("Unit Price", "0")
+                mouser_part = component.get(BOMColumns.DISTRIBUTOR_PART_NUMBER, "")
+                unit_price = component.get(BOMColumns.UNIT_PRICE, "0")
 
                 row_data["Mouser Part Number"] = mouser_part
                 row_data["Order Unit Price"] = unit_price
@@ -639,15 +899,15 @@ class BOMPurchaseFileGenerator:
         """Generate a consolidated BOM with only Mouser parts"""
         print("🔄 Generating Mouser-only BOM...\n")
 
-        components = self._load_bom_components(bom_file)
+        components = load_bom_components(bom_file)
         if components is None:
             return None
 
         # Convert all components to Mouser using dynamic lookup
         mouser_components = []
         for component in components:
-            mpn = component.get("Manufacturer Part Number", "")
-            manufacturer = component.get("Manufacturer", "")
+            mpn = component.get(BOMColumns.MANUFACTURER_PART_NUMBER, "")
+            manufacturer = component.get(BOMColumns.MANUFACTURER, "")
             new_component = component.copy()
 
             # Try to find Mouser equivalent using dynamic lookup
@@ -656,8 +916,8 @@ class BOMPurchaseFileGenerator:
                     parts = self.client.search_part_number(mpn, manufacturer)
                     if parts:
                         part_result = parts[0]
-                        new_component["Distributor"] = "Mouser"
-                        new_component["Distributor Part Number"] = (
+                        new_component[BOMColumns.DISTRIBUTOR] = "Mouser"
+                        new_component[BOMColumns.DISTRIBUTOR_PART_NUMBER] = (
                             part_result.mouser_part_number
                         )
                         print(
@@ -672,16 +932,16 @@ class BOMPurchaseFileGenerator:
                         f"⚠️ No Mouser equivalent found for: {mpn} from {manufacturer}"
                     )
 
-            elif component.get("Distributor", "").lower() == "mouser":
+            elif component.get(BOMColumns.DISTRIBUTOR, "").lower() == "mouser":
                 # Already at Mouser, keep as-is
                 print(f"✅ Keeping Mouser part: {mpn}")
             else:
                 # Unknown mapping - flag for manual review
                 print(
-                    f"⚠️ Manual review needed for: {mpn} from {component.get('Distributor', 'Unknown')}"
+                    f"⚠️ Manual review needed for: {mpn} from {component.get(BOMColumns.DISTRIBUTOR, 'Unknown')}"
                 )
-                new_component["Distributor"] = "Mouser"
-                new_component["Distributor Part Number"] = f"REVIEW-{mpn}"
+                new_component[BOMColumns.DISTRIBUTOR] = "Mouser"
+                new_component[BOMColumns.DISTRIBUTOR_PART_NUMBER] = f"REVIEW-{mpn}"
 
             mouser_components.append(new_component)
 
@@ -732,7 +992,7 @@ class BOMPurchaseFileGenerator:
         """Generate purchase guide with direct links"""
         print("📋 Generating purchase guide...\n")
 
-        components = self._load_bom_components(bom_file)
+        components = load_bom_components(bom_file)
         if components is None:
             return None
 
@@ -758,7 +1018,7 @@ class BOMPurchaseFileGenerator:
         # Group components by distributor
         distributors = {}
         for component in components:
-            distributor = component.get("Distributor", "Other")
+            distributor = component.get(BOMColumns.DISTRIBUTOR, "Other")
             if distributor not in distributors:
                 distributors[distributor] = []
             distributors[distributor].append(component)
@@ -770,25 +1030,25 @@ class BOMPurchaseFileGenerator:
             guide.append("|-----|------------|-------------|-------|------|")
 
             for component in dist_components:
-                mpn = component.get("Manufacturer Part Number", "")
-                description = component.get("Description", "")
-                quantity = component.get("Quantity", "1")
-                unit_price = component.get("Unit Price", "")
+                mpn = component.get(BOMColumns.MANUFACTURER_PART_NUMBER, "")
+                description = component.get(BOMColumns.DESCRIPTION, "")
+                quantity = component.get(BOMColumns.QUANTITY, "1")
+                unit_price = component.get(BOMColumns.UNIT_PRICE, "")
 
                 # Generate link based on distributor
                 link = ""
                 if distributor.lower() == "mouser":
-                    part_no = component.get("Distributor Part Number", mpn)
+                    part_no = component.get(BOMColumns.DISTRIBUTOR_PART_NUMBER, mpn)
                     link = f"[Buy](https://www.mouser.com/ProductDetail/{part_no})"
                 elif distributor.lower() == "digikey":
-                    part_no = component.get("Distributor Part Number", mpn)
+                    part_no = component.get(BOMColumns.DISTRIBUTOR_PART_NUMBER, mpn)
                     link = f"[Buy](https://www.digikey.com/product-detail/{part_no})"
                 elif distributor.lower() == "adafruit":
-                    part_no = component.get("Distributor Part Number", "")
+                    part_no = component.get(BOMColumns.DISTRIBUTOR_PART_NUMBER, "")
                     if part_no:
                         link = f"[Buy](https://www.adafruit.com/product/{part_no})"
                 elif distributor.lower() == "sparkfun":
-                    part_no = component.get("Distributor Part Number", mpn)
+                    part_no = component.get(BOMColumns.DISTRIBUTOR_PART_NUMBER, mpn)
                     if part_no:
                         link = f"[Buy](https://www.sparkfun.com/products/{part_no})"
 
@@ -897,7 +1157,8 @@ def main():
 
         # Initialize clients and services
         client = MouserAPIClient(args.api_key)
-        validator = BOMValidator(client)
+        mouser_bom_validator = MouserBOMValidator(args.api_key)
+        validator = BOMValidator(mouser_bom_validator)
         reporter = BOMReporter()
         updater = BOMUpdater()
         purchase_file_generator = BOMPurchaseFileGenerator(client)
@@ -911,39 +1172,35 @@ def main():
                 args.bom_file, args.priority_components
             )
 
-            if "error" not in validation_results:
-                output_file = os.path.join(args.output_dir, "validation_results.json")
-                with open(output_file, "w") as f:
-                    json.dump(validation_results, f, indent=2)
-                print(f"💾 Validation results saved to {output_file}")
+            output_file = os.path.join(args.output_dir, "validation_results.json")
+            with open(output_file, "w") as f:
+                json.dump(validation_results, f, indent=2)
+            print(f"💾 Validation results saved to {output_file}")
 
-                reporter.generate_pricing_report(validation_results)
-                reporter.generate_availability_report(validation_results)
+            reporter.generate_pricing_report(validation_results)
+            reporter.generate_availability_report(validation_results)
 
-                # Set GitHub Actions outputs if running in GH Actions
-                if "GITHUB_OUTPUT" in os.environ:
-                    with open(os.environ["GITHUB_OUTPUT"], "a") as f:
-                        f.write(
-                            f"changes_detected={validation_results['pricing_changes']['changes_detected']}\n"
+            # Set GitHub Actions outputs if running in GH Actions
+            if "GITHUB_OUTPUT" in os.environ:
+                with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+                    f.write(
+                        f"changes_detected={validation_results['pricing_changes']['changes_detected']}\n"
+                    )
+                    f.write(
+                        f"significant_changes={validation_results['pricing_changes']['significant_changes']}\n"
+                    )
+
+                    # Availability checks
+                    if args.check_availability or do_all:
+                        has_unavailable = (
+                            validation_results["availability_issues"][
+                                "unavailable_components"
+                            ]
+                            > 0
                         )
                         f.write(
-                            f"significant_changes={validation_results['pricing_changes']['significant_changes']}\n"
+                            f"unavailable_components={'true' if has_unavailable else 'false'}\n"
                         )
-
-                        # Availability checks
-                        if args.check_availability or do_all:
-                            has_unavailable = (
-                                validation_results["availability_issues"][
-                                    "unavailable_components"
-                                ]
-                                > 0
-                            )
-                            f.write(
-                                f"unavailable_components={'true' if has_unavailable else 'false'}\n"
-                            )
-            else:
-                print(f"❌ Validation failed: {validation_results['error']}")
-                return 1
 
         # Update BOM pricing if changes detected
         if (
@@ -1004,8 +1261,11 @@ def main():
         print("✅ BOM management operations complete")
         return 0
 
+    except BOMManagerError as e:
+        print(f"❌ Operation failed: {e}")
+        return 1
     except Exception as e:
-        print(f"❌ Fatal error: {e}")
+        print(f"❌ An unexpected error occurred: {e}")
         return 1
 
 

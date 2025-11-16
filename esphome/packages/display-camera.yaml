@@ -1,51 +1,49 @@
 ---
 # esphome/packages/display-camera.yaml
-display:
-  - platform: ssd1306_i2c
-    model: SSD1306 128x64
-    address: 0x3C
-    update_interval: 1s
+# Include common display settings
+!include display-common.yaml
+
+  - id: camera_display
     pages:
       - id: main_page
         lambda: |-
           // Header
-          it.printf(0, 0, id(font_small), "Camera Trap %s %s", "${line_voltage}", "${safety_standard}");
+          it.printf(id(display_header_x), id(display_header_y), id(font_small),
+                    "Camera Trap %s %s", "${line_voltage}", "${safety_standard}");
 
           // WiFi Status
           if (id(wifi_component).is_connected()) {
-            it.printf(105, 0, id(font_small), "WiFi");
+            it.printf(id(display_wifi_status_x), id(display_header_y), id(font_small), "WiFi");
           } else {
-            it.printf(100, 0, id(font_small), "No Net");
+            it.printf(id(display_wifi_status_no_net_x), id(display_header_y), id(font_small), "No Net");
           }
 
           // Sensor Status
-          it.printf(0, 12, id(font_medium), "4-Sensor Hybrid:");
-          it.printf(0, 26, id(font_small), "%s APDS", (id(apds_detection).state ? "✓" : "○"));
-          it.printf(40, 26, id(font_small), "%s PIR", (id(pir_detection).state ? "✓" : "○"));
-          it.printf(70, 26, id(font_small), "%s ToF", (id(tof_detection).state ? "✓" : "○"));
-          it.printf(100, 26, id(font_small), "📷");
+          it.printf(id(display_apds_x), id(display_sensor_status_y), id(font_medium), "4-Sensor Hybrid:");
+          it.printf(id(display_apds_x), id(display_apds_y), id(font_small),
+                    "%s APDS", (id(apds_detection).state ? "✓" : "○"));
+          it.printf(id(display_tof_x), id(display_apds_y), id(font_small),
+                    "%s PIR", (id(pir_detection).state ? "✓" : "○"));
+          it.printf(id(display_pir_x), id(display_apds_y), id(font_small),
+                    "%s ToF", (id(tof_detection).state ? "✓" : "○"));
+          it.printf(id(display_wifi_status_no_net_x), id(display_apds_y), id(font_small), "📷");
 
           // Master trigger status
           if (id(trap_triggered).state) {
-            it.filled_rectangle(0, 38, 128, 12, COLOR_ON);
-            it.print(2, 40, id(font_small), COLOR_OFF, ">> VACUUM ACTIVE <<");
+            it.filled_rectangle(id(display_apds_x), id(display_system_status_y), 128, 12, COLOR_ON);
+            it.print(2, id(display_system_status_text_y), id(font_small), COLOR_OFF, ">> VACUUM ACTIVE <<");
           } else if (id(emergency_stop).state) {
-            it.printf(0, 40, id(font_small), "EMERGENCY STOP");
+            it.printf(id(display_apds_x), id(display_system_status_text_y), id(font_small), "EMERGENCY STOP");
           } else if (id(system_armed).state) {
-            it.printf(0, 40, id(font_small), "System Armed - Ready");
+            it.printf(id(display_apds_x), id(display_system_status_text_y), id(font_small), "System Armed - Ready");
           } else {
-            it.printf(0, 40, id(font_small), "System Disarmed");
+            it.printf(id(display_apds_x), id(display_system_status_text_y), id(font_small), "System Disarmed");
           }
 
           // Stats
-          it.printf(0, 54, id(font_small), "Captures: %.0f", id(capture_count).state);
-          it.printf(70, 54, id(font_small), "Temp: %.1f°C", id(env_temperature).state);
-          it.printf(0, 48, id(font_small), "CAM:OK IR:%d%%", (int)id(ir_brightness_number).state);
-
-font:
-  - file: gfonts://Roboto Mono
-    id: font_small
-    size: 8
-  - file: gfonts://Roboto Mono
-    id: font_medium
-    size: 12
+          it.printf(id(display_apds_x), id(display_stats_y), id(font_small),
+                    "Captures: %.0f", id(capture_count).state);
+          it.printf(id(display_stats_temp_x), id(display_stats_y), id(font_small),
+                    "Temp: %.1f°C", id(env_temperature).state);
+          it.printf(id(display_apds_x), 48, id(font_small),
+                    "CAM:OK IR:%d%%", (int)id(ir_brightness_number).state);

@@ -42,16 +42,7 @@ jobs:
 
       - name: Create backup of current BOM and manage older backups
         run: |
-          # Create backup directory if it doesn't exist
-          mkdir -p pricing_backup
-
-          # Create today's backup with date stamp
-          cp BOM_CONSOLIDATED.csv pricing_backup/BOM_CONSOLIDATED_$(date +%Y%m%d).csv
-
-          # Keep only the 5 most recent backups and remove older ones
-          cd pricing_backup
-          ls -t BOM_CONSOLIDATED_*.csv | tail -n +6 | xargs -r rm
-          cd ..
+          bash ./.github/scripts/backup_bom.sh
 
       - name: Run BOM validation and generate all files
         id: bom_validation
@@ -60,10 +51,7 @@ jobs:
           python .github/scripts/bom_manager.py \
             --bom-file BOM_CONSOLIDATED.csv \
             --output-dir . \
-            --validate \
-            --check-availability \
-            --generate-purchase-files \
-            --generate-mouser-only
+            --all
         continue-on-error: true
 
       - name: Check for pricing changes
@@ -71,16 +59,6 @@ jobs:
         run: |
           echo "changes_detected=${{ steps.bom_validation.outputs.changes_detected }}" >> $GITHUB_OUTPUT
           echo "significant_changes=${{ steps.bom_validation.outputs.significant_changes }}" >> $GITHUB_OUTPUT
-
-      - name: Update BOM files with current pricing
-        if: steps.pricing_changes.outputs.changes_detected == 'true' || github.event.inputs.force_update == 'true'
-        run: |
-          echo "📝 Updating BOM files with current pricing..."
-          python .github/scripts/bom_manager.py \
-            --bom-file BOM_CONSOLIDATED.csv \
-            --output-dir . \
-            --update-pricing
-          echo "BOM files updated with current pricing"
 
       - name: Create alert for unavailable components
         if: steps.bom_validation.outputs.unavailable_components == 'true'

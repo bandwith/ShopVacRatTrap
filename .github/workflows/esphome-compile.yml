@@ -17,7 +17,7 @@ jobs:
 
       - name: Create dummy secrets.yaml
         run: |
-          cat <<EOF > esphome/secrets.yaml
+          DUMMY_SECRETS=$(cat <<EOF
           wifi_ssid: dummy_ssid
           wifi_password: dummy_password
           ota_password: dummy_ota_password
@@ -26,10 +26,12 @@ jobs:
           device_name: dummy_device_name
           friendly_name: dummy_friendly_name
           EOF
+          )
+          echo "$DUMMY_SECRETS" > esphome/secrets.yaml
 
       - name: Compile ESPHome configurations
         run: |
-          for config_file in esphome/*.yaml; do
-            echo "Compiling $config_file..."
-            esphome compile "$config_file"
-          done
+          echo "Compiling esphome/rat-trap-2025.yaml..."
+          esphome compile esphome/rat-trap-2025.yaml
+          echo "Compiling esphome/rat-trap-stemma-camera.yaml..."
+          esphome compile esphome/rat-trap-stemma-camera.yaml

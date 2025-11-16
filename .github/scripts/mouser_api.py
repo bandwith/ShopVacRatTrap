@@ -90,7 +90,11 @@ class MouserQuotaExceededError(MouserAPIError):
 
 class MouserPartNotFoundError(MouserAPIError):
     """Raised when part is not found"""
+    pass
 
+
+class MouserBOMValidationError(MouserAPIError):
+    """Raised when there's an error during BOM validation."""
     pass
 
 
@@ -382,6 +386,17 @@ class MouserAPIClient:
         return parsed_price_breaks
 
 
+class MouserBOMValidationError(MouserAPIError):
+    """Raised when there's an error during BOM validation."""
+    pass
+
+
+class MouserBOMColumns:
+    MANUFACTURER = "Manufacturer"
+    MANUFACTURER_PART_NUMBER = "Manufacturer Part Number"
+    QUANTITY = "Quantity"
+
+
 class MouserBOMValidator:
     """BOM validation using Mouser API"""
 
@@ -403,12 +418,15 @@ class MouserBOMValidator:
             elif bom_file.endswith(".xlsx"):
                 df = pd.read_excel(bom_file)
             else:
-                raise ValueError("Unsupported file format. Use CSV or Excel.")
+                raise MouserBOMValidationError("Unsupported file format. Use CSV or Excel.")
 
-            required_columns = ["Manufacturer", "Manufacturer Part Number"]
+            required_columns = [
+                MouserBOMColumns.MANUFACTURER,
+                MouserBOMColumns.MANUFACTURER_PART_NUMBER,
+            ]
             missing_columns = [col for col in required_columns if col not in df.columns]
             if missing_columns:
-                raise ValueError(f"Missing required columns: {missing_columns}")
+                raise MouserBOMValidationError(f"Missing required columns: {missing_columns}")
 
             # Validate each component
             validation_results = {
@@ -422,9 +440,9 @@ class MouserBOMValidator:
 
             for index, row in df.iterrows():
                 try:
-                    mpn = row["Manufacturer Part Number"]
-                    manufacturer = row["Manufacturer"]
-                    quantity = int(row.get(quantity_column, 1))
+                    mpn = row[MouserBOMColumns.MANUFACTURER_PART_NUMBER]
+                    manufacturer = row[MouserBOMColumns.MANUFACTURER]
+                    quantity = int(row.get(quantity_column, MouserBOMColumns.QUANTITY))
 
                     logger.info(f"🔍 Validating {mpn} ({manufacturer})...")
 
@@ -486,9 +504,6 @@ class MouserBOMValidator:
 
                     validation_results["components"].append(component_result)
 
-                    # Add delay between requests to be respectful
-                    time.sleep(0.1)
-
                 except Exception as e:
                     error_msg = f"Error validating row {index} ({mpn}): {e}"
                     logger.error(f"❌ {error_msg}")
@@ -506,9 +521,14 @@ class MouserBOMValidator:
 
             return validation_results
 
-        except Exception as e:
+        except (MouserBOMValidationError, MouserAPIError) as e:
             logger.error(f"❌ BOM validation failed: {e}")
-            return {"error": str(e)}
+            raise  # Re-raise the specific exception
+        except Exception as e:
+            logger.error(f"❌ An unexpected error occurred during BOM validation: {e}")
+            raise MouserBOMValidationError(
+                f"An unexpected error occurred during BOM validation: {e}"
+            ) from e
 
     def save_results(self, results: dict, output_file: str):
         """Save validation results to file"""
@@ -530,6 +550,75 @@ class MouserBOMValidator:
             json.dump(output_data, f, indent=2)
 
         logger.info(f"💾 Results saved to {output_file}")
+
+    def validate_single_component(
+        self, mpn: str, manufacturer: str, quantity: int
+    ) -> dict:
+        """Validates a single component against the Mouser API."""
+        component_result = {
+            "mpn": mpn,
+            "manufacturer": manufacturer,
+            "quantity": quantity,
+            "found": False,
+            "mouser_part": None,
+            "description": None,
+            "availability": None,
+            "pricing": None,
+            "datasheet": None,
+            "product_url": None,
+            "lead_time": None,
+            "lifecycle": None,
+            "rohs": None,
+            "error": None,
+        }
+
+        try:
+            parts = self.client.search_part_number(mpn, manufacturer)
+
+            if parts:
+                best_part = parts[0]
+                pricing = self.client.get_best_price(best_part, quantity)
+
+                component_result.update(
+                    {
+                        "found": True,
+                        "mouser_part": best_part.mouser_part_number,
+                        "description": best_part.description,
+                        "availability": best_part.availability,
+                        "pricing": pricing,
+                        "datasheet": best_part.data_sheet_url,
+                        "product_url": best_part.product_detail_url,
+                        "lead_time": best_part.lead_time,
+                        "lifecycle": best_part.lifecycle_status,
+                        "rohs": best_part.rohs_status,
+                    }
+                )
+            else:
+                # Try keyword search as fallback
+                keyword_parts = self.client.search_keyword(
+                    mpn, manufacturer, max_results=3
+                )
+                if keyword_parts:
+                    component_result["error"] = "Part not found by exact MPN, but keyword matches found."
+                    component_result["keyword_matches"] = len(keyword_parts)
+                    component_result["suggestions"] = [
+                        {
+                            "mpn": p.manufacturer_part_number,
+                            "manufacturer": p.manufacturer,
+                            "description": p.description,
+                            "mouser_part": p.mouser_part_number,
+                        }
+                        for p in keyword_parts[:3]
+                    ]
+                else:
+                    component_result["error"] = "Part not found."
+
+        except MouserAPIError as e:
+            component_result["error"] = str(e)
+        except Exception as e:
+            component_result["error"] = f"Unexpected error: {e}"
+
+        return component_result
 
 
 def main():
@@ -581,8 +670,11 @@ def main():
                 if results["errors"]:
                     print(f"   Errors: {len(results['errors'])}")
 
-    except Exception as e:
+    except (MouserBOMValidationError, MouserAPIError) as e:
         logger.error(f"❌ Validation failed: {e}")
+        return 1
+    except Exception as e:
+        logger.error(f"❌ An unexpected error occurred: {e}")
         return 1
 
     return 0

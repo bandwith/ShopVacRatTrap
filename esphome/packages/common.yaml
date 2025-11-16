@@ -15,6 +15,32 @@ substitutions:
   line_frequency: 60Hz
   max_current: 15A
   safety_standard: NEC/UL
+  esp32_temp_critical_threshold: 85.0
+  esp32_temp_warning_threshold: 75.0
+  emergency_sleep_duration: 300s
+  # Display coordinates
+  display_header_x: 0
+  display_header_y: 0
+  display_wifi_status_x: 105
+  display_wifi_status_no_net_x: 100
+  display_sensor_status_y: 12
+  display_apds_x: 0
+  display_apds_y: 26
+  display_tof_x: 40
+  display_tof_y: 26
+  display_pir_x: 70
+  display_pir_y: 26
+  display_system_status_y: 38
+  display_system_status_text_y: 40
+  display_stats_y: 54
+  display_stats_temp_x: 70
+  display_stats_temp_alert_x: 120
+  display_stats_temp_alert_y: 56
+  # Sensor thresholds
+  apds_proximity_threshold: 50
+  power_on_delay: 5
+  ms_conversion_factor: 1000
+  diagnostic_temp_threshold: 70.0
 
 logger:
   level: INFO

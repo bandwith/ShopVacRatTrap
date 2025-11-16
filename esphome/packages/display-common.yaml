@@ -1,0 +1,15 @@
+---
+# esphome/packages/display-common.yaml
+display:
+  - platform: ssd1306_i2c
+    model: SSD1306 128x64
+    address: 0x3C
+    update_interval: 1s
+
+font:
+  - file: gfonts://Roboto Mono
+    id: font_small
+    size: 8
+  - file: gfonts://Roboto Mono
+    id: font_medium
+    size: 12
