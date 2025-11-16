@@ -43,12 +43,6 @@ repos:
         language: system
         pass_filenames: false
         files: ^requirements\.in$
-      - id: uv-compile-dev
-        name: uv compile requirements-dev.txt
-        entry: uv pip compile requirements-dev.in -o requirements-dev.txt
-        language: system
-        pass_filenames: false
-        files: ^requirements-dev\.in$
 
   - repo: local
     hooks:

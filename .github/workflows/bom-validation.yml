@@ -41,7 +41,7 @@ jobs:
         # Use the development requirements so tests (pytest, etc.) are installed.
         uses: ./.github/actions/setup-python
         with:
-          requirements-file: requirements-dev.txt
+          requirements-file: requirements.txt
 
       - name: Run unit tests
         run: |

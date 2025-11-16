@@ -10,7 +10,7 @@ inputs:
   requirements-file:
     description: Path to the requirements file to install
     required: false
-    default: requirements-dev.txt
+    default: requirements.txt
 
 runs:
   using: composite

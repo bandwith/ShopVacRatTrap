@@ -9,3 +9,15 @@ xlrd>=2.0.1
 click>=8.1.0
 esphome==2025.10.4
 rich>=13.0.0
+
+# Development and testing tools
+detect-secrets>=1.5.0
+pre-commit>=3.0.0
+pip-tools>=6.0.0
+pytest>=8.0.0
+pytest-mock>=3.12.0
+flake8>=7.0.0
+yamllint>=1.32.0
+ruff>=0.12.9
+black
+isort

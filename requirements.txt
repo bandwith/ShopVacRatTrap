@@ -16,8 +16,12 @@ bitarray==3.8.0
     # via bitstring
 bitstring==4.3.1
     # via esptool
+black==25.11.0
+    # via -r requirements.in
 bottle==0.13.4
     # via platformio
+build==1.3.0
+    # via pip-tools
 cairocffi==1.7.1
     # via cairosvg
 cairosvg==2.8.2
@@ -28,6 +32,8 @@ cffi==2.0.0
     # via
     #   cairocffi
     #   cryptography
+cfgv==3.4.0
+    # via pre-commit
 chacha20poly1305-reuseable==0.13.2
     # via aioesphomeapi
 charset-normalizer==3.4.4
@@ -35,8 +41,10 @@ charset-normalizer==3.4.4
 click==8.1.7
     # via
     #   -r requirements.in
+    #   black
     #   esphome
     #   esptool
+    #   pip-tools
     #   platformio
     #   rich-click
     #   uvicorn
@@ -55,6 +63,10 @@ cssselect2==0.8.0
     # via cairosvg
 defusedxml==0.7.1
     # via cairosvg
+detect-secrets==1.5.0
+    # via -r requirements.in
+distlib==0.4.0
+    # via virtualenv
 esphome==2025.10.4
     # via -r requirements.in
 esphome-dashboard==20251013.0
@@ -65,6 +77,10 @@ esptool==5.1.0
     # via esphome
 et-xmlfile==2.0.0
     # via openpyxl
+filelock==3.20.0
+    # via virtualenv
+flake8==7.3.0
+    # via -r requirements.in
 freetype-py==2.5.1
     # via esphome
 h11==0.16.0
@@ -73,14 +89,20 @@ h11==0.16.0
     #   wsproto
 icmplib==3.0.4
     # via esphome
+identify==2.6.15
+    # via pre-commit
 idna==3.11
     # via
     #   anyio
     #   requests
 ifaddr==0.2.0
     # via zeroconf
+iniconfig==2.3.0
+    # via pytest
 intelhex==2.3.0
     # via esptool
+isort==7.0.0
+    # via -r requirements.in
 jinja2==3.1.6
     # via esphome
 kconfiglib==13.7.1
@@ -91,8 +113,14 @@ markupsafe==3.0.3
     # via jinja2
 marshmallow==3.26.1
     # via platformio
+mccabe==0.7.0
+    # via flake8
 mdurl==0.1.2
     # via markdown-it-py
+mypy-extensions==1.1.0
+    # via black
+nodeenv==1.9.1
+    # via pre-commit
 noiseprotocol==0.3.1
     # via aioesphomeapi
 numpy==2.3.4
@@ -100,49 +128,91 @@ numpy==2.3.4
 openpyxl==3.1.5
     # via -r requirements.in
 packaging==25.0
-    # via marshmallow
+    # via
+    #   black
+    #   build
+    #   marshmallow
+    #   pytest
 paho-mqtt==1.6.1
     # via esphome
 pandas==2.3.3
     # via -r requirements.in
+pathspec==0.12.1
+    # via
+    #   black
+    #   yamllint
 pillow==10.4.0
     # via
     #   cairosvg
     #   esphome
+pip==25.3
+    # via pip-tools
+pip-tools==7.5.2
+    # via -r requirements.in
+platformdirs==4.5.0
+    # via
+    #   black
+    #   virtualenv
 platformio==6.1.18
     # via esphome
+pluggy==1.6.0
+    # via pytest
+pre-commit==4.4.0
+    # via -r requirements.in
 protobuf==6.33.1
     # via aioesphomeapi
 puremagic==1.30
     # via esphome
+pycodestyle==2.14.0
+    # via flake8
 pycparser==2.23
     # via cffi
 pyelftools==0.32
     # via platformio
+pyflakes==3.4.0
+    # via flake8
 pygments==2.19.2
-    # via rich
+    # via
+    #   pytest
+    #   rich
 pyparsing==3.2.5
     # via esphome
+pyproject-hooks==1.2.0
+    # via
+    #   build
+    #   pip-tools
 pyserial==3.5
     # via
     #   esphome
     #   esptool
     #   platformio
+pytest==9.0.1
+    # via
+    #   -r requirements.in
+    #   pytest-mock
+pytest-mock==3.15.1
+    # via -r requirements.in
 python-dateutil==2.9.0.post0
     # via pandas
 python-dotenv==1.2.1
     # via -r requirements.in
+pytokens==0.3.0
+    # via black
 pytz==2025.2
     # via pandas
 pyyaml==6.0.3
     # via
+    #   detect-secrets
     #   esphome
     #   esptool
+    #   pre-commit
+    #   yamllint
 reedsolo==1.7.0
     # via esptool
 requests==2.32.5
     # via
     #   -r requirements.in
+    #   detect-secrets
     #   platformio
 rich==14.2.0
     # via
@@ -154,8 +224,12 @@ ruamel-yaml==0.18.15
     # via esphome
 ruamel-yaml-clib==0.2.12
     # via esphome
+ruff==0.14.5
+    # via -r requirements.in
 semantic-version==2.10.0
     # via platformio
+setuptools==80.9.0
+    # via pip-tools
 six==1.17.0
     # via python-dateutil
 sniffio==1.3.1
@@ -182,15 +256,21 @@ urllib3==2.5.0
     # via requests
 uvicorn==0.34.3
     # via platformio
+virtualenv==20.35.4
+    # via pre-commit
 voluptuous==0.15.2
     # via esphome
 webencodings==0.5.1
     # via
     #   cssselect2
     #   tinycss2
+wheel==0.45.1
+    # via pip-tools
 wsproto==1.3.1
     # via platformio
 xlrd==2.0.2
+    # via -r requirements.in
+yamllint==1.37.1
     # via -r requirements.in
 zeroconf==0.148.0
     # via

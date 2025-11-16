@@ -72,7 +72,7 @@ The project enforces code quality and formatting using pre-commit hooks:
 *   The `detect-secrets` pre-commit hook is used to prevent sensitive information from being committed to the repository.
 
 ## Dependency Management:
-*   `uv compile` pre-commit hooks are used to manage and synchronize `requirements.txt` and `requirements-dev.txt` with their respective `.in` files.
+*   `uv compile` pre-commit hooks are used to manage and synchronize `requirements.txt` with `requirements.in`.
 
 ## Automated Processes:
 *   **GitHub Actions:** Extensive use of GitHub Actions for:
