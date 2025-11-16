@@ -47,10 +47,7 @@
       "ignoreUnstable": false,
       "enabled": false,
       "postUpgradeTasks": {
-        "commands": [
-          "# Requirements are manually frozen due to ESPHome metadata conflicts",
-          "# Update process: test each package individually, then freeze with uv pip freeze"
-        ],
+        "commands": [],
         "fileFilters": ["requirements.in", "requirements.txt"]
       }
     }
