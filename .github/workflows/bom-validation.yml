@@ -37,10 +37,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Python Environment
+      - name: Setup Python Environment (dev dependencies for tests)
+        # Use the development requirements so tests (pytest, etc.) are installed.
         uses: ./.github/actions/setup-python
         with:
-          requirements-file: requirements.txt
+          requirements-file: requirements-dev.txt
 
       - name: Run unit tests
         run: |
