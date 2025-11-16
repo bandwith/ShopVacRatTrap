@@ -6,19 +6,17 @@
   "schedule": ["before 4am on Monday"],
   "pinDigests": false,
   "osvVulnerabilityAlerts": true,
-  "vulnerabilityAlerts": { "enabled": true },
-  "transitiveRemediation": true,
-
+  "vulnerabilityAlerts": {
+    "enabled": true
+  },
   "lockFileMaintenance": {
     "enabled": true,
     "schedule": ["before 4am on Monday"]
   },
-
   "prHourlyLimit": 2,
   "prConcurrentLimit": 10,
   "branchPrefix": "renovate/",
-  "description": "Simplified Renovate config with uv and SemVer enforcement",
-
+  "description": "Renovate config for ShopVacRatTrap with frozen requirements",
   "packageRules": [
     {
       "description": "Prioritize security updates - no approval needed",
@@ -44,27 +42,17 @@
       "minimumReleaseAge": "1 day"
     },
     {
-      "description": "Python requirements via uv with stable and pre-release conflict checks",
+      "description": "Python requirements - manual update workflow (frozen lockfile)",
       "matchManagers": ["pip_requirements"],
       "ignoreUnstable": false,
+      "enabled": false,
       "postUpgradeTasks": {
         "commands": [
-          "uv pip compile -o requirements.txt requirements.in",
-          "uv pip compile --pre -o requirements-pre.txt requirements.in",
-          "uv pip install -r requirements.txt",
-          "uv pip check"
+          "# Requirements are manually frozen due to ESPHome metadata conflicts",
+          "# Update process: test each package individually, then freeze with uv pip freeze"
         ],
-        "fileFilters": [
-          "requirements.in",
-          "requirements.txt",
-          "requirements-pre.txt"
-        ]
+        "fileFilters": ["requirements.in", "requirements.txt"]
       }
-    },
-    {
-      "description": "Block starlette updates due to known ESPHome/PlatformIO compatibility issues",
-      "matchPackageNames": ["starlette"],
-      "enabled": false
     }
   ]
 }
