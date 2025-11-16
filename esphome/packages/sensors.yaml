@@ -69,7 +69,7 @@ sensor:
   # System monitoring sensors
   - platform: wifi_signal
     name: ${friendly_name} WiFi Signal Strength
-    id: wifi_signal
+    id: wifi_signal_sensor
     update_interval: 60s
 
   - platform: uptime

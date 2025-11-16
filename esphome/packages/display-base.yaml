@@ -1,62 +1,61 @@
 ---
-# esphome/packages/display.yaml
-# Include common display settings
-!include display-common.yaml
+# esphome/packages/display-base.yaml
 
-esphome:
-  includes:
-    - display_helpers.h
+font:
+  - file: gfonts://Roboto Mono
+    id: font_small
+    size: 8
+  - file: gfonts://Roboto Mono
+    id: font_medium
+    size: 12
 
-globals:
-  - id: display_buffer_ptr
-    type: esphome::display::DisplayBuffer *
-    set_to_value: id(main_display)
-  - id: wifi_component_ptr
-    type: esphome::wifi::WiFiComponent *
-    set_to_value: id(wifi_component)
-  - id: trap_triggered_ptr
-    type: esphome::binary_sensor::BinarySensor *
-    set_to_value: id(trap_triggered)
-  - id: emergency_stop_ptr
-    type: esphome::binary_sensor::BinarySensor *
-    set_to_value: id(emergency_stop)
-  - id: system_armed_ptr
-    type: esphome::binary_sensor::BinarySensor *
-    set_to_value: id(system_armed)
-  - id: capture_count_ptr
-    type: esphome::number::Number *
-    set_to_value: id(capture_count)
-
-  - id: main_display
+display:
+  - platform: ssd1306_i2c
+    model: SSD1306 128x64
+    address: 0x3C
+    update_interval: 1s
+    id: main_display
     pages:
       - id: main_page
         lambda: |-
-          using namespace esphome::display;
           // Header
-          draw_common_header(it, id(display_header_x), id(display_header_y), id(font_small),
-                             "Rat Trap", "${line_voltage}", "${safety_standard}");
+          it.printf(0, 0, id(font_small), "Trap ${line_voltage} ${safety_standard}");
 
           // WiFi Status
-          draw_wifi_status(it, id(display_wifi_status_x), id(display_wifi_status_no_net_x), id(display_header_y), id(font_small));
+          if (id(wifi_component).is_connected()) {
+            it.printf(105, 0, id(font_small), "WiFi");
+          } else {
+            it.printf(100, 0, id(font_small), "No Net");
+          }
 
           // Sensor Status
-          it.printf(id(display_apds_x), id(display_sensor_status_y), id(font_medium), "Hybrid Detection:");
-          it.printf(id(display_apds_x), id(display_apds_y), id(font_small), "APDS");
-          it.printf(30, id(display_apds_y), id(font_small), "%s",
-                    (id(apds_proximity).state > id(apds_proximity_threshold) ? "✓" : "○"));
-          it.printf(id(display_tof_x), id(display_tof_y), id(font_small), "ToF");
-          it.printf(70, id(display_tof_y), id(font_small), "%s",
+          it.printf(0, 12, id(font_medium), "Hybrid Detection:");
+          it.printf(0, 26, id(font_small), "APDS");
+          it.printf(30, 26, id(font_small), "%s",
+                    (id(apds_proximity).state > ${apds_proximity_threshold} ? "✓" : "○"));
+          it.printf(40, 26, id(font_small), "ToF");
+          it.printf(70, 26, id(font_small), "%s",
                     (id(tof_distance).state < id(detection_threshold).state ? "✓" : "○"));
-          it.printf(id(display_pir_x), id(display_pir_y), id(font_small),
+          it.printf(70, 26, id(font_small),
                     "%s PIR", (id(pir_motion).state ? "✓" : "○"));
 
           // System Status
-          draw_master_trigger_status(it, id(display_apds_x), id(display_system_status_y), id(font_small), COLOR_ON, COLOR_OFF);
+          if (id(emergency_stop).state) {
+            it.filled_rectangle(0, 38, 128, 12, COLOR_ON);
+            it.print(2, 40, id(font_small), COLOR_OFF, ">> EMERGENCY STOP <<");
+          } else if (id(trap_triggered).state) {
+            it.filled_rectangle(0, 38, 128, 12, COLOR_ON);
+            it.print(2, 40, id(font_small), COLOR_OFF, ">> VACUUM ACTIVE <<");
+          } else if (id(system_armed).state) {
+            it.print(0, 40, id(font_small), "Armed & Monitoring");
+            it.print(120, 40, id(font_small), "●");
+          } else {
+            it.print(0, 40, id(font_small), "System Disarmed");
+          }
 
           // Stats
-          draw_capture_count(it, id(display_apds_x), id(display_stats_y), id(font_small));
-          it.printf(id(display_stats_temp_x), id(display_stats_y), id(font_small),
-                    "Temp: %.1f°C", id(esp32_temp).state);
-          if (id(esp32_temp).has_state() && id(esp32_temp).state > id(esp32_temp_warning_threshold)) {
-            it.print(id(display_stats_temp_alert_x), id(display_stats_temp_alert_y), id(font_small), "!");
+          it.printf(0, 54, id(font_small), "Captures: %.0f", id(capture_count).state);
+          it.printf(70, 54, id(font_small), "Temp: %.1f°C", id(esp32_temp).state);
+          if (id(esp32_temp).has_state() && id(esp32_temp).state > ${esp32_temp_warning_threshold}) {
+            it.print(120, 56, id(font_small), "!");
           }

@@ -12,9 +12,10 @@ __pycache__/
 venv/
 .venv/
 
-# ESPHome secrets
+# ESPHome secrets and build artifacts
 secrets.yaml
 esphome/secrets.yaml
+esphome/.esphome/
 
 # IDE files
 .vscode/
@@ -34,6 +35,8 @@ Thumbs.db
 *.log
 *.tmp
 *.temp
+*.backup
+*.new
 
 # 3D printing files
 *.gcode

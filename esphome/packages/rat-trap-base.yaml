@@ -9,17 +9,20 @@ i2c:
     scan: true
     frequency: 100kHz
 
+apds9960:
+  address: 0x39
+  update_interval: 100ms
+
 sensor:
   - platform: apds9960
-    address: 0x39
-    update_interval: 100ms
-    proximity:
-      name: ${friendly_name} APDS9960 Proximity
-      id: apds_proximity
-      filters:
-        - sliding_window_moving_average:
-            window_size: 5
-            send_every: 3
+    type: PROXIMITY
+    name: ${friendly_name} APDS9960 Proximity
+    id: apds_proximity
+    filters:
+      - sliding_window_moving_average:
+          window_size: 5
+          send_every: 3
+
   - platform: vl53l0x
     name: ${friendly_name} ToF Distance
     id: tof_distance
@@ -66,14 +69,15 @@ binary_sensor:
     lambda: |-
       return id(pir_motion).state;
 
-  - platform: group
+  - platform: template
     name: ${friendly_name} Rodent Detection Group
     id: rodent_detection_group
-    sensors:
-      - apds_detection
-      - tof_detection
-      - pir_detection
-    type: count
+    lambda: |-
+      int active_sensors = 0;
+      if (id(apds_detection).state) active_sensors++;
+      if (id(tof_detection).state) active_sensors++;
+      if (id(pir_detection).state) active_sensors++;
+      return active_sensors >= 2;
     on_state:
       - if:
           condition:
@@ -137,18 +141,6 @@ switch:
             - script.execute: activate_trap_sequence
           else:
             - logger.log: Manual trigger ignored - system disabled or emergency stop active
-  - platform: template
-    name: ${friendly_name} System Armed
-    id: system_armed_switch
-    icon: mdi:shield-check
-    optimistic: true
-    restore_value: true
-    turn_on_action:
-      - logger.log: System armed - hybrid detection active
-      - input_boolean.turn_on: system_armed
-    turn_off_action:
-      - logger.log: System disarmed - detection disabled
-      - input_boolean.turn_off: system_armed
 
 script:
   - id: activate_trap_sequence
@@ -157,7 +149,7 @@ script:
       - if:
           condition:
             and:
-              - input_boolean.is_on: system_armed
+              - switch.is_on: system_armed
               - binary_sensor.is_off: emergency_stop
               - binary_sensor.is_off: trap_triggered
           then:
@@ -172,7 +164,10 @@ script:
             - lambda: id(last_trigger_time) = millis();
             - delay: !lambda 'return id(vacuum_runtime).state * id(ms_conversion_factor);'
             - switch.turn_off: vacuum_relay
-            - counter.increment: capture_count
+            - lambda: |-
+                auto call = id(capture_count).make_call();
+                call.set_value(id(capture_count).state + 1);
+                call.perform();
             - lambda: |-
                 float runtime_minutes = id(vacuum_runtime).state / 60.0;
                 id(total_vacuum_runtime) += runtime_minutes;
@@ -218,7 +213,7 @@ button:
             system_ok = false;
             diagnostic_results += "BME280 environmental sensor not responding. ";
           }
-          if (id(esp32_temp).state > id(diagnostic_temp_threshold)) {
+          if (id(esp32_temp).state > ${diagnostic_temp_threshold}) {
             system_ok = false;
             diagnostic_results += "Temperature high: " + to_string(id(esp32_temp).state) + "C. ";
           }
@@ -243,14 +238,23 @@ globals:
     type: float
     restore_value: yes
     initial_value: '0'
-counter:
+  - id: ms_conversion_factor
+    type: int
+    restore_value: no
+    initial_value: '1000'
+
+number:
   - platform: template
     name: ${friendly_name} Capture Count
     id: capture_count
+    min_value: 0
+    max_value: 10000
+    step: 1
+    mode: box
+    optimistic: true
     restore_value: yes
     initial_value: 0
 
-number:
   - platform: template
     name: ${friendly_name} Detection Threshold (mm)
     id: detection_threshold
@@ -276,6 +280,49 @@ number:
     max_value: 300
     step: 5
     initial_value: 30
+    restore_value: true
+    optimistic: true
+
+  - platform: template
+    name: ${friendly_name} APDS Proximity Threshold
+    id: apds_proximity_threshold
+    min_value: 10
+    max_value: 255
+    step: 5
+    initial_value: 50
+    restore_value: true
+    optimistic: true
+
+  - platform: template
+    name: ${friendly_name} ESP32 Critical Temperature
+    id: esp32_temp_critical_threshold
+    min_value: 70
+    max_value: 95
+    step: 1
+    initial_value: 85
+    unit_of_measurement: °C
+    restore_value: true
+    optimistic: true
+
+  - platform: template
+    name: ${friendly_name} ESP32 Warning Temperature
+    id: esp32_temp_warning_threshold
+    min_value: 60
+    max_value: 85
+    step: 1
+    initial_value: 75
+    unit_of_measurement: °C
+    restore_value: true
+    optimistic: true
+
+  - platform: template
+    name: ${friendly_name} IR LED Brightness
+    id: ir_brightness_number
+    min_value: 0
+    max_value: 100
+    step: 10
+    initial_value: 80
+    unit_of_measurement: "%"
     restore_value: true
     optimistic: true
 

@@ -1,10 +1,11 @@
 ---
 # esphome/packages/safety.yaml
-input_boolean:
-  - id: system_armed
+switch:
+  - platform: template
+    id: system_armed
     name: ${friendly_name} System Armed
-    initial_value: on
-    restore_value: no
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_ON
 
 binary_sensor:
   # Emergency stop switch (GPIO18 - Safety critical)
@@ -32,7 +33,7 @@ script:
       - binary_sensor.template.publish:
           id: trap_triggered
           state: off
-      - input_boolean.turn_off: system_armed
+      - switch.turn_off: system_armed
 
   # Thermal shutdown script
   - id: thermal_shutdown
