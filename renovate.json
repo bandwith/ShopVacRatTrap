@@ -22,7 +22,7 @@
   "branchPrefix": "renovate/",
   "description": "Simplified Renovate config with uv and SemVer enforcement",
 
-  "allowedPostUpgradeCommands": [
+  "allowedCommands": [
     "^uv( |$)pip compile.*$",
     "^uv( |$)pip install.*$",
     "^uv( |$)pip check$"
@@ -36,7 +36,7 @@
       "matchDatasources": ["pypi", "npm", "github-releases", "github-tags"],
       "labels": ["security", "dependencies"],
       "automerge": true,
-      "stabilityDays": 0,
+      "minimumReleaseAge": "0 days",
       "prPriority": 10
     },
     {
@@ -52,14 +52,13 @@
       "matchManagers": ["github-actions"],
       "versioning": "semver",
       "rangeStrategy": "replace",
-      "pinVersions": true,
       "pinDigests": false
     },
     {
       "description": "Automerge minor and patch updates after a short delay",
       "matchUpdateTypes": ["minor", "patch"],
       "automerge": true,
-      "stabilityDays": 1
+      "minimumReleaseAge": "1 day"
     },
     {
       "description": "Python requirements via uv with stable and pre-release conflict checks",
