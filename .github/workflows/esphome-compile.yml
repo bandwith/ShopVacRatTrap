@@ -22,7 +22,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v5.0.0
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
       - name: Create dummy secrets.yaml (base64 encoded)
         run: |
@@ -46,13 +46,13 @@ jobs:
           echo "friendly_name: dummy_friendly_name" >> esphome/secrets.yaml
 
       - name: Build ESPHome firmware
-        uses: esphome/build-action@v7.1.0
+        uses: esphome/build-action@f93bda46d83c761cd25bbfdf350cfe508a0a39d5 # v7.1.0
         id: esphome-build
         with:
           yaml-file: ${{ matrix.yaml-file }}
 
       - name: Upload firmware artifacts
-        uses: actions/upload-artifact@v5.0.0
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
         if: always()
         with:
           name: firmware-${{ matrix.yaml-file }}
@@ -73,7 +73,7 @@ jobs:
 
     steps:
       - name: Download all firmware artifacts
-        uses: actions/download-artifact@v6.0.0
+        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6.0.0
         with:
           path: firmware-artifacts
           pattern: firmware-*
@@ -86,7 +86,7 @@ jobs:
           cd ..
 
       - name: Upload firmware to release
-        uses: softprops/action-gh-release@v2.4.2
+        uses: softprops/action-gh-release@5be0e66d93ac7ed76da52eca8bb058f665c3a5fe # v2.4.2
         with:
           files: rat-trap-firmware-${{ github.ref_name }}.zip
           fail_on_unmatched_files: true
