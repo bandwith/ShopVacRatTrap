@@ -351,10 +351,10 @@ nano secrets_local.yaml
 
 Update the following in `secrets_local.yaml`:
 ```yaml
-wifi_ssid: "YourActualNetworkName"
-wifi_password: "YourActualPassword"
-ota_password: "YourSecureOTAPassword"
-api_encryption_key: "GenerateNewKey32Characters"
+wifi_ssid_base64: "$(echo -n 'YourActualNetworkName' | base64)"
+wifi_password_base64: "$(echo -n 'YourActualPassword' | base64)"
+ota_password_base64: "$(echo -n 'YourSecureOTAPassword' | base64)"
+api_encryption_key_base64: "$(openssl rand -base64 32)"  # 32 bytes recommended (base64-encoded)
 ```
 
 #### **3.3 Generate Security Keys**
@@ -362,7 +362,7 @@ api_encryption_key: "GenerateNewKey32Characters"
 # Generate OTA password
 openssl rand -base64 16
 
-# Generate API encryption key
+# Generate API encryption key (base64)
 openssl rand -base64 32
 
 # Update secrets_local.yaml with generated keys

@@ -26,19 +26,26 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-esphome-
 
-      - name: Create dummy secrets.yaml
+      - name: Create dummy secrets.yaml (base64 encoded)
         run: |
-          DUMMY_SECRETS=$(cat <<EOF
-          wifi_ssid: dummy_ssid
-          wifi_password: dummy_password
-          ota_password: dummy_ota_password
-          api_encryption_key: dummy_api_encryption_key
-          ap_password: dummy_ap_password
-          device_name: dummy_device_name
-          friendly_name: dummy_friendly_name
-          EOF
-          )
-          echo "$DUMMY_SECRETS" > esphome/secrets.yaml
+          # Create base64-encoded dummy secrets used by esphome packages that expect <name>_base64
+          WIFI_SSID_BASE64=$(echo -n "dummy_ssid" | base64)
+          WIFI_PASSWORD_BASE64=$(echo -n "dummy_password" | base64)
+          OTA_PASSWORD_BASE64=$(echo -n "dummy_ota_password" | base64)
+          API_ENCRYPTION_KEY_BASE64=$(echo -n "dummy_api_encryption_key" | base64)
+          AP_PASSWORD_BASE64=$(echo -n "dummy_ap_password" | base64)
+
+          # Write base64-encoded dummy secrets into file
+          echo "# Dummy secrets for CI — base64 encoded so files that expect <name>_base64 work" > esphome/secrets.yaml
+          echo "wifi_ssid_base64: $WIFI_SSID_BASE64" >> esphome/secrets.yaml
+          echo "wifi_password_base64: $WIFI_PASSWORD_BASE64" >> esphome/secrets.yaml
+          echo "ota_password_base64: $OTA_PASSWORD_BASE64" >> esphome/secrets.yaml
+          echo "api_encryption_key_base64: $API_ENCRYPTION_KEY_BASE64" >> esphome/secrets.yaml
+          echo "ap_password_base64: $AP_PASSWORD_BASE64" >> esphome/secrets.yaml
+          echo "" >> esphome/secrets.yaml
+          echo "# Non-sensitive device names remain in plain text" >> esphome/secrets.yaml
+          echo "device_name: dummy_device_name" >> esphome/secrets.yaml
+          echo "friendly_name: dummy_friendly_name" >> esphome/secrets.yaml
 
       - name: Compile ESPHome configurations
         run: |
