@@ -1,3 +1,7 @@
+> **⚠️ Work in Progress ⚠️**
+>
+> This project is under active development. The documentation, features, and hardware recommendations are subject to change. Please check back for updates.
+
 # GitHub Scripts for ShopVac Rat Trap
 
 This directory contains automation scripts for the ShopVac Rat Trap project.

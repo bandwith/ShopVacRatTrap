@@ -1,3 +1,7 @@
+> **⚠️ Work in Progress ⚠️**
+>
+> This project is under active development. The documentation, features, and hardware recommendations are subject to change. Please check back for updates.
+
 # 3D Models
 
 This directory contains all the 3D models for the ShopVac Rat Trap 2025.

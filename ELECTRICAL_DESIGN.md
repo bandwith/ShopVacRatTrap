@@ -1,10 +1,14 @@
-# ShopVac Rat Trap 2025 - Electrical Design & BOM
+> **⚠️ Work in Progress ⚠️**
+>
+> This project is under active development. The documentation, features, and hardware recommendations are subject to change. Please check back for updates.
 
-## Design Overview
+# ShopVac Rat Trap 2025 - Electrical Design, Wiring, and Safety
+
+## 1. Design Overview
 
 This document outlines the electrical design for the 2025 optimized ShopVac Rat Trap, focusing on enhanced safety, cost reduction, and simplified assembly while maintaining professional-grade performance and international compliance.
 
-### Core Design Philosophy
+### 1.1. Core Design Philosophy
 
 1. **Safety First**: Adherence to NEC/UL (North America) and IEC/CE (Europe) electrical safety standards
 2. **Simplified Assembly**: No-solder design using modular STEMMA QT connectors
@@ -12,7 +16,7 @@ This document outlines the electrical design for the 2025 optimized ShopVac Rat 
 4. **IoT Integration**: Seamless ESPHome and Home Assistant compatibility
 5. **Global Compatibility**: Support for both 120V AC and 230V AC systems
 
-### Key Design Decisions
+### 1.2. Key Design Decisions
 
 #### Single Power Supply Architecture
 The design uses a single power supply with ESP32-S3's built-in regulation:
@@ -31,13 +35,13 @@ All sensors use standardized JST SH 4-pin connectors for assembly without solder
 #### Electronics Enclosure
 For maximum safety and code compliance, all electronic components (both high and low voltage) should be housed in a single, commercially available, UL-listed (or equivalent) enclosure. The recommended enclosure for this project is the **Hammond PN-1334-C (8"x6"x4" ABS)**, which is already included in the BOM. This enclosure provides ample space for all components and ensures proper separation between high and low voltage circuits.
 
-## Bill of Materials (BOM)
+## 2. Bill of Materials (BOM)
 
 **Total Project Cost: $146.10**
 
 > **Note**: Complete vendor information and direct purchase links are available in [BOM_CONSOLIDATED.csv](BOM_CONSOLIDATED.csv).
 
-### Core Electronics
+### 2.1. Core Electronics
 
 | Qty | Component | Part Number | Description | Vendor | Price |
 |-----|-----------|-------------|-------------|--------|-------|
@@ -49,7 +53,7 @@ For maximum safety and code compliance, all electronic components (both high and
 | 1 | Solid State Relay | COM-13015 | 40A chassis mount SSR | SparkFun | $24.95 |
 | 1 | Optocoupler 4N35 | 2515 | Isolation for SSR control | Adafruit | $4.95 |
 
-### Power & Safety Components
+### 2.2. Power & Safety Components
 
 | Qty | Component | Part Number | Description | Vendor | Price |
 |-----|-----------|-------------|-------------|--------|-------|
@@ -63,7 +67,7 @@ For maximum safety and code compliance, all electronic components (both high and
 | 1 | Large Arcade Button | 368 | Large Arcade Button | Adafruit | $4.95 |
 | 1 | Thermal Pad | HSP-7 | Thermal Pad for Single Phase Panel Mount SSRs | Mouser | $1.38 |
 
-### Cables & Hardware
+### 2.3. Cables & Hardware
 
 | Qty | Component | Part Number | Description | Vendor | Price |
 |-----|-----------|-------------|-------------|--------|-------|
@@ -72,31 +76,84 @@ For maximum safety and code compliance, all electronic components (both high and
 | 2 | STEMMA QT Cable 100mm | 4397 | Hub to BME280 + ESP32 to OLED | Adafruit | $1.90 |
 | 1 | Wire Kit | 3258/3259 | Red/Black 26AWG silicone wire | Adafruit | $5.90 |
 
-**Cable Configuration - Inlet Hub Optimized:**
-- **ESP32 to Inlet Hub**: 1x 500mm cable (single main run)
-- **Inlet Area Sensors**: 2x short cables (50mm, 100mm)
-- **Control Box OLED**: 1x 100mm cable (direct connection)
-- **Major Benefit**: Only 1 cable run between control box and inlet vs. 3+ separate runs
+## 3. Circuit Design & Connections
 
-### Regional Variants
+### 3.1. System Architecture
 
-To ensure global compatibility, the design utilizes a universal IEC C13 outlet for connecting the shop vacuum. Users will need to source an appropriate IEC to regional plug adapter cable for their specific location.
+**Standard Configuration:**
+```
+[120V AC Input] → [IEC Inlet + Switch] → [Mean Well PSU] → [ESP32-S3]
+                                              ↓                ↓
+[Shop Vacuum] ← [SSR Output] ← [SSR Control] ← [GPIO5] ← [3.3V Regulation]
+                                                        ↓
+[STEMMA QT Bus] ← [I2C Sensors: APDS9960 + VL53L0X + BME280 + OLED]
+```
 
-#### Universal IEC C13 Outlet
-- **Outlet**: IEC C13 (universal)
-- **Adapter Cable**: User-supplied IEC C13 to regional plug (e.g., NEMA 5-15P for North America, CEE 7/7 Schuko for Europe)
+**STEMMA QT Camera Enhanced Configuration:**
+```
+[120V AC Input] → [IEC Inlet + Switch] → [Mean Well PSU] → [ESP32-S3 Feather]
+                                              ↓                ↓
+[Shop Vacuum] ← [SSR Output] ← [SSR Control] ← [GPIO5] ← [3.3V Built-in Regulator]
+                                                         ↓
+[STEMMA QT Bus] ← [I2C: APDS9960 + VL53L0X + BME280 + OLED] → [Hybrid Detection]
+                                                         ↓
+[Evidence Storage] ← [Image Capture] ← [OV5640 STEMMA Camera] ← [Auto Trigger]
+                                                         ↓
+[High-Power IR] ← [STEMMA JST PH] ← [GPIO6] ← [Night Vision Control]
+```
 
-#### 🇺🇸 North America (120V AC, 60Hz)
-- Wire Colors: Black=Hot, White=Neutral, Green=Ground
-- Protection: 15A circuit breaker
-- Adapter Cable: IEC C13 to NEMA 5-15P
+### 3.2. GPIO Pin Assignments
 
-#### 🇪🇺 Europe (230V AC, 50Hz)
-- Wire Colors: Brown=Line, Blue=Neutral, Green/Yellow=Earth
-- Protection: 10A MCB + 30mA RCD
-- Adapter Cable: IEC C13 to CEE 7/7 (Schuko)
+**Critical Safety Rule**: GPIO5 is reserved ONLY for SSR control - never use for other purposes.
 
-### Power Budget Analysis - HYBRID DETECTION SYSTEM
+**Standard ESP32-S3 Feather Configuration:**
+| GPIO | Function | Connection | Safety Level |
+|------|----------|------------|--------------|
+| GPIO5 | SSR Control | 4N35 Optocoupler → SSR | SAFETY CRITICAL |
+| GPIO18 | Emergency Stop | Arcade Button (Active Low) | SAFETY CRITICAL |
+| GPIO3 | I2C SDA | STEMMA QT Bus (Primary) | Standard |
+| GPIO4 | I2C SCL | STEMMA QT Bus (Primary) | Standard |
+| GPIO10 | Reset Button | Reset/Test Button | Standard |
+| GPIO13 | PIR Motion | PIR Sensor Input | Standard |
+
+**STEMMA QT Camera Enhanced Configuration:**
+| GPIO | Function | Connection | Safety Level |
+|------|----------|------------|--------------|
+| GPIO5 | SSR Control | 4N35 Optocoupler → SSR | SAFETY CRITICAL |
+| GPIO18 | Emergency Stop | Arcade Button (Active Low) | SAFETY CRITICAL |
+| GPIO3 | I2C SDA | STEMMA QT Bus (Sensors) | Standard |
+| GPIO4 | I2C SCL | STEMMA QT Bus (Sensors) | Standard |
+| GPIO8 | I2C SDA | OV5640 Camera (Secondary Bus) | Standard |
+| GPIO9 | I2C SCL | OV5640 Camera (Secondary Bus) | Standard |
+| GPIO6 | IR LED Control | High-Power IR STEMMA Module | Standard |
+| GPIO10 | Reset Button | Reset/Test Button | Standard |
+| GPIO13 | PIR Motion | PIR Sensor Input | Standard |
+
+### 3.3. Power Distribution
+
+#### AC Side (120V/230V)
+```
+IEC Inlet with Integrated CB & Switch (DF11.2078.0010.01)
+├─ Line → Mean Well PSU (AC Input) + SSR Common + Current Transformer
+├─ Neutral → Mean Well PSU (AC Input) + IEC C13 Outlet Neutral
+└─ Ground → IEC C13 Outlet Ground + Enclosure Ground
+
+SSR Output → IEC C13 Outlet Line (Hot)
+```
+
+#### DC Side (5V/3.3V)
+```
+Mean Well LRS-35-5 (5V/7A)
+├─ +5V → ESP32-S3 VIN
+│        └─ Built-in 3.3V Regulator (600mA)
+│            ├─ VL53L0X (15mA)
+│            ├─ OLED Display (15mA)
+│            ├─ BME280 (3.6mA)
+│            └─ 501mA Available
+└─ GND → Common Ground
+```
+
+### 3.4. Power Budget Analysis
 
 **STANDARD CONFIGURATION (APDS9960 + VL53L0X + PIR + BME280):**
 ```
@@ -130,195 +187,193 @@ Safety Margin:         169mA available (28% headroom)
 Power Compliance:      ✅ APPROVED - Within ESP32-S3 limits
 ```
 
-**⚠️ CRITICAL POWER MANAGEMENT NOTES:**
-- Camera configuration operates near ESP32 limits during capture
-- IR LED MUST be pulsed only - never continuous operation
-- Thermal monitoring mandatory - ESP32 temperature <85°C
-- Intelligent power sequencing prevents overload conditions
+## 4. Wiring Diagrams & Cable Management
 
-**Key Advantages of STEMMA QT Upgrade:**
-- ✅ Higher resolution: 5MP OV5640 vs 2MP OV2640
-- ✅ Enhanced IR range: 10+ meters vs 3-5 meters
-- ✅ No-solder assembly: Complete STEMMA ecosystem
-- ✅ Better power management: Optimized current draw
-- ✅ Modular design: Easy component replacement
+This section provides comprehensive wiring diagrams for the ShopVac Rat Trap 2025 system, including both the current daisy-chain setup and the improved hub-based configuration using the **Adafruit QWIIC/STEMMA QT 5-Port Hub (Product ID: 5625)**.
 
-## Circuit Design & Connections
+### 4.1. Current Wiring Configuration (Daisy Chain)
 
-### System Architecture
-
-**Standard Configuration:**
+#### System Architecture Diagram
 ```
-[120V AC Input] → [IEC Inlet + Switch] → [Mean Well PSU] → [ESP32-S3]
-                                              ↓                ↓
-[Shop Vacuum] ← [SSR Output] ← [SSR Control] ← [GPIO5] ← [3.3V Regulation]
-                                                        ↓
-[STEMMA QT Bus] ← [I2C Sensors: APDS9960 + VL53L0X + BME280 + OLED]
-```
-
-**STEMMA QT Camera Enhanced Configuration:**
-```
-[120V AC Input] → [IEC Inlet + Switch] → [Mean Well PSU] → [ESP32-S3 Feather]
-                                              ↓                ↓
-[Shop Vacuum] ← [SSR Output] ← [SSR Control] ← [GPIO5] ← [3.3V Built-in Regulator]
-                                                         ↓
-[STEMMA QT Bus] ← [I2C: APDS9960 + VL53L0X + BME280 + OLED] → [Hybrid Detection]
-                                                         ↓
-[Evidence Storage] ← [Image Capture] ← [OV5640 STEMMA Camera] ← [Auto Trigger]
-                                                         ↓
-[High-Power IR] ← [STEMMA JST PH] ← [GPIO6] ← [Night Vision Control]
-```
-
-### GPIO Pin Assignments
-
-**Critical Safety Rule**: GPIO5 is reserved ONLY for SSR control - never use for other purposes.
-
-**Standard ESP32-S3 Feather Configuration:**
-| GPIO | Function | Connection | Safety Level |
-|------|----------|------------|--------------|
-| GPIO5 | SSR Control | 4N35 Optocoupler → SSR | SAFETY CRITICAL |
-| GPIO18 | Emergency Stop | Arcade Button (Active Low) | SAFETY CRITICAL |
-| GPIO3 | I2C SDA | STEMMA QT Bus (Primary) | Standard |
-| GPIO4 | I2C SCL | STEMMA QT Bus (Primary) | Standard |
-| GPIO10 | Reset Button | Reset/Test Button | Standard |
-| GPIO13 | PIR Motion | PIR Sensor Input | Standard |
-
-**STEMMA QT Camera Enhanced Configuration:**
-| GPIO | Function | Connection | Safety Level |
-|------|----------|------------|--------------|
-| GPIO5 | SSR Control | 4N35 Optocoupler → SSR | SAFETY CRITICAL |
-| GPIO18 | Emergency Stop | Arcade Button (Active Low) | SAFETY CRITICAL |
-| GPIO3 | I2C SDA | STEMMA QT Bus (Sensors) | Standard |
-| GPIO4 | I2C SCL | STEMMA QT Bus (Sensors) | Standard |
-| GPIO8 | I2C SDA | OV5640 Camera (Secondary Bus) | Standard |
-| GPIO9 | I2C SCL | OV5640 Camera (Secondary Bus) | Standard |
-| GPIO6 | IR LED Control | High-Power IR STEMMA Module | Standard |
-| GPIO10 | Reset Button | Reset/Test Button | Standard |
-| GPIO13 | PIR Motion | PIR Sensor Input | Standard |
-
-### Power Distribution
-
-#### AC Side (120V/230V)
-```
-IEC Inlet with Integrated CB & Switch (DF11.2078.0010.01)
-├─ Line → Mean Well PSU (AC Input) + SSR Common + Current Transformer
-├─ Neutral → Mean Well PSU (AC Input) + IEC C13 Outlet Neutral
-└─ Ground → IEC C13 Outlet Ground + Enclosure Ground
-
-SSR Output → IEC C13 Outlet Line (Hot)
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                           AC POWER SECTION (120V/230V)                         │
+├─────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                 │
+│  [IEC Inlet]────[Circuit Protection]────[Mean Well PSU]                        │
+│      │               │                        │                                │
+│      │               │                        ├─ +5V ──────────────────────────┼─ ESP32 VIN
+│      │               │                        ├─ GND ──────────────────────────┼─ Common GND
+│      │               │                        │                                │
+│  [Ground Bus]─────────┼────────────────────────┘                                │
+│      │               │                                                         │
+│  [AC Outlet]──────────┼─ [SSR Output]                                          │
+│                       │      ↑                                                 │
+│                   [15A Fuse]  │                                                 │
+│                              │                                                 │
+└──────────────────────────────┼─────────────────────────────────────────────────┘
+                               │
+┌──────────────────────────────┼─────────────────────────────────────────────────┐
+│                    DC CONTROL SECTION (5V/3.3V)                │               │
+├─────────────────────────────────────────────────────────────────┼───────────────┤
+│                                                                 │               │
+│  ┌─────────────────────┐    ┌──────────────────────────────────┐ │               │
+│  │   ESP32-S3 Feather  │    │        I2C Daisy Chain           │ │               │
+│  │                     │    │        (STEMMA QT)              │ │               │
+│  │   ┌─────────────────┴┐   │                                 │ │               │
+│  │   │ Built-in 3.3V   ││   │  ┌──────────┐ 100mm ┌─────────┐│ │               │
+│  │   │ Regulator       ││───┼──┤VL53L0X   ├───────┤BME280   ││ │               │
+│  │   │ 600mA capacity  ││   │  │ToF       │       │Env.     ││ │               │
+│  │   └─────────────────┘│   │  │Sensor    │       │Sensor   ││ │               │
+│  │                     │    │  │(0x29)    │       │(0x77)   ││ │               │
+│  │  GPIO5 ──────────────┼────┼──┘          │       └─────────┘│ │               │
+│  │       │              │    │             │                 │ │               │
+│  │       │              │    │             │ 200mm           │ │               │
+│  │  GPIO13 ─────────────┼────┼─ [Emergency │       ┌─────────┐│ │               │
+│  │       │              │    │    Button]  └───────┤OLED     ││ │               │
+│  │       │              │    │                     │Display  ││ │               │
+│  │  GPIO21 (SDA) ───────┼────┼─────────────────────│(0x3C)   ││ │               │
+│  │  GPIO22 (SCL) ───────┼────┼─────────────────────│         ││ │               │
+│  │                     │    │                     └─────────┘│ │               │
+│  └─────────────────────┘    └─────────────────────────────────┘ │               │
+│            │                                                    │               │
+│            │                  ┌─────────────────────────────────┘               │
+│            │                  │                                                 │
+│            │                  │  ┌─────────────────┐                           │
+│            └──[4N35]──────────┼──┤ Solid State     │                           │
+│               Optocoupler     │  │ Relay (40A)     │                           │
+│                               │  │                 │                           │
+│                               │  └─────────────────┘                           │
+│                               │           │                                     │
+└───────────────────────────────┘───────────┼─────────────────────────────────────┘
+                                            │
+                                    [Vacuum Control]
 ```
 
-#### DC Side (5V/3.3V)
+#### I2C Device Chain Details
 ```
-Mean Well LRS-35-5 (5V/7A)
-├─ +5V → ESP32-S3 VIN
-│        └─ Built-in 3.3V Regulator (600mA)
-│            ├─ VL53L0X (15mA)
-│            ├─ OLED Display (15mA)
-│            ├─ BME280 (3.6mA)
-│            └─ 501mA Available
-└─ GND → Common Ground
-```
-
-### I2C Bus Configuration
-
-**Current Implementation: STEMMA QT Daisy Chain**
-```
-ESP32-S3 STEMMA QT Port (GPIO3/GPIO4)
-    ↓ (500mm cable to inlet area)
-STEMMA QT 5-Port Hub (Adafruit 5625) - Located at Inlet
-    ├─ Port 1 → APDS9960 Proximity Sensor (50mm cable)
-    ├─ Port 2 → VL53L0X ToF Sensor (50mm cable)
-    ├─ Port 3 → BME280 Environmental (100mm cable)
-    ├─ Port 4 → [Reserved for PIR Module]
-    └─ Port 5 → [Reserved for Future Expansion]
-
-OLED Display (0x3C) → Direct to ESP32 (100mm cable in control box)
+ESP32-S3 STEMMA QT Port (GPIO21/22)
+    ↓ (100mm STEMMA QT Cable #1)
+VL53L0X ToF Sensor (I2C Address: 0x29)
+    ↓ (100mm STEMMA QT Cable #2)
+BME280 Environmental Sensor (I2C Address: 0x77)
+    ↓ (200mm STEMMA QT Cable #3)
+OLED Display (I2C Address: 0x3C)
 ```
 
-**Camera Configuration Additional Bus:**
+### 4.2. Improved Wiring Configuration (Hub-Based)
+
+#### System Architecture with QWIIC Hub in Inlet Area
 ```
-ESP32-S3 Secondary I2C (GPIO8/GPIO9)
-    ↓
-OV5640 5MP Camera Module (Adafruit 5945)
-    ↓
-High-Power IR LED → GPIO6 (STEMMA JST PH)
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                           AC POWER SECTION (120V/230V)                         │
+├─────────────────────────────────────────────────────────────────────────────────┤
+│                                 [Same as above]                                │
+└──────────────────────────────┬─────────────────────────────────────────────────┘
+                               │
+┌──────────────────────────────┼─────────────────────────────────────────────────┐
+│                    DC CONTROL SECTION (5V/3.3V)                │               │
+├─────────────────────────────────────────────────────────────────┼───────────────┤
+│                                                                 │               │
+│  ┌─────────────────────┐                                        │               │
+│  │   CONTROL BOX       │        INLET AREA COMPONENTS           │               │
+│  │                     │        (Reduced Cable Runs)           │               │
+│  │   ┌─────────────────┴┐       ┌─────────────────────────────┐ │               │
+│  │   │ Built-in 3.3V   ││       │   QWIIC Hub at Inlet       │ │               │
+│  │   │ Regulator       ││       │   (Adafruit 5625)          │ │               │
+│  │   │ 600mA capacity  ││       │                            │ │               │
+│  │   └─────────────────┘│       │  ┌─────────────┐           │ │               │
+│  │                     │        │  │ 5-Port Hub  │           │ │               │
+│  │  GPIO5 ──────────────┼────────┼──│             │           │ │               │
+│  │       │              │        │  │ Port 1 ──── ┼ VL53L0X   │ │               │
+│  │  GPIO13 ─────────────┼────────┼──│ Port 2 ──── ┼ BME280*   │ │               │
+│  │       │              │        │  │ Port 3 ──── ┼ (Future)  │ │               │
+│  │  GPIO21 (SDA) ───────┼────────┼──│ Port 4 ──── ┼ (Camera)  │ │               │
+│  │  GPIO22 (SCL) ───────┼────────┼──│ Port 5 ──── ┼ (Future)  │ │               │
+│  │                     │  |     │  │             │           │ │               │
+│  │  ┌─────────────────┐ │  |     │  │ Upstream ── ┼ ESP32 ────┼─┼─ Single Cable │
+│  │  │ OLED Display    │ │  |     │  └─────────────┘           │ │   to Control  │
+│  │  │ (0x3C)          │ │  |     └─────────────────────────────┘ │   Box         │
+│  │  └─────────────────┘ │  |                                    │               │
+│  │                     │  |     * BME280 can be in either        │               │
+│  │  ┌─────────────────┐ │  |       location based on needs       │               │
+│  │  │ BME280 Env.     │ │  |                                    │               │
+│  │  │ (Optional)      │ │  |                                    │               │
+│  │  └─────────────────┘ │  |                                    │               │
+│  └─────────────────────┘  |                                    │               │
+│            │              |                                    │               │
+│            │              └────────────────────────────────────┘               │
+│            └──[4N35]──────────────────────────────────────────────────────────┘
+│               Optocoupler
+│                                  ┌─────────────────┐
+│                                  │ Solid State     │
+│                                  │ Relay (40A)     │
+│                                  └─────────────────┘
 ```
 
-**I2C Device Addresses:**
-- `0x39` - APDS9960 Proximity/Light/Gesture sensor (at inlet)
-- `0x29` - VL53L0X Time-of-Flight sensor (at inlet)
-- `0x77` - BME280 environmental sensor (at inlet for accurate readings)
-- `0x3C` - SSD1306 OLED display (in control box)
+## 5. Safety & Compliance
 
-**Hub-Based Benefits:**
-- ✅ **Massive Cable Reduction**: Only 1 cable run between control box and inlet area
-- ✅ **Accurate Environmental Data**: BME280 at inlet monitors actual entry conditions
-- ✅ **Simplified Installation**: Single cable routing vs. multiple sensor cable runs
-- ✅ **Reduced EMI Susceptibility**: Short sensor cables less vulnerable to interference
-- ✅ **Future Expansion**: Camera and additional sensors can be added at inlet without new cable runs
-- ✅ **Easier Maintenance**: All detection components accessible at inlet location
+### 5.1. ⚠️ ELECTRICAL HAZARD WARNING ⚠️
 
-### Safety Isolation
+This project involves 120V/230V AC electrical connections. Installation **MUST** be performed by qualified individuals with electrical experience. Improper installation can result in:
+- Electrical shock or electrocution (potentially fatal)
+- Fire hazard from overloaded circuits or motor overload
+- Equipment damage from improper connections or overcurrent conditions
+- Personal injury from mechanical failures or vacuum motor damage
 
-**High Voltage Isolation:**
-- Minimum 5mm clearance between AC and DC sections
-- 4N35 optocoupler provides >4000V isolation for SSR control
-- Continuous ground from IEC inlet to outlet and enclosure
-- No shared connections between AC and DC grounds
+### 5.2. 🚨 MANDATORY SAFETY ENHANCEMENTS (August 2025)
 
-## Safety & Compliance
+#### **CRITICAL: Current Monitoring Required**
+All installations **MUST** include AC current monitoring for safety:
+- **Component**: SCT-013-020 current transformer (20A rating)
+- **Purpose**: Detect vacuum motor overload, clogged hoses, bearing failures
+- **Action**: Automatic shutdown when current exceeds 12A (141% of normal)
+- **Installation**: CT clamp around hot wire to vacuum outlet
+- **Compliance**: Required for motor protection per NEC 430.32
 
-> **Note**: For comprehensive safety procedures and detailed compliance requirements, refer to [SAFETY_REFERENCE.md](SAFETY_REFERENCE.md) and [INSTALLATION_GUIDE.md](INSTALLATION_GUIDE.md).
+### 5.3. Safety Standards Compliance
 
-### Electrical Standards Compliance
+#### North America (NEC/UL Standards)
+- **Circuit Protection:** 15A breaker and **12A fuse** (enhanced selective coordination)
+- **Wire Gauge:** 12 AWG minimum for all AC circuits (NEC Table 310.15(B)(16))
+- **Current Monitoring:** SCT-013-020 CT mandatory for motor protection (NEC 430.32)
+- **GFCI Protection:** Required for wet locations (NEC 210.8)
+- **Ground Integrity:** Continuous ground path verification mandatory (NEC 250.114)
+- **Disconnect Means:** Readily accessible per NEC 422.31(B)
+- **Isolation:** >4000V between AC and DC sections per UL 508A
+- **Surge Protection:** TVS diodes on GPIO pins recommended
 
-#### 🇺🇸 North America (NEC/UL/CSA)
-| Standard | Requirement | Implementation |
-|----------|-------------|----------------|
-| NEC 422.11(A) | Appliance disconnect within sight | Emergency switch on front panel |
-| NEC 422.31(B) | Switch rated for appliance load | 25A SSR > 15A vacuum load |
-| NEC 240.4(B) | Overcurrent protection coordination | Building breaker + PSU protection |
-| NEC 250.114 | Equipment grounding | Continuous ground path |
-| UL 508A | Industrial control panel standard | >4000V isolation, proper barriers |
+#### Europe (IEC/CE Standards)
+- **Circuit Protection:** 10A MCB and **10A fuse** coordination per IEC 60364-4-43
+- **Wire Gauge:** 1.5mm² minimum for all 230V connections (IEC 60364-5-52)
+- **Current Monitoring:** SCT-013-020 CT mandatory for motor protection (IEC 60204-1)
+- **RCD Protection:** 30mA RCD required for wet locations per IEC 60364-4-41
+- **Protective Earth:** Continuous PE conductor per IEC 60364-6-61
+- **Emergency Stop:** Category 0 disconnect per IEC 60204-1
+- **CE Marking:** All components must be CE marked for EU compliance
+- **EMC Compliance:** EN 55011 Class B emissions, ferrite cores required
 
-#### 🇪🇺 Europe (IEC/CE)
-| Standard | Requirement | Implementation |
-|----------|-------------|----------------|
-| IEC 60204-1 | Safety of machinery - Electrical | Category 0 emergency stop |
-| EN 55011 Class B | EMC emissions | Zero-crossing SSR, filtering |
-| IEC 60364-4-41 | Shock protection | RCD + protective earthing |
-| EU 2006/42/EC | Machinery Directive | CE marking required |
+### 5.4. Required Safety Equipment
 
-### Power System Specifications
+#### For Installation
+- Safety glasses with side shields
+- Insulated electrical gloves (rated for 600V minimum)
+- Non-contact voltage tester
+- Multimeter with CAT III 600V rating
+- **AC current clamp meter** (for CT calibration)
+- **GFCI outlet tester** (Klein RT105 or equivalent)
+- First aid kit with electrical burn treatment
 
-#### Regional Requirements
-| Region | Voltage | Frequency | Protection | Wire Size |
-|--------|---------|-----------|------------|-----------|
-| 🇺🇸 North America | 120V AC ±10% | 60Hz | 15A breaker | 12 AWG |
-| 🇪🇺 Europe | 230V AC ±10% | 50Hz | 10A MCB | 1.5mm² |
-| 🇬🇧 UK | 230V AC ±10% | 50Hz | 13A fused plug | 1.5mm² |
-| 🇦🇺 Australia | 230V AC ±10% | 50Hz | 10A RCD | 2.5mm² |
+#### For Regular Use
+- Fire extinguisher suitable for electrical fires (Class C)
+- Emergency contact information clearly posted
+- Operational checklist for regular safety verification
+- **Monthly current monitoring verification**
 
-### Safety Features
+## 6. Assembly and Installation
 
-**Protection Hierarchy:**
-1. **Primary**: Building electrical panel protection (15A/10A)
-2. **Power Supply**: LRS-35-5 built-in overload protection
-3. **Local Disconnect**: IEC inlet integrated switch
-4. **Emergency Stop**: Large red arcade button
-5. **Software**: ESP32 thermal monitoring with auto-shutdown
+### 6.1. Assembly Guidelines
 
-**Isolation Requirements:**
-- Minimum 4000V between AC and DC circuits (4N35 optocoupler)
-- Minimum 5mm physical clearance between high/low voltage
-- Continuous equipment grounding per local electrical codes
-- No shared grounds between AC and DC sections
-
-## Assembly Guidelines
-
-### Component Layout
-
+#### Component Layout
 **Enclosure Organization (Hammond PN-1334-C 8"x6"x4" ABS):**
 
 The following layout is recommended to ensure proper safety clearances and thermal management.
@@ -334,112 +389,57 @@ The following layout is recommended to ensure proper safety clearances and therm
 └─────────────────────────────┘
 ```
 
-**Mounting:**
-The enclosure should be mounted to the `trap_body_main.scad` using the provided mounting plate. Use M4 screws, washers, and nuts for a secure connection.
+#### Wiring Best Practices
+- **AC Wiring (Safety Critical)**: Use 12 AWG wire, proper strain relief, and follow color codes.
+- **DC Wiring**: Use pre-made STEMMA QT cables.
+- **Thermal Management**: Ensure proper ventilation and use heat sinks if necessary.
 
-**Safety Zones:**
-- **High Voltage Zone**: Right side - PSU, SSR, AC connections
-- **Low Voltage Zone**: Left side - ESP32, sensors, DC connections
-- **Interface Zone**: Front panel - user controls and display
-- **Minimum 5mm separation** between AC and DC components
+### 6.2. Lockout/Tagout Procedure
 
-### Wiring Best Practices
+**MANDATORY: Follow this procedure before ANY maintenance work**
 
-#### AC Wiring (Safety Critical)
-- **Wire Colors**: Black=Hot, White=Neutral, Green=Ground (US)
-- **Wire Size**: 12 AWG minimum for 15A circuits
-- **Strain Relief**: UL-listed cable glands on all external cables
-- **Connections**: Terminal blocks or wire nuts (UL listed)
-- **Torque**: Follow manufacturer specifications for all terminals
+1. **Disconnect Power**
+2. **Verify Zero Energy State**
+3. **Lockout**
+4. **Tagout**
+5. **Test Verification**
 
-#### DC Wiring
-- **STEMMA QT**: Pre-made cables eliminate soldering
-- **GPIO Connections**: Use header pins and jumper wires
-- **Strain Relief**: Service loops prevent cable tension
-- **Labeling**: Clear identification of all connections
+## 7. Testing & Validation
 
-### Thermal Management
+### 7.1. ⚠️ **MANDATORY Current Monitoring Calibration**
+**CRITICAL SAFETY PROCEDURE - Required for all installations**
 
-**ESP32-S3 Cooling:**
-- Mount with standoffs for airflow underneath
-- Optional: 10x10mm heat sink with thermal adhesive
-- Software temperature monitoring with thermal shutdown at 85°C
-- Position away from heat-generating components (PSU, SSR)
+1. **CT Installation Verification**
+2. **Current Calibration Procedure**
+3. **Safety Threshold Testing**
 
-**Enclosure Ventilation:**
-- Ventilation slots above PSU for convection cooling
-- Cable entry points sized appropriately to prevent overheating
-- Component spacing allows natural air circulation
-
-## Environmental Monitoring
-
-The BME280 sensor provides comprehensive environmental data for analytics and correlation with rodent activity patterns.
-
-### BME280 Specifications
-- **Temperature**: -40°C to +85°C (±1.0°C accuracy)
-- **Humidity**: 0-100% RH (±3% accuracy)
-- **Pressure**: 300-1100 hPa (±1 hPa accuracy)
-- **Power**: 1μA sleep, 3.6mA active
-- **I2C Address**: 0x77 (STEMMA QT default)
-
-### Analytics Integration
-- **Pattern Recognition**: Correlate environmental conditions with captures
-- **Predictive Triggering**: Adjust sensitivity based on weather/humidity
-- **Home Assistant Dashboards**: Trend analysis and data visualization
-- **Maintenance Alerts**: Monitor for condensation risk or extreme temperatures
-
-## Testing & Validation
-
-### Pre-Assembly Testing
-1. **Component Verification**: Test each module individually
-2. **Power Supply**: Verify 5V output and current capacity
-3. **I2C Bus**: Confirm all sensors respond at correct addresses
-4. **GPIO Function**: Test emergency stop and SSR control
-
-### Safety Testing (Mandatory)
+### 7.2. Safety Testing (Mandatory)
 1. **Isolation Test**: >4MΩ resistance between AC and DC sections
 2. **Ground Continuity**: <0.1Ω resistance from inlet to outlet ground
 3. **Thermal Test**: Monitor ESP32 temperature under full load
 4. **Emergency Stop**: Verify immediate SSR shutdown on button press
 5. **Protection Test**: Confirm PSU overload protection functions
 
-### Integration Testing
+### 7.3. Integration Testing
 1. **ESPHome Flash**: Upload configuration and verify WiFi connection
 2. **Home Assistant**: Confirm automatic entity discovery
 3. **Sensor Calibration**: Verify ToF sensor distance readings
 4. **Load Test**: Test with actual shop vacuum connected
-5. **Environmental Data**: Confirm BME280 readings are reasonable
 
-## Quality Control Checklist
+## 8. Emergency Procedures
 
-**Electrical Safety:**
-- [ ] All AC connections tight and properly insulated
-- [ ] Ground continuity verified throughout system
-- [ ] No exposed conductors or sharp edges
-- [ ] Strain relief installed on ALL external cables
-- [ ] Emergency stop clearly labeled and functional
+### 8.1. Thermal Emergency
+If thermal shutdown is triggered:
+1. **IMMEDIATE**: Disconnect power to the system
+2. **ASSESS**: Check for obstructions to ventilation
+3. **WAIT**: Allow minimum 30 minutes cooling time
+4. **INSPECT**: Look for signs of component damage
+5. **DOCUMENT**: Record the incident with temperature data if available
 
-**Component Installation:**
-- [ ] ESP32 mounted with proper standoffs
-- [ ] All STEMMA QT connections secure
-- [ ] SSR properly mounted with thermal interface
-- [ ] Power supply secured and ventilated
-- [ ] All terminal screws torqued to specification
-
-**System Function:**
-- [ ] WiFi connection established
-- [ ] All sensors reporting correct values
-- [ ] SSR switching operates correctly
-- [ ] Emergency stop immediately disables vacuum
-- [ ] OLED display showing proper status information
-- [ ] Home Assistant integration working
-
----
-
-## Related Documents
-
-- **[BOM_CONSOLIDATED.csv](BOM_CONSOLIDATED.csv)** - Complete parts list with vendor information
-- **[SAFETY_REFERENCE.md](SAFETY_REFERENCE.md)** - Comprehensive safety procedures
-- **[INSTALLATION_GUIDE.md](INSTALLATION_GUIDE.md)** - Step-by-step assembly instructions
-
-This electrical design provides a safe, reliable, and cost-effective foundation for the ShopVac Rat Trap while meeting international electrical safety standards.
+### 8.2. Emergency Stop Activation
+If emergency stop is activated:
+1. **IDENTIFY**: Determine reason for emergency stop activation
+2. **SECURE**: Ensure area is safe before resetting
+3. **INSPECT**: Check for physical damage or loose components
+4. **RESET**: Only after confirming safe conditions
+5. **TEST**: Verify all functions operate correctly

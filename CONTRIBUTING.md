@@ -1,3 +1,7 @@
+> **⚠️ Work in Progress ⚠️**
+>
+> This project is under active development. The documentation, features, and hardware recommendations are subject to change. Please check back for updates.
+
 # Contributing to the ShopVac Rat Trap 2025 Project
 
 First off, thank you for considering contributing to this project! We welcome any contributions that improve the design, functionality, and documentation.

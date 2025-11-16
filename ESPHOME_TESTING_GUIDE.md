@@ -1,3 +1,7 @@
+> **⚠️ Work in Progress ⚠️**
+>
+> This project is under active development. The documentation, features, and hardware recommendations are subject to change. Please check back for updates.
+
 # ESPHome Firmware Testing Guide
 
 This document provides a step-by-step guide for manually testing the ESPHome firmware and connected hardware components of the ShopVac Rat Trap 2025. Performing these tests after flashing a new firmware version is crucial to ensure all systems are operating correctly and safely.

@@ -1,0 +1,120 @@
+---
+# esphome/packages/sensors.yaml
+sensor:
+  # BME280 environmental sensor via STEMMA QT (I2C)
+  - platform: bme280_i2c
+    address: 0x77
+    temperature:
+      name: ${friendly_name} Environmental Temperature
+      id: env_temperature
+    humidity:
+      name: ${friendly_name} Environmental Humidity
+      id: env_humidity
+    pressure:
+      name: ${friendly_name} Barometric Pressure
+      id: env_pressure
+    update_interval: 60s
+
+  # Vacuum runtime tracking for maintenance scheduling
+  - platform: template
+    name: ${friendly_name} Total Vacuum Runtime
+    id: vacuum_runtime_sensor
+    icon: mdi:vacuum
+    unit_of_measurement: minutes
+    accuracy_decimals: 1
+    device_class: duration
+    state_class: total_increasing
+    lambda: |-
+      return id(total_vacuum_runtime);
+
+  # ESP32 internal temperature monitoring with enhanced thermal management
+  - platform: template
+    name: ${friendly_name} ESP32 Temperature
+    id: esp32_temp
+    icon: mdi:thermometer
+    unit_of_measurement: °C
+    device_class: temperature
+    state_class: measurement
+    lambda: |-
+      return temperatureRead();
+    update_interval: 15s
+    filters:
+      - sliding_window_moving_average:
+          window_size: 4
+          send_every: 2
+      - lambda: |-
+          // Enhanced thermal protection
+          if (x > 85.0) {
+            ESP_LOGW("thermal", "CRITICAL: ESP32 overheating: %.1f°C - initiating emergency shutdown", x);
+            id(last_fault_type) = "THERMAL_CRITICAL";
+            id(fault_count)++;
+            id(thermal_shutdown_button).press();
+            return x;
+          }
+          if (x > 75.0) {
+            ESP_LOGW("thermal", "WARNING: ESP32 temperature elevated: %.1f°C", x);
+          }
+          return x;
+
+  # System fault monitoring
+  - platform: template
+    name: ${friendly_name} Fault Count
+    id: fault_count_sensor
+    icon: mdi:alert
+    accuracy_decimals: 0
+    state_class: total_increasing
+    lambda: |-
+      return id(fault_count);
+
+  # System monitoring sensors
+  - platform: wifi_signal
+    name: ${friendly_name} WiFi Signal Strength
+    id: wifi_signal
+    update_interval: 60s
+
+  - platform: uptime
+    name: ${friendly_name} System Uptime
+    id: uptime_sensor
+
+text_sensor:
+  - platform: template
+    name: ${friendly_name} System Voltage
+    id: system_voltage
+    lambda: return {"${line_voltage}"};
+
+  - platform: template
+    name: ${friendly_name} Line Frequency
+    id: system_frequency
+    lambda: return {"${line_frequency}"};
+
+  - platform: template
+    name: ${friendly_name} Safety Standard
+    id: system_safety_standard
+    lambda: return {"${safety_standard}"};
+
+  - platform: template
+    name: ${friendly_name} Max Current Rating
+    id: max_current_rating
+    lambda: return {"${max_current}"};
+
+  - platform: wifi_info
+    ip_address:
+      name: ${friendly_name} IP Address
+      id: ip_address
+    ssid:
+      name: ${friendly_name} Connected SSID
+      id: wifi_ssid
+    mac_address:
+      name: ${friendly_name} MAC Address
+      id: mac_address
+
+  - platform: version
+    name: ${friendly_name} ESPHome Version
+
+  # Fault type reporting
+  - platform: template
+    name: ${friendly_name} Last Fault Type
+    id: last_fault_type_sensor
+    icon: mdi:alert-circle
+    lambda: |-
+      return id(last_fault_type);

@@ -1,3 +1,7 @@
+> **⚠️ Work in Progress ⚠️**
+>
+> This project is under active development. The documentation, features, and hardware recommendations are subject to change. Please check back for updates.
+
 # ShopVac Rat Trap 2025 - Installation & Setup Guide
 **STEMMA QT Camera System with Enhanced Capabilities**
 

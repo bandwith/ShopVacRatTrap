@@ -1,89 +1,72 @@
-// ShopVac Rat Trap 2025 - Trap Entrance
+// ShopVac Rat Trap 2025 - Trap Entrance (Refactored)
 // Engineer: Gemini
-// Date: 2025-08-15
+// Date: 2025-11-15
 //
 // ========== REVISION HIGHLIGHTS ==========
-// - NEW: Horizontal design that lays flat on the floor.
-// - NEW: 4-inch (101.6mm) opening for various rodent sizes.
-// - NEW: Integrated sensor mounts for primary detection (APDS9960 & VL53L0X).
-// - NEW: Snap-fit connector for easy assembly with the main trap body.
+// - REFACTORED: Replaced snap-fit connectors with a robust flanged connection.
+// - MODULAR: Utilizes shared modules from `trap_modules.scad`.
+// - IMPROVED: Redesigned sensor mounts for APDS9960 & VL53L0X sensors.
+// - SIMPLIFIED: Streamlined design for easier printing and assembly.
 // =========================================
+
+include <trap_modules.scad>
 
 // ========== CORE PARAMETERS ==========
 
 // [Dimensions]
-opening_diameter = 101.6; // 4 inches
-tube_wall_thickness = 4;
 entrance_length = 80;
 flat_base_height = 20;
 
-// [Snap-Fit Connector Parameters]
-clip_width = 15;
-clip_thickness = 3;
-clip_length = 20;
-clip_hook_depth = 2;
-
-// [Sensor Mount Parameters]
-sensor_mount_width = 30;
+// [Sensor Mounts]
+apds_mount_pos_z = 30;
+vl53_mount_pos_z = 60;
+sensor_mount_width = 25;
 sensor_mount_height = 20;
 sensor_mount_thickness = 3;
 
-$fn = 128;
-
 // ========== MODULES ==========
-
-module snap_fit_clip() {
-    // Cantilever snap-fit clip
-    difference() {
-        cube([clip_thickness, clip_width, clip_length]);
-        translate([clip_thickness, 0, clip_length - clip_hook_depth]) {
-            cube([clip_thickness, clip_width, clip_hook_depth * 2]);
-        }
-    }
-    translate([-clip_hook_depth, 0, clip_length - clip_hook_depth]) {
-        cube([clip_hook_depth, clip_width, clip_hook_depth]);
-    }
-}
 
 module trap_entrance() {
     difference() {
         union() {
-            // Main body
-            cylinder(h = entrance_length, d = opening_diameter + (2 * tube_wall_thickness), center = false);
+            // Main tube body
+            translate([0,0,entrance_length/2]) {
+                tube(entrance_length);
+            }
 
-            // Flat base
-            translate([- (opening_diameter / 2) - tube_wall_thickness, -opening_diameter / 2, 0]) {
-                cube([opening_diameter + (2 * tube_wall_thickness), opening_diameter, flat_base_height]);
+            // Flange at the connection end
+            translate([0, 0, entrance_length]) {
+                flange();
+            }
+
+            // Flat base for stability
+            translate([0, -tube_outer_diameter/2, 0]) {
+                cube([tube_outer_diameter, tube_outer_diameter, flat_base_height]);
             }
         }
 
-        // Hollow out the inside
-        translate([0, 0, -1]) {
-            cylinder(h = entrance_length + 2, d = opening_diameter, center = false);
-        }
-
-        // Cut away the top of the flat base to match the tube
-        translate([0, 0, flat_base_height]) {
-            cylinder(h = entrance_length, d = opening_diameter + (2 * tube_wall_thickness) + 2, center = false);
+        // Cut away top of base to match tube profile
+        translate([0,0,-1]) {
+            cylinder(d=tube_outer_diameter, h=flat_base_height+2);
         }
     }
 
-    // Add snap-fit clips
-    for (a = [90, 270]) {
-        rotate([0, 0, a]) {
-            translate([opening_diameter / 2 + tube_wall_thickness, -clip_width / 2, 20]) {
-                snap_fit_clip();
+    // Sensor mounts (APDS9960 & VL53L0X)
+    // Top mount for VL53L0X (distance sensor)
+    translate([0, 0, vl53_mount_pos_z]) {
+        rotate([90,0,0]) {
+            translate([0,0,tube_outer_diameter/2]) {
+                 cube([sensor_mount_width, sensor_mount_thickness, sensor_mount_height], center=true);
             }
         }
     }
 
-    // Add sensor mounts
-    translate([0, -sensor_mount_width/2, entrance_length - sensor_mount_height - 5]) {
-        cube([sensor_mount_thickness, sensor_mount_width, sensor_mount_height]);
-    }
-    translate([-sensor_mount_width/2, 0, entrance_length - sensor_mount_height - 5]) {
-        rotate([0,0,-90]){
-            cube([sensor_mount_thickness, sensor_mount_width, sensor_mount_height]);
+    // Side mount for APDS9960 (proximity/color sensor)
+    translate([0, 0, apds_mount_pos_z]) {
+        rotate([0,90,0]) {
+             translate([0,0,tube_outer_diameter/2]) {
+                cube([sensor_mount_thickness, sensor_mount_width, sensor_mount_height], center=true);
+            }
         }
     }
 }

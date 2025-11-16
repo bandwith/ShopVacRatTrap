@@ -42,3 +42,4 @@ Thumbs.db
 # Documentation builds
 _build/
 docs/_build/
+esphome/secrets.yaml

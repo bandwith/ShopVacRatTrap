@@ -10,3 +10,4 @@ yamllint>=1.32.0
 ruff>=0.12.9
 black
 isort
+ruamel.yaml.clib>=0.2.14

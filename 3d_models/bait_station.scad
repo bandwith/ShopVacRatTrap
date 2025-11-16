@@ -1,68 +1,80 @@
-// ShopVac Rat Trap 2025 - Bait Station
+// ShopVac Rat Trap 2025 - Bait Station (Refactored)
 // Engineer: Gemini
-// Date: 2025-08-15
+// Date: 2025-11-15
 //
 // ========== REVISION HIGHLIGHTS ==========
-// - NEW: Removable bait station for easy baiting.
-// - NEW: Plugs into the main trap body from the top.
-// - NEW: Vented design to disperse bait scent.
-// - NEW: Simple friction-fit locking mechanism.
+// - REFACTORED: Redesigned for compatibility with the updated trap body.
+// - NEW: Features a secure screw-in locking mechanism (1/4 turn lock).
+// - IMPROVED: More robust and reliable than the previous friction-fit design.
+// - SIMPLIFIED: Easier to print and use.
 // =========================================
 
 // ========== CORE PARAMETERS ==========
+$fn = 64;
 
 // [Dimensions - Must match bait_port in trap_body_main.scad]
 bait_port_diameter = 40;
 bait_port_length = 20;
 
 // [Bait Compartment]
-bait_compartment_diameter = bait_port_diameter - 10;
-bait_compartment_depth = 40;
+bait_compartment_diameter = bait_port_diameter - 4;
+bait_compartment_depth = 50;
 
 // [Handle]
-handle_diameter = bait_port_diameter + 10;
+handle_diameter = bait_port_diameter + 20;
 handle_height = 15;
 
-// [Locking Nub]
-nub_diameter = 2;
-nub_height = 1;
-
-$fn = 64;
+// [Locking Lugs]
+lug_width = 10;
+lug_height = 4;
+lug_depth = 3;
 
 // ========== MODULES ==========
 
 module bait_station() {
-    difference() {
-        union() {
+    union() {
+        difference() {
             // Main body
-            cylinder(h = bait_port_length + bait_compartment_depth, d = bait_port_diameter - 0.2); // Tolerance
+            cylinder(d=bait_port_diameter - 0.5, h=bait_port_length + bait_compartment_depth, center=true);
 
-            // Handle
-            translate([0, 0, bait_port_length + bait_compartment_depth]) {
-                cylinder(h = handle_height, d = handle_diameter);
+            // Bait compartment
+            translate([0,0, -bait_port_length/2 - 1]) {
+                cylinder(d=bait_compartment_diameter, h=bait_compartment_depth+2, center=true);
             }
-        }
 
-        // Bait compartment
-        translate([0, 0, -1]) {
-            cylinder(h = bait_compartment_depth + 2, d = bait_compartment_diameter);
-        }
-
-        // Scent holes
-        for (a = [0, 72, 144, 216, 288]) {
-            rotate([0, 0, a]) {
-                translate([bait_compartment_diameter / 2, 0, 10]) {
-                    rotate([90, 0, 0]) {
-                        cylinder(h = 20, d = 3);
+            // Scent holes
+            for (a = [0, 72, 144, 216, 288]) {
+                rotate([0, 0, a]) {
+                    translate([bait_compartment_diameter / 2 - 3, 0, -15]) {
+                        rotate([90, 0, 0]) {
+                            cylinder(h = 15, d = 4, center=true);
+                        }
                     }
                 }
             }
         }
-    }
 
-    // Locking nub
-    translate([bait_port_diameter / 2 - nub_diameter, 0, bait_port_length - 5]) {
-        cylinder(h = nub_height, d = nub_diameter);
+        // Handle
+        translate([0, 0, (bait_port_length + bait_compartment_depth)/2]) {
+            cylinder(d=handle_diameter, h=handle_height, center=true);
+            // Add an arrow indicator for locking direction
+            translate([0, handle_diameter/2 - 5, handle_height/2]) {
+                rotate([90,0,0]) {
+                    linear_extrude(height=2) {
+                        polygon(points=[[-3,0],[3,0],[0,5]]);
+                    }
+                }
+            }
+        }
+
+        // Locking lugs
+        for (r in [0, 180]) {
+            rotate([0,0,r]) {
+                translate([0, bait_port_diameter/2 - lug_depth/2, bait_port_length/2 - lug_height/2]) {
+                    cube([lug_width, lug_depth, lug_height], center=true);
+                }
+            }
+        }
     }
 }
 

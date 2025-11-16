@@ -1,3 +1,7 @@
+> **⚠️ Work in Progress ⚠️**
+>
+> This project is under active development. The documentation, features, and hardware recommendations are subject to change. Please check back for updates.
+
 # Project Overview: ShopVac Rat Trap 2025
 
 This project implements a professional-grade, IoT-based rodent control system. It features a hybrid sensor detection system, an integrated status display, and is designed for simplified assembly.
@@ -24,7 +28,7 @@ The system employs a multi-sensor detection logic ("2 of 3" sensor confirmation)
 The project uses Python for various scripts, particularly for BOM management.
 1.  **Create a virtual environment:**
     ```bash
-    python -m venv .venv
+    uv venv
     ```
 2.  **Activate the virtual environment:**
     *   On Linux/macOS:
@@ -37,7 +41,7 @@ The project uses Python for various scripts, particularly for BOM management.
         ```
 3.  **Install dependencies:**
     ```bash
-    pip install -r requirements.txt
+    uv pip install -r requirements.txt
     ```
 
 ## ESPHome Firmware:

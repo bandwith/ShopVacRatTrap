@@ -1,0 +1,80 @@
+---
+# esphome/packages/safety.yaml
+input_boolean:
+  - id: system_armed
+    name: ${friendly_name} System Armed
+    initial_value: on
+    restore_value: no
+
+binary_sensor:
+  # Emergency stop switch (GPIO18 - Safety critical)
+  - platform: gpio
+    pin:
+      number: 18
+      mode: INPUT_PULLUP
+      inverted: true
+    name: ${friendly_name} Emergency Stop
+    id: emergency_stop
+    filters:
+      - delayed_on: 100ms
+      - delayed_off: 100ms
+    on_press:
+      - logger.log: EMERGENCY STOP ACTIVATED - All operations halted
+      - switch.turn_off: vacuum_relay
+      - binary_sensor.template.publish:
+          id: trap_triggered
+          state: off
+      - input_boolean.turn_off: system_armed
+
+script:
+  # Thermal shutdown script
+  - id: thermal_shutdown
+    mode: single
+    then:
+      - logger.log: THERMAL SHUTDOWN ACTIVATED
+      - switch.turn_off: vacuum_relay
+      - binary_sensor.template.publish:
+          id: trap_triggered
+          state: off
+      - input_boolean.turn_off: system_armed
+      - deep_sleep.enter:
+          id: emergency_sleep
+          sleep_duration: 300s       # 5 minute cooldown
+
+deep_sleep:
+  id: emergency_sleep
+  sleep_duration: 300s   # 5 minute cooldown
+
+interval:
+  - interval: 5s
+    then:
+      - if:
+          condition:
+            lambda: return millis() < 5000;         # First 5 seconds after boot
+          then:
+            # NEC 422.31(B): Ensure SSR is OFF during power-up (safety critical)
+            - switch.turn_off: vacuum_relay
+            - logger.log:
+                format: 'Power-on sequencing: SSR disabled during boot (%s compliance)'
+                args: ['${safety_standard}']
+
+  # NEC/IEC compliance monitoring
+  - interval: 60s
+    then:
+      - lambda: |-
+          // Log safety compliance status
+          ESP_LOGI("safety", "System running %s compliant at %s %s",
+                   "${safety_standard}",
+                   "${line_voltage}",
+                   "${line_frequency}");
+
+globals:
+  - id: fault_count
+    type: int
+    restore_value: yes
+    initial_value: '0'
+
+  - id: last_fault_type
+    type: std::string
+    restore_value: yes
+    initial_value: '""'
