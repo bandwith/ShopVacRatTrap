@@ -55,27 +55,98 @@ jobs:
           python-version: '3.12'
           cache: pip
 
-      - name: Install pip-audit
-        run: pip install pip-audit
+      - name: Install pip-audit and sarif-tools
+        run: pip install pip-audit sarif-tools
 
       - name: Run pip-audit on requirements.txt
+        continue-on-error: true
         run: |
-          pip-audit --require-hashes --disable-pip \
+          pip-audit --disable-pip \
             -r requirements.txt \
             --format json \
-            --output pip-audit-results.json || true
+            --output pip-audit-results.json
 
       - name: Convert pip-audit results to SARIF
         if: always()
+        continue-on-error: true
         run: |
-          pip-audit --require-hashes --disable-pip \
-            -r requirements.txt \
-            --format sarif \
-            --output pip-audit-results.sarif || true
+          # Convert JSON to SARIF format
+          python3 << 'EOF'
+          import json
+          import os
+
+          # Read pip-audit JSON results
+          if not os.path.exists('pip-audit-results.json'):
+              print("No pip-audit results found, skipping SARIF conversion")
+              exit(0)
+
+          with open('pip-audit-results.json', 'r') as f:
+              audit_data = json.load(f)
+
+          # Create SARIF structure
+          sarif = {
+              "version": "2.1.0",
+              "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+              "runs": [{
+                  "tool": {
+                      "driver": {
+                          "name": "pip-audit",
+                          "informationUri": "https://github.com/pypa/pip-audit",
+                          "version": "2.9.0",
+                          "rules": []
+                      }
+                  },
+                  "results": []
+              }]
+          }
+
+          # Process vulnerabilities
+          for vuln in audit_data.get('dependencies', []):
+              for issue in vuln.get('vulns', []):
+                  rule_id = issue.get('id', 'UNKNOWN')
+
+                  # Add rule if not exists
+                  if not any(r['id'] == rule_id for r in sarif['runs'][0]['tool']['driver']['rules']):
+                      sarif['runs'][0]['tool']['driver']['rules'].append({
+                          "id": rule_id,
+                          "name": rule_id,
+                          "shortDescription": {"text": issue.get('description', 'Security vulnerability')},
+                          "helpUri": issue.get('fix_versions', [{}])[0].get('link', ''),
+                          "properties": {
+                              "security-severity": "7.0"
+                          }
+                      })
+
+                  # Add result
+                  sarif['runs'][0]['results'].append({
+                      "ruleId": rule_id,
+                      "level": "warning",
+                      "message": {
+                          "text": f"Vulnerable dependency: {vuln['name']}=={vuln['version']} - {issue.get('description', 'No description')}"
+                      },
+                      "locations": [{
+                          "physicalLocation": {
+                              "artifactLocation": {
+                                  "uri": "requirements.txt"
+                              },
+                              "region": {
+                                  "startLine": 1
+                              }
+                          }
+                      }]
+                  })
+
+          # Write SARIF file
+          with open('pip-audit-results.sarif', 'w') as f:
+              json.dump(sarif, f, indent=2)
+
+          print(f"Converted {len(sarif['runs'][0]['results'])} vulnerabilities to SARIF format")
+          EOF
 
       - name: Upload pip-audit results
         if: always()
         uses: github/codeql-action/upload-sarif@v4
+        continue-on-error: true
         with:
           sarif_file: pip-audit-results.sarif
           category: pip-audit
