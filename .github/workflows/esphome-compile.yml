@@ -10,21 +10,15 @@ on:
 jobs:
   compile:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        yaml-file:
+          - esphome/rat-trap-2025.yaml
+          - esphome/rat-trap-stemma-camera.yaml
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: Setup Python Environment
-        uses: ./.github/actions/setup-python
-
-      - name: Cache ESPHome build directory
-        uses: actions/cache@v4
-        with:
-          path: ~/.esphome
-          key: ${{ runner.os }}-esphome-${{ hashFiles('esphome/*.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-esphome-
 
       - name: Create dummy secrets.yaml (base64 encoded)
         run: |
@@ -47,9 +41,7 @@ jobs:
           echo "device_name: dummy_device_name" >> esphome/secrets.yaml
           echo "friendly_name: dummy_friendly_name" >> esphome/secrets.yaml
 
-      - name: Compile ESPHome configurations
-        run: |
-          echo "Compiling esphome/rat-trap-2025.yaml..."
-          esphome compile esphome/rat-trap-2025.yaml
-          echo "Compiling esphome/rat-trap-stemma-camera.yaml..."
-          esphome compile esphome/rat-trap-stemma-camera.yaml
+      - name: Build ESPHome firmware
+        uses: esphome/build-action@v4
+        with:
+          yaml-file: ${{ matrix.yaml-file }}
