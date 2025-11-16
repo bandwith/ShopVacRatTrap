@@ -53,7 +53,9 @@ jobs:
 
       - name: Run unit tests
         run: |
-          pytest .github/scripts/ --tb=short  # Shorter traceback for CI logs
+          # Run tests if they exist, but don't fail if no tests are found
+          pytest .github/scripts/ --tb=short || [ $? -eq 5 ] && echo "No tests found - continuing"
+        continue-on-error: false
 
       - name: Create backup of current BOM and manage older backups
         run: |

@@ -32,17 +32,29 @@ def get_changed_scad_files():
 
 
 def get_all_scad_files():
-    """Get a list of all SCAD files."""
+    """Get a list of all SCAD files (excluding module-only library files)."""
+    # Files that only contain module definitions and shouldn't be rendered
+    module_only_files = ["trap_modules.scad"]
+
     scad_files = []
     for file_path in _iterate_model_files(SCAD_EXTENSION):
-        scad_files.append(file_path)
+        # Skip module-only library files
+        if os.path.basename(file_path) not in module_only_files:
+            scad_files.append(file_path)
     return scad_files
 
 
 def get_missing_stl_files():
-    """Get a list of SCAD files that are missing their STL file."""
+    """Get a list of SCAD files that are missing their STL file (excluding module-only library files)."""
+    # Files that only contain module definitions and shouldn't be rendered
+    module_only_files = ["trap_modules.scad"]
+
     missing_files = []
     for scad_path in _iterate_model_files(SCAD_EXTENSION):
+        # Skip module-only library files
+        if os.path.basename(scad_path) in module_only_files:
+            continue
+
         stl_path = scad_path.replace(SCAD_EXTENSION, STL_EXTENSION)
         if not os.path.exists(stl_path):
             missing_files.append(scad_path)
