@@ -75,6 +75,10 @@ class MouserAPIError(Exception):
 
     pass
 
+
+class MouserRateLimitError(MouserAPIError):
+    """Raised when rate limit is exceeded"""
+
     pass
 
 

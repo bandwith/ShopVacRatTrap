@@ -6,19 +6,10 @@ requests>=2.32.0
 xlrd>=2.0.1
 
 # Core application dependencies
-click>=8.3.0
+# Note: ESPHome has strict version pins for its dependencies
+# Let ESPHome manage click, pillow, and other transitive deps
 esphome>=2025.10.5
 rich>=13.0.0
-
-# Transitive deps used by ESPHome stack
-# Updated to latest working versions as of November 2025
-# Note: ESPHome 2025.10.5 metadata has strict pins, but these versions work in practice
-aioesphomeapi>=42.7.0
-cryptography>=46.0.0
-kconfiglib>=13.7.1
-marshmallow>=4.1.0
-paho-mqtt>=2.1.0
-pillow>=12.0.0
 
 # Development and testing tools
 detect-secrets>=1.5.0

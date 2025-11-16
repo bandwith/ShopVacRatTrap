@@ -27,10 +27,12 @@ jobs:
       - name: Create dummy secrets.yaml (base64 encoded)
         run: |
           # Create base64-encoded dummy secrets used by esphome packages that expect <name>_base64
+          # ESPHome requires 32-byte keys, which when base64 encoded produce 44-character strings
           WIFI_SSID_BASE64=$(echo -n "dummy_ssid" | base64)
           WIFI_PASSWORD_BASE64=$(echo -n "dummy_password" | base64)
           OTA_PASSWORD_BASE64=$(echo -n "dummy_ota_password" | base64)
-          API_ENCRYPTION_KEY_BASE64=$(echo -n "dummy_api_encryption_key" | base64)
+          # Generate a proper 32-byte random key for API encryption (results in 44 chars base64)
+          API_ENCRYPTION_KEY_BASE64=$(openssl rand -base64 32)
           AP_PASSWORD_BASE64=$(echo -n "dummy_ap_password" | base64)
 
           # Write base64-encoded dummy secrets into file
