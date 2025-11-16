@@ -11,6 +11,10 @@ jobs:
   trivy-scan:
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: read # For checkout
+      security-events: write # For uploading SARIF results
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
