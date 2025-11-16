@@ -387,8 +387,6 @@ class MouserAPIClient:
             )
 
 
-
-
 class MouserBOMColumns:
     MANUFACTURER = "Manufacturer"
     MANUFACTURER_PART_NUMBER = "Manufacturer Part Number"
