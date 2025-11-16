@@ -64,30 +64,24 @@ jobs:
       - name: Generate STL files
         id: generate
         run: |
+          scad_files_to_build_json="[]"
           if [[ "${{ github.event.inputs.force_regenerate }}" == "true" ]]; then
-            scad_files=$(python .github/scripts/stl_generator_helper.py --get-all-files)
+            scad_files_to_build_json=$(python .github/scripts/build.py --get-all-files)
           else
-            changed_files=$(python .github/scripts/stl_generator_helper.py --get-changed-files)
-            missing_files=$(python .github/scripts/stl_generator_helper.py --get-missing-files)
-            scad_files=$(jq -n --argjson a "$changed_files" --argjson b "$missing_files" '$a + $b | unique')
+            changed_files=$(python .github/scripts/build.py --get-changed-files)
+            missing_files=$(python .github/scripts/build.py --get-missing-files)
+            scad_files_to_build_json=$(jq -n --argjson a "$changed_files" --argjson b "$missing_files" '$a + $b | unique')
           fi
 
-          if [[ -z "$scad_files" || "$scad_files" == "[]" ]]; then
+          if [[ -z "$scad_files_to_build_json" || "$scad_files_to_build_json" == "[]" ]]; then
             echo "No SCAD files to process."
             echo "should_commit=false" >> $GITHUB_OUTPUT
             exit 0
           fi
 
           echo "should_commit=true" >> $GITHUB_OUTPUT
-
-          echo "$scad_files" | jq -r '.[]' | while read -r file; do
-            openscad -o "3d_models/$(basename "$file" .scad).stl" "$file"
-          done
-
-      - name: Generate build report
-        if: steps.generate.outputs.should_commit == 'true'
-        run: |
-          python .github/scripts/stl_generator_helper.py --generate-report
+          scad_files_to_build=$(echo "$scad_files_to_build_json" | jq -r '.[]' | tr '\n' ' ')
+          python .github/scripts/build.py --build $scad_files_to_build
 
       - name: Upload STL artifacts
         if: steps.generate.outputs.should_commit == 'true'

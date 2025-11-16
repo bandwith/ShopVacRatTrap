@@ -12,16 +12,19 @@ Each component is in its own SCAD file, ready for printing.
 - `bait_station.scad`: A removable bait station.
 - `control_box_enclosure.scad`: A new enclosure for the low-voltage electronics with mounting tabs and a separate lid.
 - `control_box_lid.scad`: The lid for the new control box.
+- `sensor_mount.scad`: A mount for attaching sensors to a PVC pipe.
+- `vacuum_funnel.scad`: A funnel for connecting a PVC pipe to a shop vacuum hose.
+- `camera_mount.scad`: A mount for attaching a camera to a PVC pipe.
 
 ## Generating STL Files
 
-To generate the STL files for printing, you can use the following shell script:
+To generate the STL files for printing, you can use the following command:
 
 ```bash
-.github/scripts/stl_generate.sh
+python .github/scripts/build.py --build
 ```
 
-This script will generate STL files for each of the SCAD files listed above.
+This script will generate STL files for all of the SCAD files in this directory.
 
 ## Printing Recommendations
 
