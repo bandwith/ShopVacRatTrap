@@ -11,7 +11,7 @@ This guide assumes you have:
 
 **Estimated Time**: 2-3 weeks (including component shipping)
 
-##Step 1: Order Components
+## Step 1: Order Components
 
 ### Purchase List
 
@@ -28,11 +28,10 @@ This guide assumes you have:
    ```
 
 3. **Order Components**
-   - **Adafruit**: Sensors, ESP32, STEMMA cables (~$90)
-   - **Mouser**: Power supply, SSR, safety components (~$60)
-   - **Amazon**: Generic items (optional)
+   - **Adafruit**: Sensors, ESP32, STEMMA cables (~$82)
+   - **Mouser**: Power supply, SSR, safety components (~$101)
 
-**Budget**: ~$150 (standard) or ~$190 (camera variant)
+**Budget**: ~$183 (standard) or ~$204 (camera variant)
 
 ---
 

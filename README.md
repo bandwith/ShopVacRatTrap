@@ -2,17 +2,33 @@
 
 > **⚠️ Work in Progress ⚠️**
 >
-> This project is under active development. Documentation, features, and hardware are subject to change.
+> This project is under active development. Documentation, features, and hardware## ✨ Project Status
 
-Professional IoT-based rodent control system featuring ESP32-S3, hybrid sensor detection, and automated vacuum capture.
+**Current:** Ready for production printing (2025-11-27)
 
-## 📚 Documentation
+**Recent Updates:**
+- ✅ Flat ramp entrance (no supports needed)
+- ✅ Integrated cable channels (rodent-proof routing)
+- ✅ BOM validated (14 components verified)
+- ✅ Complete assembly visualization
+
+## 🎯 Overview
+
+This project provides complete design files for a professional-grade, IoT-enabled rodent trap system that connects to a standard shop vacuum. Features automated detection using multiple sensors and safe high-voltage switching.
+
+**Key Features:**
+- Multi-sensor detection (VL53L0X ToF, APDS9960 proximity, PIR motion)
+- ESPHome-based ESP32-S3 control
+- Solid-state relay for safe AC switching
+- Integrated cable protection (no external conduit needed)
+- 3D printable components (PETG/ASA)
+- Optional camera integration (OV5640)tion
 
 **Complete documentation:** [Read the Docs](https://shopvac-rat-trap.readthedocs.io) _(coming soon)_
 
 **Local preview:**
 ```bash
-mkdocs serve  # View at http://localhost:8000
+{{ ... }}
 ```
 
 ### Quick Links
@@ -58,8 +74,8 @@ esphome run rat-trap.yaml
 
 | Configuration | Components | Total |
 |---------------|------------|-------|
-| **Standard** | ESP32 + Sensors + Display + Power + Safety | ~$150 |
-| **+ Camera** | Adds OV5640 + IR LED | ~$190 |
+| **Standard** | ESP32 + Sensors + Display + Power + Safety | ~$183 |
+| **+ Camera** | Adds OV5640 + IR LED + SD Card | ~$204 |
 
 **Detailed BOM:** [Component Sourcing Guide](docs/hardware/sourcing.md)
 

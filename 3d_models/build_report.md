@@ -42,6 +42,53 @@ All models updated with actual BOM component dimensions:
 - **Hammond Enclosure:** 200mm × 120mm × 75mm
 - **ESP32 Feather:** 50.8mm × 22.9mm
 
+## BOM Validation Results
+
+**Status:** ✅ All components validated (2025-11-27)
+
+All 14 critical components verified against BOM_CONSOLIDATED.csv:
+- ESP32-S3 Feather (50.8×22.9mm) - ✅ Match
+- Sensors (VL53L0X, APDS9960, PIR, BME280) - ✅ All match STEMMA QT standard (17.78×25.4mm)
+- OLED Display (27×27.5mm) - ✅ Match
+- SSR AQA411VL (40×58×25.5mm) - ✅ Match (verified against datasheet)
+- PSU LRS-35-5 (99×82×30mm) - ✅ Match
+- Hammond PN-1334-C enclosure - ✅ Match
+
+**Conclusion:** No dimensional corrections needed. All models accurate.
+
+---
+
+## Cable Protection Implementation
+
+**Strategy:** Integrated channels in 3D printed structure
+
+**Design:**
+- Cable channels: 6mm wide × 3mm deep (built into trap walls)
+- Connector pockets: 8×10×5mm (for JST SH connectors)
+- Entry ports: 8-15mm diameter with chamfers
+
+**Benefits:**
+- $0 additional cost (vs $15-20 for external conduit)
+- Complete rodent protection (cables enclosed in 4mm PETG walls)
+- Simplified assembly (no external routing)
+- Clean aesthetic (invisible cables)
+
+**Implementation:**
+- trap_entrance.scad: Radial channels from sensors to junction
+- trap_body_front.scad: Vertical channel (rear wall, 125mm)
+- Control box: PG13.5 cable gland (already designed)
+
+---
+
+## Assembly Design Updates
+
+**Entrance:** Flat ramp design (trap_ramp_entrance.scad)
+- Replaces cone funnel (deprecated)
+- Prints flat - no supports needed
+- 150mm gradual slope for rodent entry
+
+---
+
 ## Print Settings Recommendations
 
 ### Material

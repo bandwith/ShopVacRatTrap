@@ -1,139 +1,81 @@
-// Sensor Mount for PVC Pipe (Two-Part Clamp)
-// Engineer: Gemini
-// Date: 2024-11-15
-//
-// ========== REVISION HIGHLIGHTS ==========
-// - REFACTORED: Redesigned as a two-part clamp for robust and secure PVC pipe attachment.
-// - REFACTORED: Parametric design for different pipe sizes and components.
-// - NEW: Includes a separate strap piece for clamping. Both parts are printed separately.
-// - NEW: Added mounting holes for sensors on the top plate.
-// - IMPROVED: Strong and reliable design for standalone operation and pipe mounting.
-// =========================================
+// ShopVac Rat Trap - Modular Sensor Section
+// Features: Embedded wiring, Snap-fit sensor covers, Twist-Lock joints
 
-// ========== CORE PARAMETERS ==========
+include <trap_modules.scad>
+
 $fn = 100;
 
-// [Assembly Control]
-show_main_body = true;
-show_strap = true;
-show_assembled = false; // Set to true to see the assembly
-
-// [Pipe]
-pipe_outer_diameter = 114.3; // 4" Schedule 40 PVC
-pipe_fit_tolerance = 0.5; // Add a small gap for a smooth fit
-
-// [Mount]
-mount_width = 80;
-plate_length = 80;
-plate_width = 60;
-plate_thickness = 4;
-wall_thickness = 6;
-
-// [Fasteners]
-flange_screw_diameter = 5; // M5
-flange_hole_spacing = pipe_outer_diameter + wall_thickness * 2 + 20;
-nut_recess_diameter = 10; // For M5 Nut
-nut_recess_depth = 5;
-
-// [Sensor Mounting]
-sensor_mount_hole_spacing_x = 60;
-sensor_mount_hole_spacing_y = 40;
-sensor_mount_hole_diameter = 3; // M3 screw
-
-// ========== MODULES ==========
-
-module main_body() {
-    pipe_radius = pipe_outer_diameter / 2;
+module sensor_section() {
+    length = 100;
 
     difference() {
-        union() {
-            // Main block
-            translate([0, 0, pipe_radius/2]) {
-                cube([mount_width, flange_hole_spacing, pipe_radius + wall_thickness], center=true);
-            }
-            // Top Plate
-            translate([0, 0, pipe_radius + wall_thickness + plate_thickness/2]) {
-                cube([plate_length, plate_width, plate_thickness], center=true);
-            }
+        trap_module_base(length);
+
+        // --- ToF Sensor Mount (Top) ---
+        translate([0, 0, length/2]) {
+            // Sensor PCB Cavity
+            translate([0, tube_od/2 + 2, 0])
+                cube([20, 10, 25], center=true);
+
+            // Wire Path to Main Channel
+            translate([0, tube_od/2 + 5, 0])
+                cylinder(d=6, h=20); // Vertical hole to channel
         }
 
-        // Pipe cutout
-        rotate([90, 0, 0]) {
-            cylinder(d=pipe_outer_diameter + (pipe_fit_tolerance * 2), h=mount_width + 2, center=true);
-        }
+        // --- PIR Sensor Mount (Side) ---
+        translate([25, 0, length/2]) {
+            rotate([0, 0, -45]) {
+                // Sensor Body Hole
+                translate([0, tube_od/2, 0])
+                    rotate([90, 0, 0])
+                    cylinder(d=23, h=20);
 
-        // Sensor mounting holes
-        for (x = [-sensor_mount_hole_spacing_x/2, sensor_mount_hole_spacing_x/2]) {
-            for (y = [-sensor_mount_hole_spacing_y/2, sensor_mount_hole_spacing_y/2]) {
-                translate([x, y, pipe_radius + wall_thickness]) {
-                    cylinder(d=sensor_mount_hole_diameter, h=plate_thickness+1, center=true);
-                }
+                // Wire Path
+                translate([0, tube_od/2, 0])
+                    rotate([90, 0, 0])
+                    cylinder(d=8, h=30);
             }
         }
+    }
 
-        // Flange screw holes
-        for (y_mult = [-1, 1]) {
-            translate([0, y_mult * flange_hole_spacing/2, 0]) {
-                rotate([90,0,0]) {
-                    cylinder(d=flange_screw_diameter, h=pipe_radius + wall_thickness + 2, center=true);
-                }
-            }
+    // --- ToF Sensor Boss ---
+    translate([0, tube_od/2, length/2]) {
+        difference() {
+            cube([26, 15, 30], center=true);
+            // Cavity
+            translate([0, 2, 0])
+                cube([21, 12, 26], center=true);
+            // Snap fit slots
+            translate([0, 5, 10])
+                cube([22, 2, 2], center=true);
+        }
+    }
+
+    // --- PIR Sensor Boss ---
+    rotate([0, 0, -45])
+    translate([0, tube_od/2, length/2]) {
+        difference() {
+            rotate([90, 0, 0])
+            cylinder(d=30, h=10);
+
+            rotate([90, 0, 0])
+            cylinder(d=23, h=12); // Sensor hole
         }
     }
 }
 
-module strap() {
-    pipe_radius = pipe_outer_diameter / 2;
-
+module tof_cover() {
+    // Snap-fit cover for ToF sensor
     difference() {
-        // Strap body
-        union() {
-            difference() {
-                cylinder(d=pipe_outer_diameter + (pipe_fit_tolerance*2) + wall_thickness*2, h=mount_width, center=true);
-                cylinder(d=pipe_outer_diameter + (pipe_fit_tolerance*2), h=mount_width+1, center=true);
-            }
-            // Flanges
-            for (y_mult = [-1, 1]) {
-                translate([0, y_mult * (pipe_radius + wall_thickness), 0]) {
-                    cube([mount_width, wall_thickness*2, wall_thickness*2], center=true);
-                }
-            }
-        }
-
-        // Cut to make a half-strap
-        translate([0,0,pipe_radius+wall_thickness+1]) {
-            cube([mount_width+2, (pipe_radius+wall_thickness)*2+2, (pipe_radius+wall_thickness)*2+2], center=true);
-        }
-
-        // Flange screw holes with nut recesses
-        for (y_mult = [-1, 1]) {
-            translate([0, y_mult * flange_hole_spacing/2, 0]) {
-                cylinder(d=flange_screw_diameter, h=mount_width+2, center=true);
-                translate([0,0, -mount_width/2 - 1]) {
-                    cylinder(d=nut_recess_diameter, h=nut_recess_depth);
-                }
-                 translate([0,0, mount_width/2 + 1 - nut_recess_depth]) {
-                    cylinder(d=nut_recess_diameter, h=nut_recess_depth);
-                }
-            }
-        }
+        cube([24, 5, 28], center=true);
+        // Sensor window
+        cube([10, 10, 5], center=true);
+        // Snap tabs
+        translate([0, 0, 10])
+            cube([22, 2, 2], center=true);
     }
 }
 
-// ========== ASSEMBLY ==========
-if (show_assembled) {
-    main_body();
-    rotate([0,0,180]) {
-        strap();
-    }
-} else {
-    if (show_main_body) {
-        main_body();
-    }
-    if (show_strap) {
-        // Place strap next to main body for printing
-        translate([0, flange_hole_spacing, 0]) {
-            strap();
-        }
-    }
-}
+// Render
+sensor_section();
+translate([0, 50, 0]) tof_cover();

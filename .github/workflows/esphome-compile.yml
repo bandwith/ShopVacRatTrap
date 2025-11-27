@@ -17,7 +17,7 @@ jobs:
     strategy:
       matrix:
         yaml-file:
-          - esphome/rat-trap-2025.yaml
+          - esphome/rat-trap.yaml
           - esphome/rat-trap-stemma-camera.yaml
 
     steps:
@@ -110,7 +110,7 @@ jobs:
             ## 🔌 Firmware Files
 
             This release includes pre-compiled firmware for:
-            - `rat-trap-2025.yaml` - Standard configuration with ToF sensor
+            - `rat-trap.yaml` - Standard configuration with ToF sensor
             - `rat-trap-stemma-camera.yaml` - Camera-enhanced configuration
 
             ### 📥 Installation Methods
@@ -127,5 +127,5 @@ jobs:
 
             **Method 3: ESPHome CLI**
             ```bash
-            esphome run rat-trap-2025.yaml --device /dev/ttyUSB0
+            esphome run rat-trap.yaml --device /dev/ttyUSB0
             ```

@@ -36,7 +36,7 @@ To trigger the trap, at least two of the three primary sensors must confirm the 
 
 ## Visual Classification (Camera Variant)
 
-For the camera-equipped variant, a **Grove Vision AI V2** provides intelligent classification:
+For the camera-equipped variant, the **OV5640 5MP STEMMA QT camera** provides visual verification and evidence capture. The camera connects via a secondary I2C bus and can capture images when the trap is triggered, providing visual confirmation of captures for analysis.
 
 *   **Role**: Real-time visual classification with onboard NPU.
 *   **Placement**: Mounted to view the trap interior via camera mount.

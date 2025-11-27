@@ -16,37 +16,40 @@ This directory contains all 3D printable components for the rat trap system, des
 
 ## 📋 Model Inventory
 
-All models updated with precise dimensions from component datasheets.
+## 📂 3D Printable Models
 
-### Core Trap Components
+### Current Models - Print These! ✅
 
-| Model | Description | Dimensions | Print Time* | Material |
-|-------|-------------|------------|-------------|----------|
-| `trap_entrance.scad` | Sensor and bait port assembly | ~130mm | 3-4h | PETG/ASA |
-| `trap_body_front.scad` | Front body half (125mm) | 125×101mm | 8-10h | PETG/ASA |
-| `trap_body_rear.scad` | Rear body half (125mm) | 125×101mm | 6-8h | PETG/ASA |
-| `trap_funnel_adapter.scad` | Vacuum connection adapter | ~150mm | 10-12h | PETG/ASA |
-| `vacuum_funnel.scad` | Shop vac funnel interface | ~180mm | 12-14h | PETG/ASA |
-| `bait_station.scad` | External bait compartment | Small | 2-3h | PETG/ASA |
+| Model | Description | Print Time | Material | Notes |
+|-------|-------------|------------|----------|-------|
+| **trap_ramp_entrance.scad** | **Flat ramp entrance** | 5-6h | PETG/ASA | No supports needed! |
+| trap_entrance.scad | Sensor mounts | 3-4h | PETG/ASA | VL53L0X, APDS9960 + cable channels |
+| trap_body_front.scad | Front body (125mm) | 8-10h | PETG/ASA | PIR mount + vertical cable channel |
+| trap_body_rear.scad | Rear body (125mm) | 8-10h | PETG/ASA | Completes 250mm trap |
+| vacuum_funnel.scad | Vacuum adapter | 3-4h | PETG/ASA | 2.5" shop vac hose connection |
+| bait_station.scad | Bait holder | 2-3h | PETG/ASA | External mounting |
 
-**Note:** `trap_body_main.scad` (250mm) is **legacy** - use split front/rear halves instead!
+### Control Box & Accessories
 
-### Sensor & Electronics Mounts
+| Model | Description | Print Time | Material | Notes |
+|-------|-------------|------------|----------|-------|
+| control_box_enclosure.scad | Electronics housing | 12-14h | PETG/ASA | Fits Hammond PN-1334-C footprint |
+| control_box_lid.scad | Box cover | 4-5h | PETG/ASA | Matches enclosure |
+| display_bezel.scad | OLED mount | 1-2h | PETG/ASA | Front panel |
+| camera_mount.scad | OV5640 mount | 2-3h | PETG/ASA | Optional camera |
+| stemma_qt_mount.scad | Sensor mounting bracket | 1-2h | PETG/ASA | General purpose |
 
-| Model | Description | Component | Dimensions | STL |
-|-------|-------------|-----------|------------|-----|
-| `stemma_qt_mount.scad` | **NEW** Universal STEMMA QT mount | VL53L0X, APDS9960, BME280 | 17.78×25.4mm boards | 28K |
-| `camera_mount.scad` | OV5640 camera mount | Adafruit 5945 | 32×32mm PCB | 138K |
-| `sensor_mount.scad` | Universal pipe clamp mount | Generic sensors | 2-part clamp | 568K |
+### Print Order (Recommended)
 
-### Control Box
+1. **trap_ramp_entrance** (5-6h) - Entry point
+2. **trap_entrance** (3-4h) - Sensor section
+3. **trap_body_front** (8-10h) - Main body front
+4. **trap_body_rear** (8-10h) - Main body rear
+5. **vacuum_funnel** (3-4h) - Exit connection
+6. **control_box_enclosure** (12-14h) - Electronics
+7. **Accessories** (8-12h total) - Lid, bezels, mounts
 
-| Model | Description | Fits | Print Time* |
-|-------|-------------|------|-------------|
-| `control_box_enclosure.scad` | Main electronics enclosure | Hammond PN-1334-C footprint | 12-15h |
-| `control_box_lid.scad` | Enclosure cover | Matches enclosure | 5-6h |
-
-\* *Print times are estimates at 0.2mm layer height, 50mm/s*
+**Total Print Time:** ~48-60 hours for complete systemmm/s*
 
 ## 🔧 Component Fitment
 
@@ -157,6 +160,76 @@ oring_groove_width = 3;       // For 2.5mm O-ring
 2. Test fit components before final assembly
 3. Clean up layer lines on visible surfaces
 4. Install threaded inserts while plastic is hot (M3/M4 holes)
+
+## 🔌 Integrated Cable Routing
+
+All trap models include **hidden cable channels** for rodent-proof STEMMA QT cable routing. No external conduit required.
+
+### Design Features
+
+**Cable Channels:** 6mm wide × 3mm deep grooves
+**Connector Pockets:** 8×10×5mm recesses for JST SH connectors
+**Entry Ports:** 8-15mm diameter with chamfers for easy threading
+**Protection:** Cables enclosed in 4mm thick PETG/ASA walls
+
+### Cable Path Design
+
+```
+Sensor Mounts → Internal Channels → Central Junction
+     ↓                                    ↓
+Connector Pockets (8×10mm)    Exit Port (15mm diameter)
+                                          ↓
+                              Trap Body Vertical Channel (6mm)
+                                          ↓
+                              Control Box Cable Gland (PG13.5)
+```
+
+### Models with Cable Infrastructure
+
+| Model | Cable Features | Notes |
+|-------|----------------|-------|
+| **trap_entrance** | Radial channels + connector pockets | Routes 3 sensors to central junction |
+| **trap_body_front** | Vertical channel (rear wall) | Covered when joined with rear half |
+| **control_box_enclosure** | PG13.5 cable gland + internal channels | Already implemented |
+| **camera_mount** | Cable channel for STEMMA connector | Already implemented |
+| **stemma_qt_mount** | Cable channel notch | Already implemented |
+
+### Cable Assembly Procedure
+
+1. **Pre-Assembly**: Connect sensors to STEMMA QT cables
+2. **Position Connectors**: Snap JST SH connectors into pockets
+3. **Route to Junction**: Follow internal channels to central exit
+4. **Thread Through Body**: Before joining trap halves, thread bundle through vertical channel
+5. **Join Halves**: Cables are now enclosed in walls
+6. **Control Box Entry**: Pass through cable gland, hand-tighten
+
+### Cable Specifications
+
+**STEMMA QT Cables:**
+- Diameter: ~1-2mm (26AWG, 4-wire)
+- JST SH Connector: 5×7×3.5mm (clearance: 8×10×5mm)
+- Max Bundle: 5 cables fit in 6mm channel
+
+**Channel Dimensions:**
+- Cable groove: 6mm wide (snug fit for cables)
+- Connector pockets: 8×10mm (loose fit for connectors)
+- Entry ports: 8mm standard, 15mm at junctions
+
+### Maintenance Access
+
+**Cable Access**: Disassemble trap body flanges (4× M4 screws)
+**Service Loop**: 10cm extra cable inside control box
+**Connector Orientation**: JST SH latches face "up" in pockets
+
+### Benefits vs External Conduit
+
+| Feature | Integrated Channels | External Conduit |
+|---------|-------------------|------------------|
+| Cost | $0 (built-in) | +$15-20 |
+| Aesthetics | Invisible | Visible metal conduit |
+| Protection | 4mm PETG walls | Metal tube |
+| Assembly | 10-15 minutes | 30-45 minutes |
+| Maintenance | Flanged disassembly | Conduit removal |
 
 ## 📦 Assembly Notes
 

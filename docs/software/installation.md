@@ -105,7 +105,7 @@ curl -O <https://raw.githubusercontent.com/bandwith/ShopVacRatTrap/main/ELECTRIC
 - [ ] VL53L0X sensor (verify I2C address 0x29)
 - [ ] OLED display (verify I2C address 0x3C) - **Integrated status display**
 - [ ] **Single LRS-35-5 PSU** (5V/7A, provides ample capacity for all components)
-- [ ] SSR relay 40A (SparkFun COM-13015, chassis mount)
+- [ ] Panasonic AQA411VL SSR 25A (panel mount)
 - [ ] **15A Circuit Breaker** (for safety compliance)
 - [ ] **15A Fuses** (for proper protection)
 - [ ] Resistors: 2x 10kΩ for pull-up circuits

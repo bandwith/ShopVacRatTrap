@@ -1,77 +1,64 @@
-// ShopVac Rat Trap - Bait Station
-//
-// Description:
-// Bait station with secure screw-in locking mechanism.
-// =========================================
+// ShopVac Rat Trap - Modular Bait Station
+// Features: External threaded cap for refill, Twist-Lock joints
 
-// ========== CORE PARAMETERS ==========
-$fn = 64;
+include <trap_modules.scad>
 
-// [Dimensions - Must match bait_port in trap_body_main.scad]
-bait_port_diameter = 40;
-bait_port_length = 20;
+$fn = 100;
 
-// [Bait Compartment]
-bait_compartment_diameter = bait_port_diameter - 4;
-bait_compartment_depth = 50;
+module bait_station_module() {
+    length = 80;
+    cap_d = 40;
 
-// [Handle]
-handle_diameter = bait_port_diameter + 20;
-handle_height = 15;
+    difference() {
+        trap_module_base(length);
 
-// [Locking Lugs]
-lug_width = 10;
-lug_height = 4;
-lug_depth = 3;
+        // Bait Port Cutout
+        translate([0, 0, length/2])
+            rotate([90, 0, 0])
+            cylinder(d=cap_d - 4, h=tube_od/2 + 20);
+    }
 
-// ========== MODULES ==========
-
-module bait_station() {
-    union() {
+    // Bait Port Neck (Threaded)
+    translate([0, -tube_od/2 + 2, length/2])
+        rotate([90, 0, 0])
         difference() {
-            // Main body
-            cylinder(d=bait_port_diameter - 0.5, h=bait_port_length + bait_compartment_depth, center=true);
-
-            // Bait compartment
-            translate([0,0, -bait_port_length/2 - 1]) {
-                cylinder(d=bait_compartment_diameter, h=bait_compartment_depth+2, center=true);
-            }
-
-            // Scent holes
-            for (a = [0, 72, 144, 216, 288]) {
-                rotate([0, 0, a]) {
-                    translate([bait_compartment_diameter / 2 - 3, 0, -15]) {
-                        rotate([90, 0, 0]) {
-                            cylinder(h = 15, d = 4, center=true);
+            union() {
+                cylinder(d=cap_d, h=15);
+                // Thread simulation (spiral)
+                for(i=[0:3]) {
+                    translate([0, 0, 2 + i*3])
+                        difference() {
+                            cylinder(d=cap_d + 2, h=1);
+                            cylinder(d=cap_d, h=1);
                         }
-                    }
                 }
             }
+            cylinder(d=cap_d - 4, h=20, center=true);
+        }
+}
+
+module bait_cap() {
+    cap_d = 40;
+    difference() {
+        union() {
+            cylinder(d=cap_d + 6, h=10);
+            // Grip ribs
+            for(r=[0:30:360]) rotate([0,0,r]) translate([cap_d/2 + 2, 0, 5]) cylinder(r=2, h=10, center=true);
         }
 
-        // Handle
-        translate([0, 0, (bait_port_length + bait_compartment_depth)/2]) {
-            cylinder(d=handle_diameter, h=handle_height, center=true);
-            // Add an arrow indicator for locking direction
-            translate([0, handle_diameter/2 - 5, handle_height/2]) {
-                rotate([90,0,0]) {
-                    linear_extrude(height=2) {
-                        polygon(points=[[-3,0],[3,0],[0,5]]);
-                    }
-                }
-            }
-        }
+        // Inner thread cavity
+        translate([0, 0, 2])
+            cylinder(d=cap_d + 0.5, h=9);
 
-        // Locking lugs
-        for (r = [0, 180]) {
-            rotate([0,0,r]) {
-                translate([0, bait_port_diameter/2 - lug_depth/2, bait_port_length/2 - lug_height/2]) {
-                    cube([lug_width, lug_depth, lug_height], center=true);
-                }
+        // Gasket Groove
+        translate([0, 0, 1])
+            difference() {
+                cylinder(d=cap_d + 4, h=1);
+                cylinder(d=cap_d - 2, h=1);
             }
-        }
     }
 }
 
-// ========== ASSEMBLY CALL ==========
-bait_station();
+// Render
+bait_station_module();
+translate([0, -50, 0]) bait_cap();

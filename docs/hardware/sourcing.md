@@ -27,10 +27,6 @@
 | 1 | 1833 | Micro SD Card 8GB Class 10... | $9.95 | [Buy](https://www.adafruit.com/product/1833) |
 | 1 | 3893 | STEMMA JST PH 4-pin Cable - 200mm Long... | $1.25 | [Buy](https://www.adafruit.com/product/3893) |
 
-## SparkFun Components
-| Qty | Part Number | Description | Price | Link |
-|-----|------------|-------------|-------|------|
-| 1 | COM-13015 | SparkFun Solid State Relay - 40A Chassis... | $14.95 | [Buy](https://www.sparkfun.com/products/COM-13015) |
 
 ## Mouser Components
 | Qty | Part Number | Description | Price | Link |
@@ -69,12 +65,12 @@
 
 ## Components Previously Not Found in Nexar - Updated Sources
 
-### 1. STEMMA QT Camera System (NEW)
-**Primary**: Grove Vision AI V2 with Onboard NPU
-**Adafruit 5949**: $24.95 - <https://www.adafruit.com/product/5949>
-**Features**: 5MP resolution, autofocus, built-in STEMMA QT connector
-**Alternative**: Generic camera modules for budget builds - lower resolution, requires soldering
-**Note**: Zero-solder assembly, future-proof modular design
+### 1. STEMMA QT Camera System
+**Primary**: OV5640 5MP Camera with STEMMA QT
+**Adafruit 5945**: $14.95 - <https://www.adafruit.com/product/5945>
+**Features**: 5MP resolution, autofocus, built-in STEMMA QT connector, I2C interface
+**Alternative**: Generic OV5640 modules - lower cost but requires soldering
+**Note**: Zero-solder assembly with STEMMA QT, perfect for modular design
 
 **High-Power IR LED System**:
 **Adafruit 5639**: $3.95 - <https://www.adafruit.com/product/5639>
@@ -103,11 +99,11 @@
 **Alternative**: LRS-35-5 for higher capacity builds (7A vs 3A capacity)
 
 ### 4. Solid State Relay
-**Primary**: Sensata Crydom D2425-10 (25A, Zero-crossing)
-**Mouser 558-D2425-10**: $32.15 - <https://www.mouser.com/ProductDetail/558-D2425-10>
-**Digi-Key 2057-D2425-10-ND**: $33.42
+**Primary**: Panasonic AQA411VL (25A, Panel Mount)
+**Mouser 769-AQA411VL**: $25.61 - <https://www.mouser.com/ProductDetail/769-AQA411VL>
+**Features**: 4-32V DC control, 25A @ 75-250V AC, LED indicator, zero-cross switching
+**Alternative**: Sensata Crydom D2425-10 - $32.15
 **Alternative**: Omron G3NA-210B-DC5-24 - $28.50
-**Alternative**: Carlo Gavazzi RM1A23D25 - $30.75
 **⚠️ SAFETY CRITICAL**: Must be UL/CE listed for AC switching
 
 ### 5. Current Transformer
@@ -168,10 +164,10 @@
 ## Sourcing Strategy by Component Type
 
 ### STEMMA QT Camera System (NEW)
-**Primary Sources**: Adafruit, SparkFun (Qwiic compatible)
-**Requirements**: STEMMA QT/Qwiic connector compatibility
-**Components**: Grove Vision AI V2, High-power IR LED, Grove cables
-**Budget**: ~20% of total project cost ($40.10 upgrade)
+**Primary Sources**: Adafruit
+**Requirements**: STEMMA QT connector compatibility, I2C interface
+**Components**: OV5640 Camera, High-power IR LED, STEMMA cables, Micro SD card
+**Budget**: ~$21 upgrade to standard configuration
 
 ### Safety-Critical Components (AC Power)
 **Primary Sources**: Mouser, Digi-Key, Newark

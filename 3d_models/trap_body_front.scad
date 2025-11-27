@@ -96,6 +96,24 @@ module trap_body_front() {
             }
         }
     }
+
+    // ========== CABLE ROUTING CHANNEL ==========
+    // Vertical channel on rear wall (covered when assembled with rear half)
+    // Runs full body length from bottom (entrance) to top (control box)
+
+    translate([-tube_outer_diameter/2 - cable_channel_width/2 - 1, 0, body_length/2]) {
+        // Cable groove (6mm wide × 3mm deep × full length)
+        translate([0, 0, -body_length/2])
+            cube([cable_channel_width, cable_channel_depth, body_length]);
+
+        // Bottom entry port (from trap entrance)
+        translate([cable_channel_width/2, cable_channel_depth/2, -body_length/2 + 5])
+            cable_entry_port(diameter=8, height=cable_channel_depth + 2);
+
+        // Top exit port (to control box)
+        translate([cable_channel_width/2, cable_channel_depth/2, body_length/2 - 5])
+            cable_entry_port(diameter=8, height=cable_channel_depth + 2);
+    }
 }
 
 // ========== ASSEMBLY CALL ==========

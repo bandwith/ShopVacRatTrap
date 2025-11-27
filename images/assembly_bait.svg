@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="400" height="300">
+  <!-- Title -->
+  <text x="200" y="20" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold">Bait Station Access</text>
+
+  <!-- Tube with bait port -->
+  <g id="tube">
+    <ellipse cx="150" cy="150" rx="50" ry="30" fill="none" stroke="black" stroke-width="2"/>
+    <line x1="100" y1="150" x2="100" y2="220" stroke="black" stroke-width="2"/>
+    <line x1="200" y1="150" x2="200" y2="220" stroke="black" stroke-width="2"/>
+    <ellipse cx="150" cy="220" rx="50" ry="30" fill="none" stroke="black" stroke-width="2"/>
+
+    <!-- Bait port opening -->
+    <circle cx="95" cy="185" r="20" fill="white" stroke="black" stroke-width="2"/>
+    <!-- Thread grooves -->
+    <circle cx="95" cy="185" r="18" fill="none" stroke="black" stroke-width="0.5"/>
+    <circle cx="95" cy="185" r="16" fill="none" stroke="black" stroke-width="0.5"/>
+    <circle cx="95" cy="185" r="14" fill="none" stroke="black" stroke-width="0.5"/>
+  </g>
+
+  <!-- Bait cap (separate) -->
+  <g id="bait_cap">
+    <circle cx="280" cy="120" r="25" fill="white" stroke="black" stroke-width="2"/>
+    <!-- Handle ribs -->
+    <line x1="260" y1="120" x2="255" y2="120" stroke="black" stroke-width="2"/>
+    <line x1="265" y1="110" x2="260" y2="108" stroke="black" stroke-width="2"/>
+    <line x1="265" y1="130" x2="260" y2="132" stroke="black" stroke-width="2"/>
+    <line x1="300" y1="120" x2="305" y2="120" stroke="black" stroke-width="2"/>
+    <line x1="295" y1="110" x2="300" y2="108" stroke="black" stroke-width="2"/>
+    <line x1="295" y1="130" x2="300" y2="132" stroke="black" stroke-width="2"/>
+    <!-- Inner threads -->
+    <circle cx="280" cy="120" r="20" fill="none" stroke="black" stroke-width="0.5" stroke-dasharray="2,2"/>
+    <text x="280" y="100" text-anchor="middle" font-family="Arial, sans-serif" font-size="10">Cap</text>
+  </g>
+
+  <!-- Twist arrow -->
+  <path d="M 250 130 Q 230 150, 220 175" fill="none" stroke="black" stroke-width="2" stroke-dasharray="3,3" marker-end="url(#arrowhead)"/>
+  <text x="235" y="150" font-family="Arial, sans-serif" font-size="10" transform="rotate(-30 235 150)">Screw on ⟳</text>
+
+  <!-- Peanut butter jar icon -->
+  <g id="pb_jar">
+    <rect x="300" y="200" width="40" height="50" rx="3" fill="burlywood" stroke="black" stroke-width="1.5"/>
+    <rect x="300" y="195" width="40" height="8" fill="darkgray" stroke="black" stroke-width="1.5"/>
+    <ellipse cx="320" cy="195" rx="20" ry="3" fill="lightgray" stroke="black" stroke-width="1"/>
+    <text x="320" y="230" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" font-weight="bold">PB</text>
+  </g>
+
+  <!-- Knife/spatula -->
+  <g id="knife">
+    <rect x="350" y="220" width="30" height="3" fill="silver" stroke="black" stroke-width="0.5"/>
+    <rect x="350" y="218" width="5" height="7" fill="brown" stroke="black" stroke-width="0.5"/>
+  </g>
+
+  <!-- Steps -->
+  <g id="steps">
+    <circle cx="30" cy="60" r="12" fill="none" stroke="black" stroke-width="2"/>
+    <text x="30" y="65" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold">1</text>
+    <text x="50" y="65" font-family="Arial, sans-serif" font-size="11">Unscrew cap</text>
+
+    <circle cx="30" cy="85" r="12" fill="none" stroke="black" stroke-width="2"/>
+    <text x="30" y="90" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold">2</text>
+    <text x="50" y="90" font-family="Arial, sans-serif" font-size="11">Add peanut butter</text>
+
+    <circle cx="30" cy="110" r="12" fill="none" stroke="black" stroke-width="2"/>
+    <text x="30" y="115" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold">3</text>
+    <text x="50" y="115" font-family="Arial, sans-serif" font-size="11">Screw cap back tight</text>
+  </g>
+
+  <!-- Arrow marker definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <polygon points="0 0, 10 3, 0 6" fill="black"/>
+    </marker>
+  </defs>
+</svg>

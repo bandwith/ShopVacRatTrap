@@ -29,48 +29,55 @@ The BOM is automatically validated and updated via GitHub Actions. Check the lat
 
 ## Component Categories
 
-### Core Electronics (~$95)
+### Core Electronics (~$93)
 
 | Component | Qty | Est. Price |
 |-----------|-----|------------|
-| ESP32-S3 Feather | 1 | $17.50 |
-| VL53L0X ToF Sensor | 1 | $14.95 |
-| APDS9960 ProximitySensor | 1 | $7.95 |
-| PIR Motion Sensor | 1 | $5.95 |
-| BME280 Environmental | 1 | $14.95 |
-| OLED Display 128x64 | 1 | $17.50 |
-| STEMMA QT Hub | 1 | $7.50 |
-| STEMMA QT Cables | 4 | $4.60 |
+| ESP32-S3 Feather (5323) | 1 | $17.50 |
+| Feather Stacking Headers (2830) | 1 | $1.25 |
+| VL53L0X ToF Sensor (3317) | 1 | $15.89 |
+| APDS9960 Proximity (3595) | 1 | $7.50 |
+| PIR Motion Sensor (4871) | 1 | $3.95 |
+| BME280 Environmental (4816) | 1 | $10.95 |
+| OLED Display 128x64 (326) | 1 | $17.50 |
+| STEMMA QT 5-Port Hub (5625) | 1 | $2.50 |
+| STEMMA QT Cables (various) | 4 | $4.15 |
 
-### Power & Safety (~$80)
-
-| Component | Qty | Est. Price |
-|-----------|-----|------------|
-| Mean Well LRS-35-5 PSU | 1 | $18.95 |
-| Solid State Relay 40A | 1 | $24.95 |
-| IEC Inlet w/ CB & Switch | 1 | $37.50 |
-| Emergency Stop Button | 1 | $19.57 |
-| AC Outlet (Panel Mount) | 1 | $2.05 |
-| Current Transformer | 1 | $3.46 |
-| Optocoupler 4N35 | 1 | $0.58 |
-| Fuses & Hardware | - | ~$10 |
-
-### Optional Camera System (+$40)
+### Power & Safety (~$90)
 
 | Component | Qty | Est. Price |
 |-----------|-----|------------|
-| OV5640 5MP Camera | 1 | $24.95 |
-| High-Power IR LED | 1 | $3.95 |
-| Additional STEMMA Cables | 2 | $3.20 |
-| Micro SD Card 8GB | 1 | $9.95 |
+| Mean Well LRS-35-5 PSU | 1 | $11.80 |
+| Panasonic AQA411VL SSR 25A | 1 | $25.61 |
+| Crydom HSP-7 Thermal Pad | 1 | $1.38 |
+| IEC Inlet w/ CB & Switch (DF11.2078.0010.01) | 1 | $37.27 |
+| Emergency Stop Button (XB6ETN521P) | 1 | $22.13 |
+| Panel Mount IEC Outlet (6600.3100) | 1 | $2.05 |
+| Split Core Current Transformer (PCS020-EE0502KS) | 1 | $4.09 |
+| Optocoupler 4N35 (4N35-X007) | 1 | $0.76 |
+| Hammond Enclosure (PN-1334-C) | 1 | $16.20 |
+| Large Arcade Button (368) | 1 | $2.00 |
+| Wire - Red 26AWG (1877) | 1 | $0.95 |
+| Wire - Black 26AWG (1881) | 1 | $0.95 |
+
+### Optional Camera System (+$21)
+
+| Component | Qty | Est. Price |
+|-----------|-----|------------|
+| OV5640 5MP Camera (5945) | 1 | $14.95 |
+| High-Power IR LED (5639) | 1 | $3.95 |
+| Micro SD Card 8GB (1833) | 1 | $1.95 |
+| STEMMA JST PH Cable 200mm (3893) | 1 | $1.25 |
 
 ## Total Project Cost
 
-- **Standard Configuration**: ~$150
-- **Camera Configuration**: ~$190
+**Budget**: ~$183 (standard) or ~$204 (camera variant)
 
 !!! note "Price Variability"
-    Prices are estimates and may vary based on vendor, availability, and quantity discounts. Use the BOM Manager for current pricing.
+    Prices shown are from BOM_CONSOLIDATED.csv based on Mouser and Adafruit pricing. Actual costs may vary with availability and quantity discounts. Use the BOM Manager for current pricing.
+
+!!! note "Integrated Cable Protection"
+    All STEMMA QT cables route through built-in channels in the 3D printed trap structure. No external conduit or cable protection components needed - cables are protected by 4mm thick chew-resistant PETG/ASA walls. Cable gland (PG13.5) integrated in control box design.
 
 ## Component Sourcing
 

@@ -40,7 +40,7 @@ For maximum safety and code compliance, all electronic components (both high and
 
 ## 2. Bill of Materials (BOM)
 
-**Total Project Cost: $146.10**
+**Total Project Cost: $183 (Standard) / $204 (Camera)**
 
 > **Note**: Complete vendor information and direct purchase links are available in [BOM_CONSOLIDATED.csv](BOM_CONSOLIDATED.csv).
 
@@ -49,35 +49,38 @@ For maximum safety and code compliance, all electronic components (both high and
 | Qty | Component | Part Number | Description | Vendor | Price |
 |-----|-----------|-------------|-------------|--------|-------|
 | 1 | ESP32-S3 Feather | 5323 | 8MB Flash, USB-C, STEMMA QT | Adafruit | $17.50 |
-| 1 | VL53L0X ToF Sensor | 3317 | Time-of-Flight distance sensor | Adafruit | $14.95 |
+| 1 | Feather Stacking Headers | 2830 | 12-pin and 16-pin female headers | Adafruit | $1.25 |
+| 1 | VL53L0X ToF Sensor | 3317 | Time-of-Flight distance sensor | Adafruit | $15.89 |
+| 1 | APDS9960 Proximity | 3595 | Proximity/Light/RGB/Gesture | Adafruit | $7.50 |
+| 1 | PIR Motion Sensor | 4871 | PIR Motion Sensor | Adafruit | $3.95 |
 | 1 | OLED Display 128x64 | 326 | 0.96" monochrome display | Adafruit | $17.50 |
-| 1 | BME280 Env. Sensor | 2652 | Temperature/Humidity/Pressure | Adafruit | $14.95 |
-| 1 | QWIIC Hub | 5625 | 5-Port STEMMA QT/QWIIC Hub | Adafruit | $7.50 |
-| 1 | Solid State Relay | COM-13015 | 40A chassis mount SSR | SparkFun | $24.95 |
-| 1 | Optocoupler 4N35 | 2515 | Isolation for SSR control | Adafruit | $4.95 |
+| 1 | BME280 Env. Sensor | 4816 | Temperature/Humidity/Pressure | Adafruit | $10.95 |
+| 1 | STEMMA QT 5-Port Hub | 5625 | 5-Port STEMMA QT/Qwiic Hub | Adafruit | $2.50 |
 
 ### 2.2. Power & Safety Components
 
 | Qty | Component | Part Number | Description | Vendor | Price |
 |-----|-----------|-------------|-------------|--------|-------|
 | 1 | Power Supply | LRS-35-5 | Mean Well 5V/7A chassis mount | Mouser | $11.80 |
-| 1 | IEC Inlet w/ CB & Switch | DF11.2078.0010.01 | C14 inlet + CB + switch | Mouser | $37.50 |
+| 1 | Solid State Relay | AQA411VL | Panasonic 25A SSR | Mouser | $25.61 |
+| 1 | Thermal Pad | HSP-7 | Crydom thermal pad for SSR | Mouser | $1.38 |
+| 1 | IEC Inlet w/ CB & Switch | DF11.2078.0010.01 | C14 inlet + CB + switch | Mouser | $37.27 |
 | 1 | AC Outlet | 6600.3100 | Panel Mount IEC C13 Outlet | Mouser | $2.05 |
-| 1 | Emergency Stop Button | XB6ETN521P | 16mm Red E-Stop Switch | Mouser | $19.57 |
-| 1 | Current Transformer | PCS020-EE0502KS | 20A Split Core CT | Mouser | $3.46 |
-| 1 | Optocoupler | 4N35-X007 | General Purpose Optocoupler | Mouser | $0.58 |
-| 1 | PIR Motion Sensor | 4871 | PIR Motion Sensor | Adafruit | $7.50 |
-| 1 | Large Arcade Button | 368 | Large Arcade Button | Adafruit | $4.95 |
-| 1 | Thermal Pad | HSP-7 | Thermal Pad for Single Phase Panel Mount SSRs | Mouser | $1.38 |
+| 1 | Emergency Stop Button | XB6ETN521P | 16mm Red E-Stop Switch | Mouser | $22.13 |
+| 1 | Current Transformer | PCS020-EE0502KS | 20A Split Core CT | Mouser | $4.09 |
+| 1 | Optocoupler | 4N35-X007 | General Purpose Optocoupler | Mouser | $0.76 |
+| 1 | Large Arcade Button | 368 | Large Arcade Button | Adafruit | $2.00 |
+| 1 | Enclosure | PN-1334-C | Hammond 8"x6"x4" ABS | Mouser | $16.20 |
 
 ### 2.3. Cables & Hardware
 
 | Qty | Component | Part Number | Description | Vendor | Price |
 |-----|-----------|-------------|-------------|--------|-------|
-| 1 | STEMMA QT Cable 500mm | 4401 | Main cable to inlet hub | Adafruit | $1.95 |
-| 1 | STEMMA QT Cable 50mm | 4399 | Hub to VL53L0X (co-located) | Adafruit | $0.75 |
-| 2 | STEMMA QT Cable 100mm | 4397 | Hub to BME280 + ESP32 to OLED | Adafruit | $1.90 |
-| 1 | Wire Kit | 3258/3259 | Red/Black 26AWG silicone wire | Adafruit | $5.90 |
+| 1 | STEMMA QT Cable 500mm | 4401 | 500mm JST SH cable | Adafruit | $1.25 |
+| 1 | STEMMA QT Cable 50mm | 4399 | 50mm JST SH cable | Adafruit | $0.95 |
+| 2 | STEMMA QT Cable 100mm | 4397 | 100mm JST SH cable | Adafruit | $1.90 |
+| 1 | Wire - Red 26AWG | 1877 | Silicone cover 2m red wire | Adafruit | $0.95 |
+| 1 | Wire - Black 26AWG | 1881 | Silicone cover 2m black wire | Adafruit | $0.95 |
 
 ## 3. Circuit Design & Connections
 
@@ -124,8 +127,8 @@ For maximum safety and code compliance, all electronic components (both high and
 |------|----------|------------|--------------|
 | GPIO5 | SSR Control | 4N35 Optocoupler → SSR | SAFETY CRITICAL |
 | GPIO18 | Emergency Stop | Arcade Button (Active Low) | SAFETY CRITICAL |
-| GPIO3 | I2C SDA | STEMMA QT Bus (Sensors) | Standard |
-| GPIO4 | I2C SCL | STEMMA QT Bus (Sensors) | Standard |
+| GPIO3 | I2C SDA | STEMMA QT Bus (Primary Sensors) | Standard |
+| GPIO4 | I2C SCL | STEMMA QT Bus (Primary Sensors) | Standard |
 | GPIO8 | I2C SDA | OV5640 Camera (Secondary Bus) | Standard |
 | GPIO9 | I2C SCL | OV5640 Camera (Secondary Bus) | Standard |
 | GPIO6 | IR LED Control | High-Power IR STEMMA Module | Standard |
@@ -231,11 +234,13 @@ This section provides comprehensive wiring diagrams for the ShopVac Rat Trap sys
 │  │  GPIO5 ──────────────┼────┼──┘          │       └─────────┘│ │               │
 │  │       │              │    │             │                 │ │               │
 │  │       │              │    │             │ 200mm           │ │               │
-│  │  GPIO13 ─────────────┼────┼─ [Emergency │       ┌─────────┐│ │               │
-│  │       │              │    │    Button]  └───────┤OLED     ││ │               │
-│  │       │              │    │                     │Display  ││ │               │
-│  │  GPIO21 (SDA) ───────┼────┼─────────────────────│(0x3C)   ││ │               │
-│  │  GPIO22 (SCL) ───────┼────┼─────────────────────│         ││ │               │
+│  │  GPIO13 ─────────────┼────┼─ [PIR Motion]                   │ │               │
+│  │       │              │    │                                 │ │               │
+│  │       │              │    │             ┌─────────┐       │ │               │
+│  │  GPIO18 ─────────────┼────┼─ [Emergency │OLED     │       │ │               │
+│  │       │              │    │    Button]  │Display  │       │ │               │
+│  │  GPIO3 (SDA) ───────┼────┼─────────────────────│(0x3C)   ││ │               │
+│  │  GPIO4 (SCL) ───────┼────┼─────────────────────│         ││ │               │
 │  │                     │    │                     └─────────┘│ │               │
 │  └─────────────────────┘    └─────────────────────────────────┘ │               │
 │            │                                                    │               │
@@ -254,7 +259,7 @@ This section provides comprehensive wiring diagrams for the ShopVac Rat Trap sys
 
 #### I2C Device Chain Details
 ```
-ESP32-S3 STEMMA QT Port (GPIO21/22)
+ESP32-S3 STEMMA QT Port (GPIO3/4)
     ↓ (100mm STEMMA QT Cable #1)
 VL53L0X ToF Sensor (I2C Address: 0x29)
     ↓ (100mm STEMMA QT Cable #2)
@@ -290,8 +295,8 @@ OLED Display (I2C Address: 0x3C)
 │  │       │              │        │  │ Port 1 ──── ┼ VL53L0X   │ │               │
 │  │  GPIO13 ─────────────┼────────┼──│ Port 2 ──── ┼ BME280*   │ │               │
 │  │       │              │        │  │ Port 3 ──── ┼ (Future)  │ │               │
-│  │  GPIO21 (SDA) ───────┼────────┼──│ Port 4 ──── ┼ (Camera)  │ │               │
-│  │  GPIO22 (SCL) ───────┼────────┼──│ Port 5 ──── ┼ (Future)  │ │               │
+│  │  GPIO3 (SDA) ────────┼────────┼──│ Port 4 ──── ┼ (Camera)  │ │               │
+│  │  GPIO4 (SCL) ────────┼────────┼──│ Port 5 ──── ┼ (Future)  │ │               │
 │  │                     │  |     │  │             │           │ │               │
 │  │  ┌─────────────────┐ │  |     │  │ Upstream ── ┼ ESP32 ────┼─┼─ Single Cable │
 │  │  │ OLED Display    │ │  |     │  └─────────────┘           │ │   to Control  │
