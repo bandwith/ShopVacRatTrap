@@ -1,7 +1,7 @@
 #pragma once
 
 #include "esphome/core/component.h"
-#include "esphome/components/esp32_camera/esp32_camera.h"
+
 
 namespace esphome {
 namespace rodent_classifier {

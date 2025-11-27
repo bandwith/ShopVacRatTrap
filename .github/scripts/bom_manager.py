@@ -582,7 +582,7 @@ class BOMPurchaseFileGenerator:
             row_data["Order Quantity"] = quantity
 
             # If already from Mouser, use existing data
-            if current_distributor and current_distributor.lower() == "mouser":
+            if (current_distributor or "").lower() == "mouser":
                 mouser_part = component.get(BOMColumns.DISTRIBUTOR_PART_NUMBER, "")
                 unit_price = component.get(BOMColumns.UNIT_PRICE, "0")
 
@@ -723,10 +723,7 @@ class BOMPurchaseFileGenerator:
                         f"⚠️ No Mouser equivalent found for: {mpn} from {manufacturer}"
                     )
 
-            elif (
-                component.get(BOMColumns.DISTRIBUTOR)
-                and component.get(BOMColumns.DISTRIBUTOR).lower() == "mouser"
-            ):
+            elif (component.get(BOMColumns.DISTRIBUTOR) or "").lower() == "mouser":
                 # Already at Mouser, keep as-is
                 print(f"✅ Keeping Mouser part: {mpn}")
             else:
