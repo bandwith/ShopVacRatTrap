@@ -35,6 +35,16 @@ jobs:
         with:
           python-version: '3.13'
 
+      - name: Cache ESPHome and PlatformIO
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.platformio
+            .esphome
+          key: ${{ runner.os }}-esphome-${{ hashFiles('esphome/*.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-esphome-
+
       - name: Sync Python dependencies (frozen)
         run: uv pip install --system -r requirements.txt
 
