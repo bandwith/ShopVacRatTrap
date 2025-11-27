@@ -2,7 +2,7 @@
 >
 > This project is under active development. The documentation, features, and hardware recommendations are subject to change. Please check back for updates.
 
-# Contributing to the ShopVac Rat Trap 2025 Project
+# Contributing to the ShopVac Rat Trap Project
 
 First off, thank you for considering contributing to this project! We welcome any contributions that improve the design, functionality, and documentation.
 
@@ -19,8 +19,8 @@ We welcome contributions in several forms:
 
 To get started, you'll need to fork the repository and clone it to your local machine:
 ```bash
-git clone https://github.com/your-username/ShopVac-Rat-Trap-2025.git
-cd ShopVac-Rat-Trap-2025
+git clone https://github.com/your-username/ShopVac-Rat-Trap-.git
+cd ShopVac-Rat-Trap-
 ```
 
 ### Development Environment
@@ -59,12 +59,15 @@ The Python scripts are used for BOM management and other automation tasks.
 
 ## Running Tests
 
-The project uses `pytest` for testing the Python scripts.
+## Running Tests
+
+The project uses `pytest` for testing the Python scripts. Tests are located in the `tests/` directory.
+
 - **Run Tests**: To run the tests, simply run `pytest` from the root directory:
   ```bash
   pytest
   ```
-- **Adding Tests**: If you add new functionality to a Python script, please add corresponding tests in the relevant `test_*.py` file.
+- **Adding Tests**: If you add new functionality to a Python script, please add corresponding tests in the `tests/` directory. We use `pytest` fixtures and mocks to test isolated components.
 
 ## Submitting Pull Requests
 

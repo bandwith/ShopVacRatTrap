@@ -1,156 +1,77 @@
-// Camera Mount for PVC Pipe (Two-Part Clamp)
-// Engineer: Gemini
-// Date: 2025-11-15
-//
-// ========== REVISION HIGHLIGHTS ==========
-// - REFACTORED: Redesigned as a two-part clamp for robust and secure PVC pipe attachment.
-// - REFACTORED: Parametric design for different pipe sizes and components.
-// - NEW: Includes a separate strap piece for clamping. Both parts are printed separately.
-// - NEW: Added a universal camera mounting slot and a standard 1/4-20 UNC threaded hole.
-// - IMPROVED: Strong and reliable design for standalone operation and pipe mounting.
-// =========================================
+// ShopVac Rat Trap - OV5640 Camera Mount
+// Adafruit 5945: 32mm × 32mm PCB with M12 lens mount
+// Updated with actual component dimensions
 
-// ========== CORE PARAMETERS ==========
-$fn = 100;
+use <trap_modules.scad>
 
-// [Assembly Control]
-show_main_body = true;
-show_strap = true;
-show_assembled = false; // Set to true to see the assembly
+// === OV5640 Camera Parameters (Adafruit 5945) ===
+camera_pcb_size = 32;           // 32mm square PCB
+camera_hole_spacing = 28;       // Mounting hole spacing (corner to corner)
+camera_hole_diameter = 2.7;     // M2.5 clearance
+camera_lens_diameter = 14;      // M12 lens housing clearance
+camera_lens_height = 10;        // Lens projection above PCB
+camera_pcb_thickness = 1.6;     // Standard PCB
+stemma_clearance = 8;           // Space for STEMMA QT connector on side
 
-// [Pipe]
-pipe_outer_diameter = 114.3; // 4" Schedule 40 PVC
-pipe_fit_tolerance = 0.5; // Add a small gap for a smooth fit
+// Mount parameters
+mount_base_thickness = 4;
+mount_standoff_height = 5;
+mount_width = camera_pcb_size + 10;
+mount_length = camera_pcb_size + stemma_clearance + 5;
 
-// [Mount]
-mount_width = 60;
-plate_length = 60;
-plate_width = 60;
-plate_thickness = 6; // Thicker plate for camera stability
-wall_thickness = 6;
+// Tube mounting (if attaching to trap)
+attach_to_tube = false;
 
-// [Fasteners]
-flange_screw_diameter = 5; // M5
-flange_hole_spacing = pipe_outer_diameter + wall_thickness * 2 + 20;
-nut_recess_diameter = 10; // For M5 Nut
-nut_recess_depth = 5;
-
-// [Camera Mounting]
-camera_mount_slot_width = 6.5; // For 1/4" screw
-camera_mount_slot_length = 30;
-tripod_screw_diameter = 6.35; // 1/4 inch
-tripod_screw_pitch = 1.27; // 20 threads per inch
-
-// ========== MODULES ==========
-
-// Library for threading - using a common OpenSCAD library pattern
-module thread(diameter, pitch, length) {
-    h = length;
-    r = diameter / 2;
-    rotate_extrude(convexity = 10)
-        translate([r - pitch / 4, 0, 0])
-            polygon(points=[[0,0],[pitch/2,0],[pitch/2,pitch/2],[0,pitch/2]]);
-}
-
-module main_body() {
-    pipe_radius = pipe_outer_diameter / 2;
-
+module camera_mount() {
     difference() {
         union() {
-            // Main block
-            translate([0, 0, pipe_radius/2]) {
-                cube([mount_width, flange_hole_spacing, pipe_radius + wall_thickness], center=true);
-            }
-            // Top Plate
-            translate([0, 0, pipe_radius + wall_thickness + plate_thickness/2]) {
-                cube([plate_length, plate_width, plate_thickness], center=true);
-            }
-        }
+            // Base plate
+            translate([0, 0, mount_base_thickness/2])
+                cube([mount_width, mount_length, mount_base_thickness], center=true);
 
-        // Pipe cutout
-        rotate([90, 0, 0]) {
-            cylinder(d=pipe_outer_diameter + (pipe_fit_tolerance * 2), h=mount_width + 2, center=true);
-        }
-
-        // Camera mounting slot and threaded hole
-        translate([0, 0, pipe_radius + wall_thickness]) {
-            // Slot
-            hull() {
-                for (y = [-camera_mount_slot_length/2, camera_mount_slot_length/2]) {
-                    translate([0, y, 0])
-                        cylinder(d=camera_mount_slot_width, h=plate_thickness+1, center=true);
+            // PCB standoffs (4 corners)
+            for (x = [-camera_hole_spacing/2, camera_hole_spacing/2]) {
+                for (y = [-camera_hole_spacing/2, camera_hole_spacing/2]) {
+                    translate([x, y, mount_base_thickness])
+                        cylinder(d=6, h=mount_standoff_height, $fn=20);
                 }
             }
-            // 1/4-20 Threaded hole in the center of the slot
-            // Note: Printing threads might require a well-calibrated printer.
-            // A tap can be used to clean the threads post-printing.
-            translate([0, 0, -plate_thickness/2])
-                thread(tripod_screw_diameter, tripod_screw_pitch, plate_thickness);
         }
 
-        // Flange screw holes
-        for (y_mult = [-1, 1]) {
-            translate([0, y_mult * flange_hole_spacing/2, 0]) {
-                rotate([90,0,0]) {
-                    cylinder(d=flange_screw_diameter, h=pipe_radius + wall_thickness + 2, center=true);
-                }
+        // Mounting holes in standoffs (M2.5)
+        for (x = [-camera_hole_spacing/2, camera_hole_spacing/2]) {
+            for (y = [-camera_hole_spacing/2, camera_hole_spacing/2]) {
+                translate([x, y, -1])
+                    cylinder(d=camera_hole_diameter, h=mount_base_thickness + mount_standoff_height + 2, $fn=16);
             }
+        }
+
+        // Lens clearance hole in base
+        translate([0, 0, -1])
+            cylinder(d=camera_lens_diameter, h=mount_base_thickness + 2, $fn=32);
+
+        // Cable channel for STEMMA QT connector
+        translate([0, camera_pcb_size/2 + 2, mount_base_thickness/2])
+            cube([10, stemma_clearance, mount_base_thickness + 1], center=true);
+
+        // Wall mounting holes (for M3 screws)
+        for (x = [-mount_width/2 + 5, mount_width/2 - 5]) {
+            translate([x, -mount_length/2 + 5, -1])
+                cylinder(d=3.2, h=mount_base_thickness + 2, $fn=16);
         }
     }
-}
 
-module strap() {
-    pipe_radius = pipe_outer_diameter / 2;
-
-    difference() {
-        // Strap body
-        union() {
+    // Lens hood (optional, helps with glare)
+    if (false) {  // Set to true if needed
+        translate([0, 0, mount_base_thickness + mount_standoff_height + camera_pcb_thickness]) {
             difference() {
-                cylinder(d=pipe_outer_diameter + (pipe_fit_tolerance*2) + wall_thickness*2, h=mount_width, center=true);
-                cylinder(d=pipe_outer_diameter + (pipe_fit_tolerance*2), h=mount_width+1, center=true);
-            }
-            // Flanges
-            for (y_mult = [-1, 1]) {
-                translate([0, y_mult * (pipe_radius + wall_thickness), 0]) {
-                    cube([mount_width, wall_thickness*2, wall_thickness*2], center=true);
-                }
-            }
-        }
-
-        // Cut to make a half-strap
-        translate([0,0,pipe_radius+wall_thickness+1]) {
-            cube([mount_width+2, (pipe_radius+wall_thickness)*2+2, (pipe_radius+wall_thickness)*2+2], center=true);
-        }
-
-        // Flange screw holes with nut recesses
-        for (y_mult = [-1, 1]) {
-            translate([0, y_mult * flange_hole_spacing/2, 0]) {
-                cylinder(d=flange_screw_diameter, h=mount_width+2, center=true);
-                translate([0,0, -mount_width/2 - 1]) {
-                    cylinder(d=nut_recess_diameter, h=nut_recess_depth);
-                }
-                 translate([0,0, mount_width/2 + 1 - nut_recess_depth]) {
-                    cylinder(d=nut_recess_diameter, h=nut_recess_depth);
-                }
+                cylinder(d=camera_lens_diameter + 4, h=8, $fn=32);
+                translate([0, 0, -1])
+                    cylinder(d=camera_lens_diameter, h=10, $fn=32);
             }
         }
     }
 }
 
-// ========== ASSEMBLY ==========
-if (show_assembled) {
-    main_body();
-    rotate([0,0,180]) {
-        strap();
-    }
-} else {
-    if (show_main_body) {
-        main_body();
-    }
-    if (show_strap) {
-        // Place strap next to main body for printing
-        translate([0, flange_hole_spacing, 0]) {
-            strap();
-        }
-    }
-}
+// Assembly call
+camera_mount();

@@ -2,7 +2,7 @@
 >
 > This project is under active development. The documentation, features, and hardware recommendations are subject to change. Please check back for updates.
 
-# Project Overview: ShopVac Rat Trap 2025
+# Project Overview: ShopVac Rat Trap
 
 This project implements a professional-grade, IoT-based rodent control system. It features a hybrid sensor detection system, an integrated status display, and is designed for simplified assembly.
 
@@ -46,7 +46,7 @@ The project uses Python for various scripts, particularly for BOM management.
 
 ## ESPHome Firmware:
 The ESPHome configurations define the device's behavior and sensor logic.
-*   **Standard Configuration:** `esphome/rat-trap-2025.yaml`
+*   **Standard Configuration:** `esphome/rat-trap-.yaml`
 *   **Camera Variant Configuration:** `esphome/rat-trap-stemma-camera.yaml`
 To build and flash the firmware, you will need to use the ESPHome command-line tool or dashboard, following standard ESPHome procedures.
 

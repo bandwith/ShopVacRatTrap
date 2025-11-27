@@ -4,8 +4,10 @@ packages:
   sensors: !include packages/sensors.yaml
   safety: !include packages/safety.yaml
   display: !include packages/display-camera.yaml
+  camera: !include packages/camera.yaml
+  cv: !include packages/cv.yaml
   base: !include packages/rat-trap-base.yaml
 
 substitutions:
-  device_name: rat-trap-camera-2025
-  friendly_name: ShopVac Rat Trap 2025 with STEMMA Camera
+  device_name: rat-trap-camera
+  friendly_name: ShopVac Rat Trap with STEMMA Camera

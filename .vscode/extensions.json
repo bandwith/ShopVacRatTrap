@@ -1,0 +1,12 @@
+{
+    "recommendations": [
+        "Antyos.openscad",
+        "leathong.stl-viewer",
+        "ESPHome.esphome-vscode",
+        "mechatroner.rainbow-csv",
+        "redhat.vscode-yaml",
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "charliermarsh.ruff"
+    ]
+}

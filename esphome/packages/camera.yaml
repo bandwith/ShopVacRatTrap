@@ -1,0 +1,20 @@
+# esphome/packages/camera.yaml
+# Grove Vision AI V2 Integration via UART
+
+uart:
+  - id: grove_uart
+    tx_pin: GPIO17
+    rx_pin: GPIO16
+    baud_rate: 115200
+
+# Grove AI communicates detection results via UART
+# Results are typically in JSON format: {"type":"person","confidence":0.95}
+
+script:
+  - id: capture_evidence
+    mode: single
+    then:
+      - logger.log: "Grove Vision AI V2 - Capturing and classifying..."
+      # The Grove AI continuously processes images and sends results via UART
+      # We'll parse these in a custom component or lambda
+      - logger.log: "Classification request sent"

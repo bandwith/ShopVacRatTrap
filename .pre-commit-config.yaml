@@ -8,18 +8,18 @@ repos:
       - id: trailing-whitespace
       - id: end-of-file-fixer
       - id: check-yaml
-        exclude: ^esphome/.*\.ya?ml$     # Exclude ESPHome YAML files (they have special syntax)
+        exclude: (^esphome/.*\.ya?ml$)|(^mkdocs\.yml$) # Exclude ESPHome YAML files (they have special syntax) and MkDocs YAML files (they use Python tag constructors)
       - id: check-json
       - id: check-added-large-files
         args: [--maxkb=2048, --enforce-all]
-        exclude: \.stl$     # Allow large STL files for 3D models
+        exclude: \.stl$ # Allow large STL files for 3D models
       - id: check-merge-conflict
       - id: check-case-conflict
       - id: check-symlinks
       - id: check-toml
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.12.8
+    rev: v0.14.6
     hooks:
       # Run the linter.
       - id: ruff-check
@@ -57,7 +57,7 @@ repos:
         stages: [manual]
 
   - repo: https://github.com/adrienverge/yamllint.git
-    rev: v1.21.0
+    rev: v1.37.1
     hooks:
       - id: yamllint
         args: [--strict]
@@ -71,11 +71,10 @@ repos:
         exclude: (^.yamllint.yaml$)|(^esphome/.*\.ya?ml$)
 
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.20.0
+    rev: v3.21.2
     hooks:
       - id: pyupgrade
         args: [--py311-plus]
-
 # -   repo: https://github.com/rhysd/actionlint
 #     rev: v1.7.7  # Use the desired actionlint version
 #     hooks:

@@ -2,7 +2,7 @@
 >
 > This project is under active development. The documentation, features, and hardware recommendations are subject to change. Please check back for updates.
 
-# Component Sourcing Guide - ShopVac Rat Trap 2025
+# Component Sourcing Guide - ShopVac Rat Trap
 
 ## Adafruit Components
 | Qty | Part Number | Description | Price | Link |
@@ -22,7 +22,7 @@
 | 1 | 4090 | Terminal Block Kit - 2.54mm pitch... | $9.95 | [Buy](https://www.adafruit.com/product/4090) |
 | 1 | 1877 | Silicone Cover Stranded-Core Wire - 2m 2... | $2.95 | [Buy](https://www.adafruit.com/product/1877) |
 | 1 | 1881 | Silicone Cover Stranded-Core Wire - 2m 2... | $2.95 | [Buy](https://www.adafruit.com/product/1881) |
-| 1 | 5945 | OV5640 5MP Camera with smaller lens - ST... | $29.95 | [Buy](https://www.adafruit.com/product/5945) |
+| 1 | 113991054 | Seeed Studio XIAO ESP32S3 Sense (with camera + mic) | $13.99 | [Buy](https://www.seeedstudio.com/XIAO-ESP32S3-Sense-p-5639.html) |
 | 1 | 5639 | High-Power IR LED - STEMMA JST PH... | $3.95 | [Buy](https://www.adafruit.com/product/5639) |
 | 1 | 1833 | Micro SD Card 8GB Class 10... | $9.95 | [Buy](https://www.adafruit.com/product/1833) |
 | 1 | 3893 | STEMMA JST PH 4-pin Cable - 200mm Long... | $1.25 | [Buy](https://www.adafruit.com/product/3893) |
@@ -70,7 +70,7 @@
 ## Components Previously Not Found in Nexar - Updated Sources
 
 ### 1. STEMMA QT Camera System (NEW)
-**Primary**: OV5640 STEMMA Camera with PiCowBell Breakout
+**Primary**: Grove Vision AI V2 with Onboard NPU
 **Adafruit 5949**: $24.95 - <https://www.adafruit.com/product/5949>
 **Features**: 5MP resolution, autofocus, built-in STEMMA QT connector
 **Alternative**: Generic camera modules for budget builds - lower resolution, requires soldering
@@ -170,7 +170,7 @@
 ### STEMMA QT Camera System (NEW)
 **Primary Sources**: Adafruit, SparkFun (Qwiic compatible)
 **Requirements**: STEMMA QT/Qwiic connector compatibility
-**Components**: OV5640 camera, High-power IR LED, STEMMA cables, SD card
+**Components**: Grove Vision AI V2, High-power IR LED, Grove cables
 **Budget**: ~20% of total project cost ($40.10 upgrade)
 
 ### Safety-Critical Components (AC Power)

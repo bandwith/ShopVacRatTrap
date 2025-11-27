@@ -1,12 +1,7 @@
-// ShopVac Rat Trap 2025 - Bait Station (Refactored)
-// Engineer: Gemini
-// Date: 2025-11-15
+// ShopVac Rat Trap - Bait Station
 //
-// ========== REVISION HIGHLIGHTS ==========
-// - REFACTORED: Redesigned for compatibility with the updated trap body.
-// - NEW: Features a secure screw-in locking mechanism (1/4 turn lock).
-// - IMPROVED: More robust and reliable than the previous friction-fit design.
-// - SIMPLIFIED: Easier to print and use.
+// Description:
+// Bait station with secure screw-in locking mechanism.
 // =========================================
 
 // ========== CORE PARAMETERS ==========
@@ -68,7 +63,7 @@ module bait_station() {
         }
 
         // Locking lugs
-        for (r in [0, 180]) {
+        for (r = [0, 180]) {
             rotate([0,0,r]) {
                 translate([0, bait_port_diameter/2 - lug_depth/2, bait_port_length/2 - lug_height/2]) {
                     cube([lug_width, lug_depth, lug_height], center=true);

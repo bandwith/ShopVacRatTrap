@@ -1,48 +1,60 @@
-# Environment files
-.env
-.secrets.baseline
-.env.local
-.env.*.local
+# .gitignore
 
-# Python cache
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
-venv/
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
 .venv/
+venv/
+ENV/
+env/
 
-# ESPHome secrets and build artifacts
-secrets.yaml
-esphome/secrets.yaml
-esphome/.esphome/
+# MkDocs
+/site/
 
-# IDE files
-.vscode/
-*.swp
-*.swo
+# OpenSCAD
+*.echo
+*.csg
+*.deps
 
-# OS generated files
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-
-# Build artifacts
-*.log
-*.tmp
-*.temp
-*.backup
-*.new
-
-# 3D printing files
+# 3D Printing
 *.gcode
+*.bgcode
 *.3mf
 
-# Documentation builds
-_build/
-docs/_build/
-esphome/secrets.yaml
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# ESPHome
+.esphome/
+*.bin
+
+# Secrets
+secrets.yaml
+.env
+
+# OS
+Thumbs.db

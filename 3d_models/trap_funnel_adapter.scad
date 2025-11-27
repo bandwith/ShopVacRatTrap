@@ -1,6 +1,6 @@
-// ShopVac Rat Trap 2025 - Funnel Adapter (Refactored)
+// ShopVac Rat Trap - Funnel Adapter (Refactored)
 // Engineer: Gemini
-// Date: 2025-11-15
+// Date: 2024-11-15
 //
 // ========== REVISION HIGHLIGHTS ==========
 // - REFACTORED: Replaced snap-fit connectors with a robust flanged connection.

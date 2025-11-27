@@ -2,11 +2,14 @@
 >
 > This project is under active development. The documentation, features, and hardware recommendations are subject to change. Please check back for updates.
 
-# ShopVac Rat Trap 2025 - Electrical Design, Wiring, and Safety
+# ShopVac Rat Trap - Electrical Design, Wiring, and Safety
 
 ## 1. Design Overview
 
-This document outlines the electrical design for the 2025 optimized ShopVac Rat Trap, focusing on enhanced safety, cost reduction, and simplified assembly while maintaining professional-grade performance and international compliance.
+This document details the electrical design, theory of operation, and safety considerations for the ShopVac Rat Trap.
+
+> [!NOTE]
+> For practical wiring instructions and diagrams, please refer to the **[Assembly Guide](ASSEMBLY_GUIDE.md)**.
 
 ### 1.1. Core Design Philosophy
 
@@ -97,7 +100,7 @@ For maximum safety and code compliance, all electronic components (both high and
                                                          ↓
 [STEMMA QT Bus] ← [I2C: APDS9960 + VL53L0X + BME280 + OLED] → [Hybrid Detection]
                                                          ↓
-[Evidence Storage] ← [Image Capture] ← [OV5640 STEMMA Camera] ← [Auto Trigger]
+[Evidence Storage] ← [Dimension Capture] ← [OV5640 STEMMA Camera] ← [Auto Trigger]
                                                          ↓
 [High-Power IR] ← [STEMMA JST PH] ← [GPIO6] ← [Night Vision Control]
 ```
@@ -189,7 +192,7 @@ Power Compliance:      ✅ APPROVED - Within ESP32-S3 limits
 
 ## 4. Wiring Diagrams & Cable Management
 
-This section provides comprehensive wiring diagrams for the ShopVac Rat Trap 2025 system, including both the current daisy-chain setup and the improved hub-based configuration using the **Adafruit QWIIC/STEMMA QT 5-Port Hub (Product ID: 5625)**.
+This section provides comprehensive wiring diagrams for the ShopVac Rat Trap system, including both the current daisy-chain setup and the improved hub-based configuration using the **Adafruit QWIIC/STEMMA QT 5-Port Hub (Product ID: 5625)**.
 
 ### 4.1. Current Wiring Configuration (Daisy Chain)
 
@@ -320,7 +323,7 @@ This project involves 120V/230V AC electrical connections. Installation **MUST**
 - Equipment damage from improper connections or overcurrent conditions
 - Personal injury from mechanical failures or vacuum motor damage
 
-### 5.2. 🚨 MANDATORY SAFETY ENHANCEMENTS (August 2025)
+### 5.2. 🚨 MANDATORY SAFETY ENHANCEMENTS (August )
 
 #### **CRITICAL: Current Monitoring Required**
 All installations **MUST** include AC current monitoring for safety:

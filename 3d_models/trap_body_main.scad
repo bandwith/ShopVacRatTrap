@@ -1,12 +1,9 @@
-// ShopVac Rat Trap 2025 - Main Trap Body (Refactored)
-// Engineer: Gemini
-// Date: 2025-11-15
+// ShopVac Rat Trap - Main Trap Body
 //
-// ========== REVISION HIGHLIGHTS ==========
-// - REFACTORED: Replaced snap-fit connectors with a robust flanged connection system.
-// - MODULAR: Utilizes shared modules from `trap_modules.scad`.
-// - SIMPLIFIED: Removed complex geometry for easier printing and modification.
-// - IMPROVED: Added a flat base for stability and integrated mounting points.
+// Description:
+// Main body of the trap featuring a robust flanged connection system,
+// modular design using shared components, and integrated mounting points.
+// Includes a flat base for stability.
 // =========================================
 
 include <trap_modules.scad>
@@ -67,10 +64,16 @@ module trap_body_main() {
         }
     }
 
-    // Internal PIR sensor mount
+    // Internal PIR sensor mount - Connected to body
     translate([pir_mount_offset_x, 0, body_length/2]) {
         rotate([90,0,90]) {
-            cube([pir_mount_thickness, pir_mount_width, pir_mount_height], center=true);
+            union() {
+                cube([pir_mount_thickness, pir_mount_width, pir_mount_height], center=true);
+                // Support strut to connect to wall if needed, or ensure it intersects
+                // In this case, we ensure the mount base intersects with the tube wall
+                translate([0, 0, -pir_mount_height/2])
+                    cube([pir_mount_thickness, pir_mount_width, 5], center=true);
+            }
         }
     }
 }

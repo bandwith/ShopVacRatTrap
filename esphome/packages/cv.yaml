@@ -1,0 +1,27 @@
+globals:
+  - id: classifier_instance
+    type: esphome::rodent_classifier::RodentClassifier*
+    restore_value: no
+    initial_value: "nullptr"
+
+esphome:
+  includes:
+    - components/rodent_classifier/rodent_classifier.h
+  on_boot:
+    priority: 600
+    then:
+      - lambda: |-
+          id(classifier_instance) = new esphome::rodent_classifier::RodentClassifier();
+          id(classifier_instance)->setup();
+
+script:
+  - id: run_classification
+    mode: single
+    then:
+      - logger.log: "Starting visual classification..."
+      - lambda: |-
+          if (id(classifier_instance) != nullptr) {
+            id(classifier_instance)->classify_current_frame();
+          }
+      - delay: 500ms
+      - logger.log: "Classification complete"

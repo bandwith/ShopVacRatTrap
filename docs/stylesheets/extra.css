@@ -1,0 +1,90 @@
+/* Custom CSS for ShopVac Rat Trap Documentation */
+
+/* Enhanced grid cards */
+.md-typeset .grid.cards > :is(ul, ol) > li {
+    border: .05rem solid var(--md-default-fg-color--lightest);
+    border-radius: .2rem;
+    transition: border .25s, box-shadow .25s;
+}
+
+.md-typeset .grid.cards > :is(ul, ol) > li:hover {
+    border-color: var(--md-accent-fg-color--transparent);
+    box-shadow: var(--md-shadow-z2);
+}
+
+/* Warning/Safety callouts more prominent */
+.md-typeset .admonition.danger,
+.md-typeset details.danger {
+    border-color: #ff1744;
+}
+
+.md-typeset .danger > .admonition-title,
+.md-typeset .danger >summary {
+    background-color: #ff174410;
+    border-color: #ff1744;
+}
+
+/* Code blocks with better contrast */
+.md-typeset code {
+    font-size: .85em;
+    word-break: break-word;
+}
+
+/* Better table styling */
+.md-typeset table:not([class]) {
+    border: .05rem solid var(--md-typeset-table-color);
+    border-radius: .2rem;
+    overflow: hidden;
+}
+
+/* Centered text helper */
+.text-center {
+    text-align: center;
+}
+
+/* Mermaid diagram styling */
+.mermaid {
+    text-align: center;
+    margin: 1em 0;
+}
+
+/* Custom button styling */
+.md-button--primary {
+    font-weight: 600;
+}
+
+/* Badge styling for status indicators */
+.badge {
+    display: inline-block;
+    padding: .25em .4em;
+    font-size: 75%;
+    font-weight: 700;
+    line-height: 1;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: baseline;
+    border-radius: .25rem;
+}
+
+.badge-success {
+    background-color: #4caf50;
+    color: white;
+}
+
+.badge-warning {
+    background-color: #ff9800;
+    color: white;
+}
+
+.badge-danger {
+    background-color: #f44336;
+    color: white;
+}
+
+/* Responsive image containers */
+.img-responsive {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 1em auto;
+}

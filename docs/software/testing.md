@@ -4,14 +4,14 @@
 
 # ESPHome Firmware Testing Guide
 
-This document provides a step-by-step guide for manually testing the ESPHome firmware and connected hardware components of the ShopVac Rat Trap 2025. Performing these tests after flashing a new firmware version is crucial to ensure all systems are operating correctly and safely.
+This document provides a step-by-step guide for manually testing the ESPHome firmware and connected hardware components of the ShopVac Rat Trap . Performing these tests after flashing a new firmware version is crucial to ensure all systems are operating correctly and safely.
 
 **⚠️ Safety First:** Before proceeding, ensure the high-voltage AC components are wired correctly and safely. If you are not confident in your electrical work, do not connect the device to AC power.
 
 ## Test Environment
 
 - **Hardware**: Fully assembled ShopVac Rat Trap with all sensors and components connected.
-- **Software**: Device flashed with the latest ESPHome firmware (`rat-trap-2025.yaml` or `rat-trap-stemma-camera.yaml`).
+- **Software**: Device flashed with the latest ESPHome firmware (`rat-trap-.yaml` or `rat-trap-stemma-camera.yaml`).
 - **Tools**:
     - A multimeter for continuity and voltage checks.
     - A small object (e.g., a piece of cardboard or your hand) to simulate a rodent.

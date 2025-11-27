@@ -123,7 +123,7 @@ switch:
     on_turn_on:
       - logger.log:
           format: SSR activated - switching %s load (%s compliant)
-          args: ['${line_voltage}', '${safety_standard}']
+          args: ["${line_voltage}", "${safety_standard}"]
     on_turn_off:
       - logger.log: SSR deactivated - load disconnected
   - platform: template
@@ -160,9 +160,14 @@ script:
             - binary_sensor.template.publish:
                 id: trap_triggered
                 state: on
+
+            # Trigger Camera and CV (if available)
+            - script.execute: capture_evidence
+            - script.execute: run_classification
+
             - switch.turn_on: vacuum_relay
             - lambda: id(last_trigger_time) = millis();
-            - delay: !lambda 'return id(vacuum_runtime).state * id(ms_conversion_factor);'
+            - delay: !lambda "return id(vacuum_runtime).state * id(ms_conversion_factor);"
             - switch.turn_off: vacuum_relay
             - lambda: |-
                 auto call = id(capture_count).make_call();
@@ -176,7 +181,7 @@ script:
             - binary_sensor.template.publish:
                 id: trap_triggered
                 state: off
-            - delay: !lambda 'return id(cooldown_period).state * id(ms_conversion_factor);'
+            - delay: !lambda "return id(cooldown_period).state * id(ms_conversion_factor);"
             - binary_sensor.template.publish:
                 id: rodent_detected
                 state: off
@@ -233,15 +238,15 @@ globals:
   - id: last_trigger_time
     type: unsigned long
     restore_value: no
-    initial_value: '0'
+    initial_value: "0"
   - id: total_vacuum_runtime
     type: float
     restore_value: yes
-    initial_value: '0'
+    initial_value: "0"
   - id: ms_conversion_factor
     type: int
     restore_value: no
-    initial_value: '1000'
+    initial_value: "1000"
 
 number:
   - platform: template

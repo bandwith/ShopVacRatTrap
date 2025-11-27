@@ -1,0 +1,16 @@
+# ShopVac Rat Trap 2025 - AI Rules
+
+## Project Context
+This project is an IoT-based rodent control system using ESP32-S3, ESPHome, and Python.
+It involves hardware control, 3D printing, and automated BOM management.
+
+## Coding Standards
+- **Python**: Follow PEP 8. Use `ruff` for linting and formatting. Type hinting is required.
+- **ESPHome**: Use modular YAML configurations.
+- **OpenSCAD**: Parameterize models. Use comments to explain geometry.
+- **General**: Keep files clean. Remove unused code.
+
+## AI Behavior
+- When generating Python code, always include type hints.
+- When modifying OpenSCAD files, ensure the `$fn` parameter is set for smooth curves (e.g., `$fn=100`).
+- Do not suggest changes that violate safety standards (NEC/IEC).

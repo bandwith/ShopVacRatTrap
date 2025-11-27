@@ -2,7 +2,7 @@
 >
 > This project is under active development. The documentation, features, and hardware recommendations are subject to change. Please check back for updates.
 
-# ShopVac Rat Trap 2025 - Installation & Setup Guide
+# ShopVac Rat Trap - Installation & Setup Guide
 **STEMMA QT Camera System with Enhanced Capabilities**
 
 ## Enhanced System Overview
@@ -371,13 +371,13 @@ openssl rand -base64 32
 #### **3.4 Initial Flash**
 ```bash
 # Compile configuration
-esphome compile rat-trap-2025.yaml
+esphome compile rat-trap.yaml
 
 # Connect ESP32 via USB and flash
-esphome upload rat-trap-2025.yaml --device /dev/ttyUSB0
+esphome upload rat-trap.yaml --device /dev/ttyUSB0
 
 # Monitor initial boot
-esphome logs rat-trap-2025.yaml
+esphome logs rat-trap.yaml
 ```
 
 #### **3.5 Verify Installation**
@@ -532,7 +532,7 @@ Check log output for:
    - alias: "Rat Trap Notification"
      trigger:
        - platform: state
-         entity_id: binary_sensor.rat_trap_2025_rodent_detected
+         entity_id: binary_sensor.rat_trap_rodent_detected
          to: 'on'
      action:
        - service: notify.mobile_app
@@ -553,7 +553,7 @@ Check log output for:
    - alias: "Rat Trap Detection with Photo"
      trigger:
        - platform: state
-         entity_id: binary_sensor.rat_trap_2025_rodent_detected
+         entity_id: binary_sensor.rat_trap_rodent_detected
          to: 'on'
      action:
        - service: camera.snapshot

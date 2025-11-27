@@ -1,0 +1,176 @@
+---
+site_name: ShopVac Rat Trap
+site_description: Professional IoT-based rodent control system with ESP32, hybrid sensor detection, and Home Assistant integration
+site_author: bandwith
+site_url: https://shopvac-rat-trap.readthedocs.io
+
+repo_name: bandwith/ShopVacRatTrap
+repo_url: https://github.com/bandwith/ShopVacRatTrap
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  palette:
+    # Light mode
+    - media: '(prefers-color-scheme: light)'
+      scheme: default
+      primary: deep purple
+      accent: amber
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    # Dark mode
+    - media: '(prefers-color-scheme: dark)'
+      scheme: slate
+      primary: deep purple
+      accent: amber
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.expand
+    - navigation.path
+    - navigation.top
+    - navigation.tracking
+    - navigation.indexes
+    - toc.follow
+    - toc.integrate
+    - search.suggest
+    - search.highlight
+    - search.share
+    - content.code.copy
+    - content.code.annotate
+    - content.tabs.link
+    - announce.dismiss
+
+  icon:
+    repo: fontawesome/brands/github
+    edit: material/pencil
+    view: material/eye
+
+  font:
+    text: Roboto
+    code: Roboto Mono
+
+plugins:
+  - search:
+      lang: en
+      separator: '[\s\-\.]+'
+  - git-revision-date-localized:
+      enable_creation_date: true
+      type: timeago
+  - minify:
+      minify_html: true
+      minify_js: true
+      minify_css: true
+
+markdown_extensions:
+  # Python Markdown
+  - abbr
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - toc:
+      permalink: true
+      toc_depth: 3
+
+  # Python Markdown Extensions
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !%21python/name:material.extensions.emoji.twemoji ""
+      emoji_generator: !%21python/name:material.extensions.emoji.to_svg ""
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.mark
+  - pymdownx.snippets
+  - pymdownx.smartsymbols
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !%21python/name:pymdownx.superfences.fence_code_format ""
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/bandwith/ShopVacRatTrap
+      name: GitHub Repository
+    - icon: fontawesome/brands/discord
+      link: https://discord.gg/KhAMKrd
+      name: ESPHome Discord
+
+  version:
+    provider: mike
+
+  analytics:
+    feedback:
+      title: Was this page helpful?
+      ratings:
+        - icon: material/emoticon-happy-outline
+          name: This page was helpful
+          data: 1
+          note: >-
+            Thanks for your feedback!
+        - icon: material/emoticon-sad-outline
+          name: This page could be improved
+          data: 0
+          note: >-
+            Thanks for your feedback! Help us improve by
+            <a href="https://github.com/bandwith/ShopVacRatTrap/issues/new" target="_blank" rel="noopener">opening an issue</a>.
+
+extra_css:
+  - stylesheets/extra.css
+
+nav:
+  - Home: index.md
+  - Getting Started:
+      - getting-started/index.md
+      - Safety First: getting-started/safety.md
+      - Quick Start: getting-started/quick-start.md
+  - Hardware:
+      - hardware/index.md
+      - Bill of Materials: hardware/bom.md
+      - Component Sourcing: hardware/sourcing.md
+      - Electrical Design: hardware/electrical.md
+      - Assembly Guide: hardware/assembly.md
+      - Sensor Logic: hardware/sensor-logic.md
+      - Supplier Changes: hardware/supplier-changes.md
+  - Software:
+      - software/index.md
+      - Installation Guide: software/installation.md
+      - ESPHome Configuration: software/esphome-config.md
+      - Testing Guide: software/testing.md
+      - Home Assistant: software/home-assistant.md
+  - Reference:
+      - reference/index.md
+      - Troubleshooting: reference/troubleshooting.md
+      - FAQ: reference/faq.md
+      - Glossary: reference/glossary.md
+  - Contributing:
+      - contributing/index.md
+      - Development Setup: contributing/development.md
+      - Code Style: contributing/code-style.md
+
+copyright: |
+  &copy; 2025 <a href="https://github.com/bandwith" target="_blank" rel="noopener">bandwith</a> -
+  <a href="#__consent">Change cookie settings</a>

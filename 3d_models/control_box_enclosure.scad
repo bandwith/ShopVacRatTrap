@@ -1,6 +1,6 @@
 // Control Box Enclosure (Refactored)
 // Engineer: Gemini
-// Date: 2025-11-15
+// Date: 2024-11-15
 //
 // ========== REVISION HIGHLIGHTS ==========
 // - REFACTORED: Complete redesign for a robust, screw-together enclosure.

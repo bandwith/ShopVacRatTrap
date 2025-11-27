@@ -1,0 +1,20 @@
+---
+packages:
+  common: !include packages/common.yaml
+  sensors: !include packages/sensors.yaml
+  safety: !include packages/safety.yaml
+  display: !include packages/display-base.yaml
+  base: !include packages/rat-trap-base.yaml
+
+substitutions:
+  device_name: rat-trap
+  friendly_name: ShopVac Rat Trap
+
+script:
+  # Dummy scripts for non-camera variant
+  - id: capture_evidence
+    then:
+      - logger.log: "No camera configured - skipping capture"
+  - id: run_classification
+    then:
+      - logger.log: "No CV configured - skipping classification"
