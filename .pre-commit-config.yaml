@@ -8,7 +8,8 @@ repos:
       - id: trailing-whitespace
       - id: end-of-file-fixer
       - id: check-yaml
-        exclude: (^esphome/.*\.ya?ml$)|(^mkdocs\.yml$) # Exclude ESPHome YAML files (they have special syntax) and MkDocs YAML files (they use Python tag constructors)
+        # Exclude ESPHome YAML files (special syntax) and MkDocs (Python tag constructors)
+        exclude: (^esphome/.*\.ya?ml$)|(^mkdocs\.yml$)
       - id: check-json
       - id: check-added-large-files
         args: [--maxkb=2048, --enforce-all]
