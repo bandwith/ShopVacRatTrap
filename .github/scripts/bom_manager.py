@@ -812,7 +812,7 @@ class BOMPurchaseFileGenerator:
         # Group components by distributor
         distributors = {}
         for component in components:
-            distributor = component.get(BOMColumns.DISTRIBUTOR, "Other")
+            distributor = component.get(BOMColumns.DISTRIBUTOR) or "Other"
             if distributor not in distributors:
                 distributors[distributor] = []
             distributors[distributor].append(component)
