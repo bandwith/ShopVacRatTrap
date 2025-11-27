@@ -698,7 +698,7 @@ class BOMPurchaseFileGenerator:
         mouser_components = []
         for component in components:
             mpn = component.get(BOMColumns.MANUFACTURER_PART_NUMBER, "")
-            manufacturer = component.get(BOMColumns.MANUFACTURER, "")
+            manufacturer = component.get(BOMColumns.MANUFACTURER) or ""
             new_component = component.copy()
 
             # Try to find Mouser equivalent using dynamic lookup

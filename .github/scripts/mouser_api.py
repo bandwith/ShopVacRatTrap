@@ -264,7 +264,7 @@ class MouserAPIClient:
                 if (
                     manufacturer
                     and manufacturer.lower()
-                    not in part_data.get("Manufacturer", "").lower()
+                    not in (part_data.get("Manufacturer") or "").lower()
                 ):
                     continue
 
