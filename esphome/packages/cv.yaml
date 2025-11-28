@@ -4,9 +4,11 @@ globals:
     restore_value: no
     initial_value: "nullptr"
 
+external_components:
+  - source: components
+    components: [rodent_classifier]
+
 esphome:
-  includes:
-    - components/rodent_classifier/rodent_classifier.h
   on_boot:
     priority: 600
     then:
