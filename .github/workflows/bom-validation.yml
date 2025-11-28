@@ -27,7 +27,7 @@ env:
 jobs:
   validate-bom:
     runs-on: ubuntu-latest
-    timeout-minutes: 30  # Prevent hangs on long API calls
+    timeout-minutes: 30 # Prevent hangs on long API calls
 
     permissions:
       contents: write
@@ -67,9 +67,9 @@ jobs:
           echo "🔄 Starting BOM management process..."
           python .github/scripts/bom_manager.py \
             --bom-file BOM_CONSOLIDATED.csv \
-            --output-dir . \
+            --output-dir purchasing \
             --all
-        continue-on-error: false  # Fail fast if script errors
+        continue-on-error: false # Fail fast if script errors
 
       - name: Set validation outputs from generated files
         id: set_validation_outputs

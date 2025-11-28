@@ -55,7 +55,7 @@ binary_sensor:
     name: ${friendly_name} APDS Detection
     id: apds_detection
     lambda: |-
-      return id(apds_proximity).state > id(apds_proximity_threshold);
+      return id(apds_proximity).state > id(apds_proximity_threshold).state;
 
   - platform: template
     name: ${friendly_name} ToF Detection
