@@ -3,6 +3,10 @@
 esphome:
   name: ${device_name}
   friendly_name: ${friendly_name}
+  platformio_options:
+    build_flags:
+      - -DARDUINO_USB_CDC_ON_BOOT=1
+      - -DARDUINO_USB_MODE=1
 
 esp32:
   board: adafruit_feather_esp32s3
