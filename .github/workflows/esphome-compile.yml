@@ -77,11 +77,18 @@ jobs:
         with:
           yaml-file: ${{ matrix.yaml-file }}
 
+      - name: Prepare artifact name
+        id: artifact_name
+        run: |
+          # Replace slashes with hyphens for the artifact name
+          SAFE_NAME=$(echo "${{ matrix.yaml-file }}" | tr '/' '-')
+          echo "safe_name=$SAFE_NAME" >> $GITHUB_OUTPUT
+
       - name: Upload firmware artifacts
         uses: actions/upload-artifact@v5.0.0
         if: always()
         with:
-          name: firmware-${{ matrix.yaml-file }}
+          name: firmware-${{ steps.artifact_name.outputs.safe_name }}
           path: |
             ${{ steps.esphome-build.outputs.name }}/*.bin
             ${{ steps.esphome-build.outputs.name }}/*.factory.bin
