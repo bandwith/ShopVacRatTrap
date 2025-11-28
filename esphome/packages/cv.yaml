@@ -4,6 +4,10 @@ external_components:
       path: components
     components: [rodent_classifier]
 
+esphome:
+  includes:
+    - components/rodent_classifier/rodent_classifier.h
+
 rodent_classifier:
   id: classifier_instance
 
