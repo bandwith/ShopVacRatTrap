@@ -503,6 +503,29 @@ class BOMReporter:
                 f"unavailable_components={'true' if has_unavailable else 'false'}\n"
             )
 
+        # Generate dynamic issue title if there are unavailable components
+        if has_unavailable:
+            title = "🚨 Component Availability Alert - Critical Parts Low Stock"
+            if unavailable:
+                # Use the first unavailable component to generate a specific title
+                first_comp = unavailable[0]
+                # Try to extract a meaningful role/name from description
+                desc = first_comp.get("description", "").split(",")[0].strip()
+                if not desc:
+                    desc = first_comp.get("mpn", "Unknown Part")
+
+                # Truncate if too long
+                if len(desc) > 50:
+                    desc = desc[:47] + "..."
+
+                title = f"🚨 Component Availability Alert - {desc}"
+                if len(unavailable) > 1:
+                    title += f" (+{len(unavailable) - 1} others)"
+
+            # Write title to file for workflow to use
+            with open("availability_issue_title.txt", "w") as f:
+                f.write(title)
+
 
 class BOMPurchaseFileGenerator:
     """Generates purchase files from a BOM."""
