@@ -25,9 +25,10 @@
 
 ## 5. Attach Control Box
 ![Control Box Assembly](/home/bandwith/ShopVacRatTrap/images/assembly_control_box.svg)
-1. Plug cables into the ESP32.
-2. Snap the Control Box onto the rear rail.
-3. Slide the lid closed.
+1. **Install the 30mm Arcade Button** into the side hole and secure with its nut.
+2. Plug cables into the ESP32 and connect the button.
+3. Snap the Control Box onto the rear rail.
+4. Slide the lid closed.
 
 ## 6. Bait & Arm
 ![Bait Cap](/home/bandwith/ShopVacRatTrap/images/assembly_bait.svg)

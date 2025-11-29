@@ -65,6 +65,12 @@ module control_box_base() {
                 rotate([-90, 0, 0])
                 cylinder(d=3, h=wall_thickness + 2);
         }
+
+        // Button Hole (30mm Arcade Button)
+        // Placed on the side for easy access
+        translate([internal_length - 30, -1, 30])
+            rotate([-90, 0, 0])
+            cylinder(d=30.5, h=wall_thickness + 2); // 30.5mm for tolerance
     }
 
     // === INTERNAL MOUNTS ===
