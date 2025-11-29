@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="400" height="300">
+  <!-- Title -->
+  <text x="200" y="20" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold">Control Box Assembly</text>
+
+  <!-- Tube base -->
+  <g id="tube_base">
+    <ellipse cx="200" cy="200" rx="50" ry="20" fill="white" stroke="black" stroke-width="2"/>
+    <line x1="150" y1="200" x2="150" y2="240" stroke="black" stroke-width="2"/>
+    <line x1="250" y1="200" x2="250" y2="240" stroke="black" stroke-width="2"/>
+    <ellipse cx="200" cy="240" rx="50" ry="20" fill="none" stroke="black" stroke-width="2"/>
+
+    <!-- Mounting rail -->
+    <rect x="180" y="185" width="40" height="8" fill="white" stroke="black" stroke-width="1.5"/>
+  </g>
+
+  <!-- Control box (floating above) -->
+  <g id="control_box" transform="translate(0, -60)">
+    <rect x="150" y="150" width="100" height="60" rx="3" fill="white" stroke="black" stroke-width="2"/>
+    <!-- Internal components sketch -->
+    <rect x="160" y="160" width="30" height="20" fill="lightgray" stroke="black" stroke-width="0.5"/>
+    <rect x="200" y="160" width="40" height="35" fill="lightgray" stroke="black" stroke-width="0.5"/>
+    <text x="200" y="145" text-anchor="middle" font-family="Arial, sans-serif" font-size="10">Control Box</text>
+
+    <!-- Snap clips on bottom -->
+    <rect x="175" y="210" width="10" height="5" fill="black"/>
+    <rect x="215" y="210" width="10" height="5" fill="black"/>
+  </g>
+
+  <!-- Down arrow -->
+  <line x1="200" y1="120" x2="200" y2="175" stroke="black" stroke-width="2" stroke-dasharray="5,5" marker-end="url(#arrowhead)"/>
+  <text x="220" y="150" font-family="Arial, sans-serif" font-size="11">Snap onto rail</text>
+
+  <!-- Sliding lid (to the side) -->
+  <g id="sliding_lid">
+    <rect x="280" y="100" width="90" height="50" rx="2" fill="white" stroke="black" stroke-width="2"/>
+    <!-- Dovetail rails -->
+    <line x1="285" y1="105" x2="365" y2="105" stroke="black" stroke-width="1"/>
+    <line x1="285" y1="145" x2="365" y2="145" stroke="black" stroke-width="1"/>
+    <!-- Handle -->
+    <circle cx="360" cy="125" r="8" fill="none" stroke="black" stroke-width="1.5"/>
+    <text x="325" y="90" text-anchor="middle" font-family="Arial, sans-serif" font-size="10">Lid</text>
+  </g>
+
+  <!-- Arrow to lid -->
+  <path d="M 245 100 Q 260 95, 275 100" fill="none" stroke="black" stroke-width="2" stroke-dasharray="3,3" marker-end="url(#arrowhead)"/>
+  <text x="260" y="85" text-anchor="middle" font-family="Arial, sans-serif" font-size="10">Slide on →</text>
+
+  <!-- Steps -->
+  <g id="steps">
+    <circle cx="30" cy="50" r="12" fill="none" stroke="black" stroke-width="2"/>
+    <text x="30" y="55" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold">1</text>
+    <text x="50" y="55" font-family="Arial, sans-serif" font-size="11">Connect cables to ESP32</text>
+
+    <circle cx="30" cy="75" r="12" fill="none" stroke="black" stroke-width="2"/>
+    <text x="30" y="80" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold">2</text>
+    <text x="50" y="80" font-family="Arial, sans-serif" font-size="11">Snap box onto rail</text>
+
+    <circle cx="30" cy="100" r="12" fill="none" stroke="black" stroke-width="2"/>
+    <text x="30" y="105" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold">3</text>
+    <text x="50" y="105" font-family="Arial, sans-serif" font-size="11">Slide lid to close</text>
+  </g>
+
+  <!-- Arrow marker definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <polygon points="0 0, 10 3, 0 6" fill="black"/>
+    </marker>
+
+    <g id="ikea_man">
+      <circle cx="0" cy="0" r="8" fill="none" stroke="black" stroke-width="2"/>
+      <line x1="0" y1="8" x2="0" y2="35" stroke="black" stroke-width="2"/>
+      <line x1="0" y1="35" x2="-10" y2="60" stroke="black" stroke-width="2"/>
+      <line x1="0" y1="35" x2="10" y2="60" stroke="black" stroke-width="2"/>
+      <line x1="-15" y1="20" x2="15" y2="20" stroke="black" stroke-width="2"/>
+    </g>
+    <g id="ikea_man_twist">
+      <circle cx="0" cy="0" r="8" fill="none" stroke="black" stroke-width="2"/>
+      <line x1="0" y1="8" x2="0" y2="35" stroke="black" stroke-width="2"/>
+      <line x1="0" y1="35" x2="-10" y2="60" stroke="black" stroke-width="2"/>
+      <line x1="0" y1="35" x2="10" y2="60" stroke="black" stroke-width="2"/>
+      <path d="M -15 20 Q 0 10 15 20" fill="none" stroke="black" stroke-width="2"/>
+    </g>
+    <g id="warning_icon">
+      <path d="M 0 -15 L 13 10 L -13 10 Z" fill="none" stroke="black" stroke-width="2"/>
+      <line x1="0" y1="-5" x2="0" y2="3" stroke="black" stroke-width="2"/>
+      <circle cx="0" cy="7" r="1" fill="black"/>
+    </g>
+</defs>
+<use href="#warning_icon" x="180" y="170" transform="scale(1.5)"/>
+</svg>
