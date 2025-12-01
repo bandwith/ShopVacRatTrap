@@ -10,6 +10,7 @@ xlrd>=2.0.1
 # Let ESPHome manage click, pillow, and other transitive deps
 esphome>=2025.10.5
 rich>=13.0.0
+starlette<0.47 # Constrain starlette to be compatible with platformio
 
 # Development and testing tools
 detect-secrets>=1.5.0
