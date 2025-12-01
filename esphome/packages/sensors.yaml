@@ -2,6 +2,13 @@
 # esphome/packages/sensors.yaml
 
 sensor:
+  # APDS9960 Gesture/Proximity Sensor
+  - platform: apds9960
+    proximity:
+      name: "APDS9960 Proximity"
+      id: apds_proximity
+    update_interval: 100ms
+
   # VL53L4CX ToF Distance Sensor
   - platform: vl53l4cx
     name: "ToF Distance"
@@ -110,6 +117,19 @@ sensor:
     id: uptime_sensor
 
 binary_sensor:
+  # Detection Status Sensors (for Display)
+  - platform: template
+    id: apds_detection
+    lambda: return id(apds_proximity).state > ${apds_proximity_threshold};
+
+  - platform: template
+    id: pir_detection
+    lambda: return id(ir_presence).state;
+
+  - platform: template
+    id: tof_detection
+    lambda: return (id(distance_sensor).state < 500 && id(distance_sensor).state > 50);
+
   # STHS34PF80 IR Presence Sensor
   - platform: sths34pf80
     name: "IR Presence"
