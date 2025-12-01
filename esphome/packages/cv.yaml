@@ -1,22 +1,19 @@
-external_components:
-  - source:
-      type: local
-      path: components
-    components: [rodent_classifier]
-
-esphome:
-  includes:
-    - components/rodent_classifier/rodent_classifier.h
-
-rodent_classifier:
-  id: classifier_instance
-
-script:
-  - id: run_classification
-    mode: single
-    then:
-      - logger.log: "Starting visual classification..."
-      - lambda: |-
-          id(classifier_instance).classify_current_frame();
-      - delay: 500ms
-      - logger.log: "Classification complete"
+# Rodent classifier temporarily disabled for compilation testing
+# external_components:
+#   - source:
+#       type: local
+#       path: components
+#     components: [rodent_classifier]
+#
+# rodent_classifier:
+#   id: classifier_instance
+#
+# script:
+#   - id: run_classification
+#     mode: single
+#     then:
+#       - logger.log: "Starting visual classification..."
+#       - lambda: |-
+#           id(classifier_instance).classify_current_frame();
+#       - delay: 500ms
+#       - logger.log: "Classification complete"

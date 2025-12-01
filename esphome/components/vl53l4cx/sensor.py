@@ -18,5 +18,5 @@ async def to_code(config):
     var = await sensor.new_sensor(config)
     await cg.register_component(var, config)
 
-    cg.add_library("stm32duino/STM32duino VL53L4CX", "1.2.0")
+    cg.add_library("https://github.com/stm32duino/VL53L4CX.git", None)
     cg.add_library("Wire", None)

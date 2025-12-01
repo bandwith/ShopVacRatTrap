@@ -19,7 +19,7 @@ class STHS34PF80Component : public PollingComponent, public binary_sensor::Binar
       mark_failed();
       return;
     }
-    sths.setMode(STHS34PF80_MODE_CONTINUOUS);
+    sths.setOutputDataRate(STHS34PF80_ODR_15_HZ);
   }
 
   void update() override {
