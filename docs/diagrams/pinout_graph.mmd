@@ -1,0 +1,62 @@
+graph LR
+    subgraph ESP32_S3_Feather [ESP32-S3 Feather]
+        direction TB
+        GPIO3[GPIO 3]
+        GPIO4[GPIO 4]
+        GPIO5[GPIO 5]
+        GPIO6[GPIO 6]
+        GPIO9[GPIO 9]
+        GPIO10[GPIO 10]
+        GPIO11[GPIO 11]
+        GPIO12[GPIO 12]
+        GPIO13[GPIO 13]
+        GPIO14[GPIO 14]
+        GPIO15[GPIO 15]
+        GPIO16[GPIO 16]
+        GPIO17[GPIO 17]
+        GPIO18[GPIO 18]
+        GPIO21[GPIO 21]
+        GPIO38[GPIO 38]
+        GPIO40[GPIO 40]
+        GPIO41[GPIO 41]
+        GPIO47[GPIO 47]
+        GPIO48[GPIO 48]
+    end
+
+    subgraph I2C_Bus_A [I2C Bus A]
+        SDA_A[SDA Line]
+        SCL_A[SCL Line]
+    end
+
+    subgraph Camera_Interface [Camera Interface]
+        Cam_Data[Data Bus D0-D7]
+        Cam_Ctrl[Control Bus]
+        Cam_Sync[Sync Signals]
+    end
+
+    %% Connections
+    GPIO3 --> |SDA| SDA_A
+    GPIO4 --> |SCL| SCL_A
+
+    GPIO5 --> |Control| SSR[SSR Relay]
+    GPIO6 --> |Input| EStop[Emergency Stop]
+    GPIO9 --> |Input| Reset[Reset Button]
+    GPIO21 --> |Output| IR_LED[IR LED]
+
+    %% Camera Connections
+    GPIO10 --> |XCLK| Cam_Sync
+    GPIO13 --> |PCLK| Cam_Sync
+    GPIO38 --> |VSYNC| Cam_Sync
+    GPIO47 --> |HREF| Cam_Sync
+
+    GPIO40 --> |SDA| Cam_Ctrl
+    GPIO41 --> |SCL| Cam_Ctrl
+
+    GPIO11 --> |D6| Cam_Data
+    GPIO12 --> |D5| Cam_Data
+    GPIO14 --> |D4| Cam_Data
+    GPIO15 --> |D0| Cam_Data
+    GPIO16 --> |D3| Cam_Data
+    GPIO17 --> |D1| Cam_Data
+    GPIO18 --> |D2| Cam_Data
+    GPIO48 --> |D7| Cam_Data

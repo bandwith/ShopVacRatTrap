@@ -1,21 +1,22 @@
 Manufacturer,Manufacturer Part Number,Description,Quantity,Reference Designator,Distributor,Distributor Part Number,Unit Price,Extended Price
 Adafruit,5323,ESP32-S3 Feather with 8MB Flash No PSRAM,1,U1,Mouser,485-5323,17.50,17.50
 Adafruit,2830,Feather Stacking Headers - 12-pin and 16-pin female headers,1,CONN1,Mouser,485-2830,1.25,1.25
-Adafruit,3317,VL53L0X Time of Flight Distance Sensor - STEMMA QT,1,U2,Mouser,485-3317,15.89,15.89
-Adafruit,326,"Monochrome 0.96"" 128x64 OLED Display - STEMMA QT",1,U3,Mouser,485-326,17.50,17.50
+Adafruit,5945,OV5640 5MP Camera with smaller lens - STEMMA QT,1,CAM1,Mouser,485-5945,14.95,14.95
+Adafruit,5639,High-Power IR LED - STEMMA JST PH 2mm,1,LED1,Mouser,485-5639,3.95,3.95
+Adafruit,5425,VL53L4CX Time of Flight Distance Sensor - STEMMA QT,1,U2,DigiKey,1528-4497-ND,18.00,18.00
+Adafruit,6426,STHS34PF80 IR Temperature & Presence Sensor - STEMMA QT,1,U5,Mouser,485-6426,11.95,11.95
+Adafruit,4438,LSM6DSOX 6-DoF Accelerometer and Gyroscope - STEMMA QT,1,U6,DigiKey,1528-2947-ND,10.95,10.95
+Adafruit,3421,I2S MEMS Microphone Breakout - SPH0645LM4H,1,MIC1,DigiKey,1528-2169-ND,6.95,6.95
 Adafruit,4816,BME280 Temperature Humidity Pressure Sensor - STEMMA QT,1,U4,Mouser,485-4816,10.95,10.95
+Adafruit,326,"Monochrome 0.96"" 128x64 OLED Display - STEMMA QT",1,U3,Mouser,485-326,17.50,17.50
 Adafruit,5625,STEMMA QT / Qwiic 5-Port Hub,1,HUB1,Mouser,485-5625,2.50,2.50
-Adafruit,3595,APDS9960 Proximity Light RGB Gesture Sensor - STEMMA QT,1,U6,Mouser,485-3595,7.50,7.50
-Adafruit,4871,PIR Motion Sensor,1,PIR1,Adafruit,4871,3.95,3.95
+Adafruit,4210,STEMMA QT / Qwiic JST SH 4-pin Cable - 100mm Long,3,CABLE1,Mouser,485-4210,2.50,7.50
+Adafruit,3893,STEMMA JST PH 2mm 3-Pin to Male Header Cable - 200mm,1,CABLE2,Mouser,485-3893,1.25,1.25
 Panasonic,AQA411VL,Solid State Relay 25A,1,K1,Mouser,769-AQA411VL,25.61,25.61
 Crydom,HSP-7,Thermal Pad for Single Phase Panel Mount SSRs,1,TP1,Mouser,558-HSP-7,1.38,1.38
 Vishay,4N35-X007,General Purpose Optocoupler,1,U7,Mouser,4N35-X007,0.76,0.76
-Adafruit,4401,STEMMA QT / Qwiic JST SH 4-pin Cable - 500mm Long,1,CABLE1,Mouser,485-4401,1.25,1.25
-Adafruit,4399,STEMMA QT / Qwiic JST SH 4-pin Cable - 50mm Long,1,CABLE2,Mouser,485-4399,0.95,0.95
-Adafruit,4397,STEMMA QT / Qwiic JST SH 4-pin Cable - 100mm Long,2,CABLE3,Mouser,485-4397,0.95,1.90
 Schneider Electric,XB6ETN521P,Emergency Stop Switch 16mm Red,1,SW1,Mouser,996-XB6ETN521P,22.13,22.13
 Adafruit,471,Arcade Button - 30mm Translucent Red,1,BTN1,Mouser,485-471,2.50,2.50
-Hammond,PN-1334-C,"ABS Project Enclosure 8""x6""x4""",1,ENC1,Mouser,PN-1334-C,16.20,16.20
 GCT,TBC05-02-1-G-G,2.54mm Pitch PCB Terminal Block,1,CONN3,Mouser,523-TBC05-02-1-G-G,0.61,0.61
 Mean Well,LRS-35-5,Switching Power Supply 5V 7A Chassis Mount,1,PS1,Mouser,709-LRS35-5,11.80,11.80
 Bourns,PCS020-EE0502KS,20A Split Core Current Transformer,1,CT1,Mouser,PCS020-EE0502KS,4.09,4.09
@@ -23,7 +24,4 @@ Schurter,DF11.2078.0010.01,IEC C14 Inlet with Integrated CB (TA45) & Switch,1,J1
 Schurter,6600.3100,Panel Mount IEC C13 Outlet,1,J2,Mouser,6600.3100,2.05,2.05
 Adafruit,1877,Silicone Cover Stranded-Core Wire - 2m 26AWG Red,1,W2,Mouser,485-1877,0.95,0.95
 Adafruit,1881,Silicone Cover Stranded-Core Wire - 2m 26AWG Black,1,W3,Mouser,485-1881,0.95,0.95
-Adafruit,5945,OV5640 5MP Camera with smaller lens - STEMMA QT,1,CAM1,Mouser,485-5945,14.95,14.95
-Adafruit,5639,High-Power IR LED - STEMMA JST PH,1,LED1,Mouser,485-5639,3.95,3.95
 Adafruit,1833,Micro SD Card 8GB Class 10,1,SD1,Mouser,485-1833,1.95,1.95
-Adafruit,3893,STEMMA JST PH 4-pin Cable - 200mm Long,1,CABLE4,Mouser,485-3893,1.25,1.25

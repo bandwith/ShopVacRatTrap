@@ -2,6 +2,7 @@
 // Features: Twist-Lock (Bayonet) joints, Embedded Cable Channels, Tool-free assembly
 
 $fn = 100;
+include <helpers.scad>
 
 // ========== DIMENSIONS ==========
 tube_id = 60; // Inner diameter for rat passage

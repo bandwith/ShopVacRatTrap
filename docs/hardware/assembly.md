@@ -4,17 +4,14 @@
 
 This guide covers the physical assembly of the ShopVac Rat Trap system.
 
-**Design:** Horizontal tube trap with flat ramp entrance
+**Design:** Modular Twist-Lock Tube System with Integrated Cable Channels
+**Assembly Time:** ~1-2 hours (excluding printing)
+**Tools Required:**
+*   Wire strippers/cutters
+*   Small flathead screwdriver (for terminal blocks)
+*   *No screws required for main trap body assembly!*
 
-**Assembly Sequence:**
-1. Print all 3D components (48-60 hours total)
-2. Install sensors in mounts
-3. Route cables through integrated channels
-4. Assemble trap sections
-5. Wire control box electronics
-6. Connect to shop vacuum
-
-**Safety:** This system uses 120V AC. Follow all safety precautions.
+**Safety:** This system uses 120V/230V AC. Follow all safety precautions.
 
 ---
 
@@ -23,135 +20,109 @@ This guide covers the physical assembly of the ShopVac Rat Trap system.
 See [Bill of Materials](bom.md) for complete parts list.
 
 ### 3D Printed Parts
-- trap_ramp_entrance (flat ramp, no supports)
-- trap_entrance (sensor mounts)
-- trap_body_front (125mm with cable channel)
-- trap_body_rear (125mm)
-- vacuum_funnel (shop vac adapter)
-- control_box_enclosure
-- Accessories (lid, bezels, mounts)
+*   **Modules**:
+    *   `trap_entrance.stl` (Sensor mounts, bottom section)
+    *   `trap_body_front.stl` (Main body extension)
+    *   `trap_body_rear.stl` (Rear section)
+    *   `vacuum_funnel.stl` (Shop vac adapter)
+    *   `bait_station.stl` (Side mount)
+*   **Control Box**:
+    *   `control_box_enclosure.stl`
+    *   `control_box_lid.stl`
+*   **Mounts**:
+    *   `sensor_mount.stl` (For PIR/ToF)
+    *   `camera_mount.stl` (Optional)
 
 ## 2. 3D Printing
 
 All parts are designed to be printed without supports if oriented correctly.
 
 ### Recommended Settings
-- **Material**: PETG or ABS (PLA is not recommended for durability).
+- **Material**: PETG or ASA (PLA is not recommended for durability/outdoors).
 - **Layer Height**: 0.2mm.
 - **Infill**: 40% Gyroid (for strength).
 - **Wall Thickness**: **4mm** (Critical for chew resistance).
 
-### Parts List
-| File | Description | Notes |
-|------|-------------|-------|
-| `trap_body_main.stl` | Main tube body | Print vertically. |
-| `trap_entrance.stl` | Bottom entrance with sensor mounts | Print flat side down. |
-| `vacuum_funnel.stl` | Funnel connecting to vacuum hose | Print flange down. |
-| `bait_station.stl` | Side bait holder | Print with opening up. |
-| `camera_mount.stl` | (Optional) Camera clamp | Print in two parts. |
+---
+
+## 3. Mechanical Assembly (Twist-Lock)
+
+The new modular design uses a tool-free twist-lock mechanism to connect the trap sections.
+
+### Step 1: Prepare Parts & Sensors
+1.  Remove any brim or stringing from prints.
+2.  Ensure sensor ports and cable channels are clear of debris.
+3.  **Pre-connect STEMMA QT cables** to your sensors (VL53L0X, APDS9960, PIR) *before* mounting.
+
+### Step 2: Connect Modules
+![Twist Lock Detail](../images/twist_lock_detail.png)
+1.  **Align**: Line up the alignment dots/marks on the mating tubes (e.g., `trap_entrance` to `trap_body_front`).
+2.  **Push**: Push the sections together firmly.
+3.  **Twist**: Twist clockwise until you feel the lock click into place.
+4.  Repeat for all tube sections (`vacuum_funnel` -> `trap_body` -> `trap_entrance`).
+
+### Step 3: Route Cables
+The system features **integrated cable channels** to protect wires from rodents.
+
+![Cable Routing](../images/cable_routing.png)
+
+1.  **Feed Wires**: As you connect modules, ensure the sensor wires feed into the top cable channel.
+2.  **Pass-Through**: The channels align perfectly when the twist-lock is engaged.
+3.  **Exit**: All cables should exit at the rear, near the Control Box mounting point.
+
+### Step 4: Install Sensors
+![Sensor Installation](../images/sensor_installation.png)
+1.  **VL53L0X (ToF)**: Press into the top mount on the `trap_entrance`.
+2.  **PIR Sensor**: Press into the side mount.
+3.  **APDS9960**: Install in the `bait_station` mount.
+4.  **Secure**: Snap the printed sensor covers (`sensor_mount.stl`) over the sensors to lock them in place.
+
+### Step 5: Attach Control Box
+1.  **Mount**: Snap the Control Box onto the rear rail/mount of the trap body.
+2.  **Gland**: Pass the cable bundle through the cable gland on the control box.
+3.  **Button**: Install the 30mm Arcade Button into the side hole of the control box.
+
+### Step 6: Bait & Arm
+1.  Unscrew the Bait Cap on the `bait_station`.
+2.  Add bait (e.g., peanut butter).
+3.  Screw the cap back on tight.
 
 ---
 
-## 2. Mechanical Assembly
-
-![Exploded View](../images/exploded_view.png)
-
-### Steps
-1.  **Prepare Parts**: Remove any brim or stringing from prints. Ensure sensor ports are clear.
-2.  **Install Inserts**: Heat-set M3 threaded inserts into all mounting holes (sensor mounts, flange connections).
-3.  **Assemble Body**:
-    *   Attach `vacuum_funnel` to the top of `trap_body_main` using M3x10mm screws.
-    *   Attach `trap_entrance` to the bottom of `trap_body_main`.
-    *   Screw the `bait_station` into the side port.
-4.  **Mount Sensors**:
-    *   Secure VL53L0X to the top mount on `trap_entrance`.
-    *   Secure PIR sensor to the side mount on `trap_body_main`.
-    *   Secure APDS9960 to the bait station mount.
-5.  **Camera (Optional)**: Clamp the camera mount to the top of the tube and secure the OV5640.
-
----
-
-## 3. Electrical Wiring
+## 4. Electrical Wiring
 
 > [!WARNING]
 > **High Voltage Hazard**: This project controls mains voltage (120V/240V). Ensure the device is unplugged while wiring the relay.
 
-![Wiring Diagram](../images/wiring_diagram.png)
+![ESP32-S3 Feather Pinout](../images/esp32_s3_feather_pinout.png)
+
+> [!TIP]
+> For the complete system wiring diagram, see the **[Wiring Diagram](../WIRING_DIAGRAM.md)**.
 
 ### Connections
 
 | Component | ESP32 Pin | Notes |
 |-----------|-----------|-------|
-| **I2C Bus (Primary)** | SDA=GPIO3, SCL=GPIO4 | APDS9960, VL53L0X, BME280, OLED, Hub |
-| **I2C Bus (Camera)** | SDA=GPIO8, SCL=GPIO9 | OV5640 Camera (Optional) |
-| **PIR Sensor** | GPIO13 | Input (Pull-down) |
+| **I2C Bus A** | SDA=GPIO3, SCL=GPIO4 | Primary Bus (Sensors & Display) |
 | **SSR Control** | GPIO5 | Output to Optocoupler (Active High) |
-| **IR LED Control** | GPIO6 | High-Power IR LED (Camera variant) |
-| **Emergency Stop** | GPIO18 | Arcade Button (Pull-up, Inverted) |
-| **Reset Button** | GPIO10 | Reset/Test Button |
+| **Emergency Stop** | GPIO6 | Input (Active Low, Pull-up) |
+| **Reset Button** | GPIO9 | Input (Active Low, Pull-up) |
+| **IR LED** | GPIO21 | Night Vision Illumination |
+| **Camera Module** | GPIO10-18, 38, 40-41, 47-48 | See Pinout Diagram for details |
 
 ### Power Distribution
 - **ESP32**: Powered via USB-C or 5V regulator.
 - **Sensors**: 3.3V from ESP32 regulator (ensure total current < 500mA).
 - **Vacuum**: Switched via SSR/Relay on the Live wire.
 
-### Cable Routing & Rodent Protection
-
-All STEMMA QT cables route through **integrated channels** built into the 3D printed trap structure for complete rodent protection.
-
-**Cable Path:** Sensor Mounts → Trap Entrance → Trap Body → Control Box
-
-#### Routing STEMMA QT Cables
-
-1. **Sensor Connections** (Inside Trap Entrance):
-   - Connect sensors to STEMMA QT cables before mounting
-   - Position JST SH connectors in connector pockets (8×10mm recesses)
-   - Connectors snap into pockets near each sensor mount
-   - Cable exits route to central junction
-
-2. **Central Junction** (Trap Entrance Top):
-   - Gather all sensor cables at central exit port (15mm diameter)
-   - Optional: Install STEMMA QT 5-Port Hub here for cleaner routing
-   - Bundle cables together (up to 5 cables fit through channel)
-
-3. **Trap Body Channel** (Before Assembly):
-   - **IMPORTANT: Route cables BEFORE joining trap halves**
-   - Thread cable bundle through vertical channel in trap body rear wall
-   - Channel is 6mm wide, enclosed when front/rear halves join
-   - Cables protected inside 4mm PETG/ASA walls
-
-4. **Control Box Entry**:
-   - Pass cables through PG13.5 cable gland on rear panel
-   - Cable gland provides strain relief and environmental sealing
-   - Hand tighten cable gland (do not overtighten)
-
-5. **Internal Control Box Routing**:
-   - Follow internal wire management channels
-   - Leave 10cm service loop for maintenance
-   - Connect to ESP32 Feather STEMMA QT port or hub
-
-#### Cable Securing
-
-- **Trap Body**: No external cable ties needed (fully enclosed in channels)
-- **Control Box**: Use zip tie anchor points (pre-printed in enclosure)
-- **Connector Orientation**: Position JST SH latches "up" for easy access
-
-#### Rodent Protection Features
-
-✅ **4mm thick walls** - Chew-resistant PETG/ASA construction
-✅ **Enclosed channels** - Cables inaccessible to rodents
-✅ **No external conduit** - Clean aesthetic, simplified assembly
-✅ **Connector pockets** - Prevents cable strain at joints
-
-#### Troubleshooting
-
-- **Cable won't fit through channel**: Ensure connectors are in pockets, not mid-channel
-- **Channel too tight**: Slight taper designed in; gently guide cables through
-- **Need cable access**: Disassemble trap body halves (flanged design allows this)
+### Cable Routing Details
+*   **Internal Channels**: 6mm wide, fully enclosed.
+*   **Protection**: 4mm thick walls prevent rodent access.
+*   **Slack**: Leave ~10cm service loop inside the control box.
 
 ---
 
-## 4. Firmware Flashing
+## 5. Firmware Flashing
 
 1.  **Install ESPHome**: `pip install esphome`
 2.  **Connect**: Plug ESP32 into computer via USB.
@@ -167,8 +138,26 @@ All STEMMA QT cables route through **integrated channels** built into the 3D pri
 
 ---
 
-## 5. Testing & Calibration
+## 6. Testing & Calibration
 
 1.  **Sensor Check**: Use the OLED display or Web Interface to verify all sensors show "OK".
 2.  **Thresholds**: Adjust `detection_threshold` (ToF) and `apds_proximity_threshold` in the Web UI if needed.
 3.  **Dry Run**: Use the "Manual Trigger" button in the Web UI to test the vacuum activation (ensure vacuum is connected!).
+
+---
+
+## 7. Maintenance
+
+To ensure reliable operation and safety:
+
+*   **Monthly**:
+    *   Clean the sensor lenses (ToF, Proximity, PIR) with a soft cloth.
+    *   Inspect cable glands and connections for tightness.
+    *   Verify the trap is clear of debris.
+*   **Quarterly**:
+    *   Test the **Emergency Stop** button.
+    *   Check for firmware updates.
+    *   Inspect the 3D printed parts for any signs of wear or chewing.
+*   **Annually**:
+    *   Perform a full electrical safety inspection.
+    *   Replace the fuse if it shows signs of oxidation or age.

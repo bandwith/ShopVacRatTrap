@@ -428,6 +428,28 @@ class BOMReporter:
                     f"| {component['mpn']} | {component['description'][:30]}... | {old_price} | {new_price} | {change} |"
                 )
 
+        # List components not found
+        not_found_components = []
+        for component in validation_results["components"]:
+            if not component.get("found"):
+                not_found_components.append(component)
+
+        if not_found_components:
+            report.append("\n### ⚠️ Components Not Found")
+            report.append(
+                "The following components could not be found in the Mouser API:"
+            )
+            report.append("| Part Number | Description | Error |")
+            report.append("|------------|-------------|-------|")
+
+            for component in not_found_components:
+                mpn = component.get("mpn", "N/A")
+                desc = component.get("description", "")
+                if len(desc) > 30:
+                    desc = desc[:27] + "..."
+                error = component.get("error", "Unknown error")
+                report.append(f"| {mpn} | {desc} | {error} |")
+
         # Save report
         with open("pricing_report.md", "w") as f:
             f.write("\n".join(report))

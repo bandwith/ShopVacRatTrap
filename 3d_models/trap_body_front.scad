@@ -2,8 +2,8 @@
 //
 // Description:
 // Front half of the main trap body (125mm section).
-// Connects to trap_entrance via flange at one end,
-// and to trap_body_rear via center flange joint at the other.
+// Connects to trap_entrance via twist lock at one end,
+// and to trap_body_rear via twist lock at the other.
 // =========================================
 
 include <trap_modules.scad>
@@ -16,14 +16,7 @@ flat_base_height = 20;
 
 // [Bait Station Port]
 bait_port_diameter = 40;
-bait_port_length = 20;
 bait_port_wall_thickness = 3;
-
-// [PIR Sensor Mount]
-pir_mount_offset_x = 50;
-pir_mount_width = 30;
-pir_mount_height = 25;
-pir_mount_thickness = 3;
 
 // ========== MODULES ==========
 
@@ -32,87 +25,48 @@ module trap_body_front() {
         union() {
             // Main tube body
             translate([0,0,body_length/2]) {
-                tube(body_length, tube_outer_diameter, tube_wall_thickness);
+                // Using standard tube module
+                cylinder(d=tube_od, h=body_length);
             }
 
-            // Flange at entrance end (connects to trap_entrance)
+            // Twist Lock Male at Entrance End
             translate([0, 0, 0]) {
-                flange(flange_diameter, flange_thickness, flange_screw_hole_diameter, flange_screw_hole_inset);
+                 // Male end to fit into entrance female
+                 rotate([180, 0, 0])
+                    twist_lock_male();
             }
 
-            // Flange at center joint (connects to trap_body_rear)
+            // Twist Lock Female at Center Joint
             translate([0, 0, body_length]) {
-                flange(flange_diameter, flange_thickness, flange_screw_hole_diameter, flange_screw_hole_inset);
+                twist_lock_female();
             }
 
             // Flat base for stability
-            translate([0, -tube_outer_diameter/2, 0]) {
-                cube([tube_outer_diameter, tube_outer_diameter, flat_base_height]);
-            }
-
-            // Alignment pins for center joint (male)
-            for (a = [0, 180]) {
-                rotate([0, 0, a]) {
-                    translate([alignment_pin_radius, 0, body_length]) {
-                        cylinder(d=alignment_pin_diameter, h=alignment_pin_length, $fn=20);
-                    }
-                }
+            translate([-tube_od/2, -tube_od/2, 0]) {
+                cube([tube_od, tube_od/2, body_length]); // Support under tube
             }
         }
 
-        // Cut away top of base to match tube profile
-        translate([0,0,-1]) {
-            cylinder(d=tube_outer_diameter, h=flat_base_height+2);
-        }
+        // Hollow Tube
+        translate([0, 0, -20])
+            cylinder(d=tube_id, h=body_length + 40);
 
         // Bait station port (positioned in front half)
         translate([0, 0, body_length - 50]) {
             rotate([90, 0, 0]) {
-                difference() {
-                    cylinder(d=bait_port_diameter + (2*bait_port_wall_thickness), h=tube_outer_diameter+2, center=true);
-                    cylinder(d=bait_port_diameter, h=tube_outer_diameter+4, center=true);
-                }
-            }
-        }
-
-        // O-ring groove at center joint
-        translate([0, 0, body_length - oring_groove_depth/2]) {
-            rotate_extrude(convexity=10) {
-                translate([tube_outer_diameter/2 - oring_groove_width/2, 0, 0]) {
-                    square([oring_groove_width, oring_groove_depth], center=true);
-                }
+                cylinder(d=bait_port_diameter, h=tube_od+4, center=true);
             }
         }
     }
 
-    // Internal PIR sensor mount
-    translate([pir_mount_offset_x, 0, body_length/2]) {
-        rotate([90,0,90]) {
-            union() {
-                cube([pir_mount_thickness, pir_mount_width, pir_mount_height], center=true);
-                // Support strut
-                translate([0, 0, -pir_mount_height/2])
-                    cube([pir_mount_thickness, pir_mount_width, 5], center=true);
+    // Add Bait Port Boss
+    translate([0, 0, body_length - 50]) {
+        rotate([90, 0, 0]) {
+            difference() {
+                cylinder(d=bait_port_diameter + 6, h=tube_od/2 + 10);
+                cylinder(d=bait_port_diameter, h=tube_od + 20);
             }
         }
-    }
-
-    // ========== CABLE ROUTING CHANNEL ==========
-    // Vertical channel on rear wall (covered when assembled with rear half)
-    // Runs full body length from bottom (entrance) to top (control box)
-
-    translate([-tube_outer_diameter/2 - cable_channel_width/2 - 1, 0, body_length/2]) {
-        // Cable groove (6mm wide × 3mm deep × full length)
-        translate([0, 0, -body_length/2])
-            cube([cable_channel_width, cable_channel_depth, body_length]);
-
-        // Bottom entry port (from trap entrance)
-        translate([cable_channel_width/2, cable_channel_depth/2, -body_length/2 + 5])
-            cable_entry_port(diameter=8, height=cable_channel_depth + 2);
-
-        // Top exit port (to control box)
-        translate([cable_channel_width/2, cable_channel_depth/2, body_length/2 - 5])
-            cable_entry_port(diameter=8, height=cable_channel_depth + 2);
     }
 }
 

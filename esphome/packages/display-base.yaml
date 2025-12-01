@@ -11,6 +11,7 @@ font:
 
 display:
   - platform: ssd1306_i2c
+    i2c_id: bus_a
     model: SSD1306 128x64
     address: 0x3C
     update_interval: 1s
@@ -30,14 +31,15 @@ display:
 
           // Sensor Status
           it.printf(0, 12, id(font_medium), "Hybrid Detection:");
-          it.printf(0, 26, id(font_small), "APDS");
-          it.printf(30, 26, id(font_small), "%s",
-                    (id(apds_proximity).state > ${apds_proximity_threshold} ? "✓" : "○"));
+          it.printf(0, 26, id(font_small), "IR");
+          it.printf(20, 26, id(font_small), "%s",
+                    (id(ir_presence).state ? "✓" : "○"));
           it.printf(40, 26, id(font_small), "ToF");
           it.printf(70, 26, id(font_small), "%s",
-                    (id(tof_distance).state < id(detection_threshold).state ? "✓" : "○"));
-          it.printf(70, 26, id(font_small),
-                    "%s PIR", (id(pir_motion).state ? "✓" : "○"));
+                    (id(distance_sensor).state < id(detection_threshold).state ? "✓" : "○"));
+          it.printf(90, 26, id(font_small), "Vib");
+          it.printf(115, 26, id(font_small), "%s",
+                    (id(accel_x).state > 5.0 ? "✓" : "○"));
 
           // System Status
           if (id(emergency_stop).state) {

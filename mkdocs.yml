@@ -88,8 +88,8 @@ markdown_extensions:
   - pymdownx.caret
   - pymdownx.details
   - pymdownx.emoji:
-      emoji_index: !%21python/name:material.extensions.emoji.twemoji ""
-      emoji_generator: !%21python/name:material.extensions.emoji.to_svg ""
+      emoji_index: !%21python/name:material.extensions.emoji.twemoji
+      emoji_generator: !%21python/name:material.extensions.emoji.to_svg
   - pymdownx.highlight:
       anchor_linenums: true
       line_spans: __span
@@ -103,7 +103,7 @@ markdown_extensions:
       custom_fences:
         - name: mermaid
           class: mermaid
-          format: !%21python/name:pymdownx.superfences.fence_code_format ""
+          format: !%21python/name:pymdownx.superfences.fence_code_format
   - pymdownx.tabbed:
       alternate_style: true
   - pymdownx.tasklist:

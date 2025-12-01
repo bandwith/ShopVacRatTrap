@@ -84,6 +84,7 @@ Supports: Yes, for overhangs
        If you're not qualified for AC work, **stop here** and hire a licensed electrician.
 
 3. **DC Electronics**
+   ![ESP32-S3 Feather Pinout](../images/esp32_s3_feather_pinout.png)
    ```
    - ESP32-S3 mounting
    - STEMMA QT sensor connections

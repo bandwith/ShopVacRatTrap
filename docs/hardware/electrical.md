@@ -9,7 +9,7 @@
 This document details the electrical design, theory of operation, and safety considerations for the ShopVac Rat Trap.
 
 > [!NOTE]
-> For practical wiring instructions and diagrams, please refer to the **[Assembly Guide](ASSEMBLY_GUIDE.md)**.
+> For practical wiring instructions and diagrams, please refer to the **[Assembly Guide](assembly.md)**.
 
 ### 1.1. Core Design Philosophy
 
@@ -112,28 +112,17 @@ For maximum safety and code compliance, all electronic components (both high and
 
 **Critical Safety Rule**: GPIO5 is reserved ONLY for SSR control - never use for other purposes.
 
-**Standard ESP32-S3 Feather Configuration:**
-| GPIO | Function | Connection | Safety Level |
-|------|----------|------------|--------------|
-| GPIO5 | SSR Control | 4N35 Optocoupler → SSR | SAFETY CRITICAL |
-| GPIO18 | Emergency Stop | Arcade Button (Active Low) | SAFETY CRITICAL |
-| GPIO3 | I2C SDA | STEMMA QT Bus (Primary) | Standard |
-| GPIO4 | I2C SCL | STEMMA QT Bus (Primary) | Standard |
-| GPIO10 | Reset Button | Reset/Test Button | Standard |
-| GPIO13 | PIR Motion | PIR Sensor Input | Standard |
+![ESP32-S3 Feather Pinout](../images/esp32_s3_feather_pinout.png)
 
-**STEMMA QT Camera Enhanced Configuration:**
+> [!TIP]
+> For a detailed pin mapping table and full system wiring diagram, please refer to the **[Wiring Diagram](../WIRING_DIAGRAM.md)**.
+
+**Key Safety Pins:**
 | GPIO | Function | Connection | Safety Level |
 |------|----------|------------|--------------|
-| GPIO5 | SSR Control | 4N35 Optocoupler → SSR | SAFETY CRITICAL |
-| GPIO18 | Emergency Stop | Arcade Button (Active Low) | SAFETY CRITICAL |
-| GPIO3 | I2C SDA | STEMMA QT Bus (Primary Sensors) | Standard |
-| GPIO4 | I2C SCL | STEMMA QT Bus (Primary Sensors) | Standard |
-| GPIO8 | I2C SDA | OV5640 Camera (Secondary Bus) | Standard |
-| GPIO9 | I2C SCL | OV5640 Camera (Secondary Bus) | Standard |
-| GPIO6 | IR LED Control | High-Power IR STEMMA Module | Standard |
-| GPIO10 | Reset Button | Reset/Test Button | Standard |
-| GPIO13 | PIR Motion | PIR Sensor Input | Standard |
+| **GPIO5** | SSR Control | 4N35 Optocoupler → SSR | **SAFETY CRITICAL** |
+| **GPIO6** | Emergency Stop | Arcade Button (Active Low) | **SAFETY CRITICAL** |
+| **GPIO9** | Reset Button | Reset/Test Button | Standard |
 
 ### 3.3. Power Distribution
 

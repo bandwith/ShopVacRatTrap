@@ -11,7 +11,7 @@ binary_sensor:
   # Emergency stop switch (GPIO18 - Safety critical)
   - platform: gpio
     pin:
-      number: 18
+      number: 6
       mode: INPUT_PULLUP
       inverted: true
     name: ${friendly_name} Emergency Stop
@@ -43,24 +43,24 @@ script:
       - script.execute: safety_disarm
       - deep_sleep.enter:
           id: emergency_sleep
-          sleep_duration: ${emergency_sleep_duration}       # 5 minute cooldown
+          sleep_duration: ${emergency_sleep_duration} # 5 minute cooldown
 
 deep_sleep:
   id: emergency_sleep
-  sleep_duration: ${emergency_sleep_duration}   # 5 minute cooldown
+  sleep_duration: ${emergency_sleep_duration} # 5 minute cooldown
 
 interval:
   - interval: 5s
     then:
       - if:
           condition:
-            lambda: return millis() < 5000;         # First 5 seconds after boot
+            lambda: return millis() < 5000; # First 5 seconds after boot
           then:
             # NEC 422.31(B): Ensure SSR is OFF during power-up (safety critical)
             - switch.turn_off: vacuum_relay
             - logger.log:
-                format: 'Power-on sequencing: SSR disabled during boot (%s compliance)'
-                args: ['${safety_standard}']
+                format: "Power-on sequencing: SSR disabled during boot (%s compliance)"
+                args: ["${safety_standard}"]
 
   # NEC/IEC compliance monitoring
   - interval: 60s
@@ -76,7 +76,7 @@ globals:
   - id: fault_count
     type: int
     restore_value: yes
-    initial_value: '0'
+    initial_value: "0"
 
   - id: last_fault_type
     type: std::string

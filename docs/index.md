@@ -59,6 +59,8 @@ The ShopVac Rat Trap is a professional-grade, ESP32-based IoT rodent control sys
 
 ## System Architecture
 
+![ESP32-S3 Feather Pinout](images/esp32_s3_feather_pinout.png)
+
 ```mermaid
 graph TB
     subgraph "Trap Assembly"

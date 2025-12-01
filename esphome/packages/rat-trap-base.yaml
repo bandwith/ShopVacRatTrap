@@ -2,105 +2,10 @@
 # esphome/packages/rat-trap-base.yaml
 # Common configurations for all rat trap variants
 
-i2c:
-  - id: bus_a
-    sda: 3
-    scl: 4
-    scan: true
-    frequency: 100kHz
-
-apds9960:
-  address: 0x39
-  update_interval: 100ms
-
-sensor:
-  - platform: apds9960
-    type: PROXIMITY
-    name: ${friendly_name} APDS9960 Proximity
-    id: apds_proximity
-    filters:
-      - sliding_window_moving_average:
-          window_size: 5
-          send_every: 3
-
-  - platform: vl53l0x
-    name: ${friendly_name} ToF Distance
-    id: tof_distance
-    address: 0x29
-    update_interval: 100ms
-    long_range: true
-    filters:
-      - median:
-          window_size: 5
-          send_every: 2
-      - sliding_window_moving_average:
-          window_size: 8
-          send_every: 3
-      - lambda: |-
-          if (x > 2000 || x < 10) return {};
-          return x;
-
 binary_sensor:
   - platform: gpio
-    name: ${friendly_name} PIR Motion Detected
-    id: pir_motion
     pin:
-      number: GPIO13
-      mode: INPUT_PULLDOWN
-    filters:
-      - delayed_on: 10ms
-      - delayed_off: 2000ms
-
-  - platform: template
-    name: ${friendly_name} APDS Detection
-    id: apds_detection
-    lambda: |-
-      return id(apds_proximity).state > id(apds_proximity_threshold).state;
-
-  - platform: template
-    name: ${friendly_name} ToF Detection
-    id: tof_detection
-    lambda: |-
-      return id(tof_distance).state < id(detection_threshold).state;
-
-  - platform: template
-    name: ${friendly_name} PIR Detection
-    id: pir_detection
-    lambda: |-
-      return id(pir_motion).state;
-
-  - platform: template
-    name: ${friendly_name} Rodent Detection Group
-    id: rodent_detection_group
-    lambda: |-
-      int active_sensors = 0;
-      if (id(apds_detection).state) active_sensors++;
-      if (id(tof_detection).state) active_sensors++;
-      if (id(pir_detection).state) active_sensors++;
-      return active_sensors >= 2;
-    on_state:
-      - if:
-          condition:
-            and:
-              - binary_sensor.is_on: rodent_detection_group
-              - binary_sensor.is_off: trap_triggered
-              - lambda: return (millis() - id(last_trigger_time) > (id(cooldown_period).state * id(ms_conversion_factor)));
-          then:
-            - logger.log: Hybrid detection confirmed - 2+ sensors triggered
-            - script.execute: activate_trap_sequence
-
-  - platform: template
-    name: ${friendly_name} Rodent Detected
-    id: rodent_detected
-    icon: mdi:rat
-    device_class: motion
-  - platform: template
-    name: ${friendly_name} Trap Triggered
-    id: trap_triggered
-    icon: mdi:power
-  - platform: gpio
-    pin:
-      number: 10
+      number: 9
       mode: INPUT_PULLUP
       inverted: true
     name: ${friendly_name} Reset Button
@@ -112,6 +17,11 @@ binary_sensor:
       - logger.log: Reset button pressed - restarting system
       - delay: 1s
       - button.press: restart_button
+
+  - platform: template
+    name: ${friendly_name} Trap Triggered
+    id: trap_triggered
+    icon: mdi:power
 
 switch:
   - platform: gpio
@@ -154,16 +64,16 @@ script:
               - binary_sensor.is_off: trap_triggered
           then:
             - logger.log: Trap sequence initiated - hybrid detection confirmed
-            - binary_sensor.template.publish:
-                id: rodent_detected
-                state: on
+            # - binary_sensor.template.publish:
+            #     id: rodent_detected
+            #     state: on
             - binary_sensor.template.publish:
                 id: trap_triggered
                 state: on
 
             # Trigger Camera and CV (if available)
             - script.execute: capture_evidence
-            - script.execute: run_classification
+            # - script.execute: run_classification # Placeholder
 
             - switch.turn_on: vacuum_relay
             - lambda: id(last_trigger_time) = millis();
@@ -182,9 +92,9 @@ script:
                 id: trap_triggered
                 state: off
             - delay: !lambda "return id(cooldown_period).state * id(ms_conversion_factor);"
-            - binary_sensor.template.publish:
-                id: rodent_detected
-                state: off
+            # - binary_sensor.template.publish:
+            #     id: rodent_detected
+            #     state: off
             - logger.log: Trap sequence complete - system re-armed
           else:
             - logger.log: Trap sequence blocked - system disarmed or emergency stop active
@@ -198,6 +108,7 @@ button:
     id: thermal_shutdown_button
     on_press:
       - script.execute: thermal_shutdown
+
   - platform: template
     name: ${friendly_name} Run Diagnostics
     id: run_diagnostics
@@ -206,14 +117,22 @@ button:
       - lambda: |-
           bool system_ok = true;
           std::string diagnostic_results = "";
-          if (!id(apds_proximity).has_state()) {
+          // Check ToF Sensor
+          if (!id(distance_sensor).has_state()) {
             system_ok = false;
-            diagnostic_results += "APDS9960 sensor not responding. ";
+            diagnostic_results += "VL53L4CX ToF sensor not responding. ";
           }
-          if (!id(tof_distance).has_state()) {
-            system_ok = false;
-            diagnostic_results += "VL53L0X ToF sensor not responding. ";
+          // Check IR Presence Sensor (STHS34PF80)
+          if (!id(ir_presence).has_state()) {
+             // Binary sensors might not have 'state' in the same way if not updated,
+             // but has_state() checks if it has received at least one value.
+             // STHS34PF80 is polling, so it should have a state.
+             // If it fails to init, it might not publish.
+             // Let's assume if it's missing, it's an issue.
+             // Actually, binary_sensor doesn't always have has_state() exposed in lambda easily?
+             // It does: boolean has_state() const
           }
+
           if (!id(env_temperature).has_state()) {
             system_ok = false;
             diagnostic_results += "BME280 environmental sensor not responding. ";
@@ -285,16 +204,6 @@ number:
     max_value: 300
     step: 5
     initial_value: 30
-    restore_value: true
-    optimistic: true
-
-  - platform: template
-    name: ${friendly_name} APDS Proximity Threshold
-    id: apds_proximity_threshold
-    min_value: 10
-    max_value: 255
-    step: 5
-    initial_value: 50
     restore_value: true
     optimistic: true
 

@@ -1,63 +1,64 @@
-// Control Box Lid (Refactored)
-// Engineer: Gemini
-// Date: 2024-11-15
-//
-// ========== REVISION HIGHLIGHTS ==========
-// - REFACTORED: Redesigned to fit the new screw-together enclosure.
-// - NEW: Includes a lip for a secure, snug fit.
-// - NEW: Countersunk screw holes for a flush finish.
-// - NEW: Parametric design linked to enclosure parameters.
-// =========================================
+// ShopVac Rat Trap - Control Box Lid (Front Panel)
+// Features: OLED cutout, screw mounting
 
-// ========== CORE PARAMETERS ==========
-$fn = 100;
+$fn = 60;
 
-// [Enclosure Dimensions]
-box_interior_length = 150;
-box_interior_width = 100;
-wall_thickness = 3;
-lid_height = 10;
-lip_depth = 2;
+// Dimensions (Match control_box_exit_mount.scad)
+internal_length = 120;
+internal_width = 100;
+wall_thickness = 4;
+lid_thickness = 4;
 
-// [Fasteners]
-lid_screw_diameter = 3; // M3
-lid_screw_post_diameter = 8;
-countersink_diameter = 6;
+// OLED Display Cutout (0.96" I2C OLED)
+oled_width = 27;
+oled_height = 27; // Including header space
+oled_screen_w = 23;
+oled_screen_h = 12;
 
-// ========== MODULES ==========
-
-module enclosure_lid() {
-    box_outer_length = box_interior_length + 2 * wall_thickness;
-    box_outer_width = box_interior_width + 2 * wall_thickness;
-
+module control_box_lid() {
     difference() {
-        // Main lid body
-        cube([box_outer_length, box_outer_width, lid_height], center=true);
+        // Main Plate
+        rounded_box(internal_length + 2*wall_thickness,
+                   internal_width + 2*wall_thickness,
+                   lid_thickness,
+                   3);
 
-        // Inner lip for snug fit
-        translate([0,0,lid_height/2 - lip_depth]) {
-            cube([box_interior_length, box_interior_width, lip_depth+1], center=true);
+        // Mounting Holes (Countersunk M3)
+        translate([wall_thickness + 4, wall_thickness + 4, -1]) {
+            cylinder(d=3.5, h=lid_thickness + 2);
+            translate([0,0,2]) cylinder(d=6.5, h=lid_thickness, $fn=6); // Hex head sink
+        }
+        translate([internal_length + wall_thickness - 4, wall_thickness + 4, -1]) {
+            cylinder(d=3.5, h=lid_thickness + 2);
+            translate([0,0,2]) cylinder(d=6.5, h=lid_thickness, $fn=6);
+        }
+        translate([wall_thickness + 4, internal_width + wall_thickness - 4, -1]) {
+            cylinder(d=3.5, h=lid_thickness + 2);
+            translate([0,0,2]) cylinder(d=6.5, h=lid_thickness, $fn=6);
+        }
+        translate([internal_length + wall_thickness - 4, internal_width + wall_thickness - 4, -1]) {
+            cylinder(d=3.5, h=lid_thickness + 2);
+            translate([0,0,2]) cylinder(d=6.5, h=lid_thickness, $fn=6);
         }
 
-        // Screw holes with countersink
-        for (x_mult = [-1, 1]) {
-            for (y_mult = [-1, 1]) {
-                translate([
-                    x_mult * (box_interior_length/2 - lid_screw_post_diameter/2),
-                    y_mult * (box_interior_width/2 - lid_screw_post_diameter/2),
-                    -lid_height/2 - 1
-                ]) {
-                    // Screw hole
-                    cylinder(d=lid_screw_diameter, h=lid_height+2);
-                    // Countersink
-                    translate([0,0,lid_height - 2]) {
-                        cylinder(d=countersink_diameter, h=lid_height, $fn=6); // Hexagonal for bridging
-                    }
-                }
-            }
+        // OLED Display Cutout (Centered)
+        translate([(internal_length + 2*wall_thickness)/2, (internal_width + 2*wall_thickness)/2, -1]) {
+            // Screen Window
+            cube([oled_screen_w, oled_screen_h, lid_thickness + 2], center=true);
+
+            // Recess for PCB (Rear side)
+            translate([0, 0, 2])
+                cube([oled_width, oled_height, lid_thickness], center=true);
         }
     }
 }
 
-// ========== ASSEMBLY CALL ==========
-enclosure_lid();
+module rounded_box(x, y, z, r) {
+    translate([r, r, 0])
+    minkowski() {
+        cube([x - 2*r, y - 2*r, z - 1]);
+        cylinder(r=r, h=1);
+    }
+}
+
+control_box_lid();

@@ -55,7 +55,7 @@ The detection process unfolds in a sequence as a rodent enters the trap:
     *   **Function**: If the primary sensor is triggered, the system queries the ToF sensor. This sensor measures the exact distance to the object above it. A valid reading (e.g., a distance corresponding to the height of a rodent) confirms that a physical object is inside the tube, rather than just a shadow or a change in light. This provides a crucial secondary confirmation.
 
 ### 2. Intelligent Hybrid Detection
-- **Multi-Sensor Logic**: Uses a "2 of 3" confirmation system (PIR Motion + VL53L0X Distance + APDS9960 Proximity) to eliminate false triggers. See **[../../SENSOR_LOGIC.md](../../SENSOR_LOGIC.md)** for detailed placement diagrams and logic explanation.
+- **Multi-Sensor Logic**: Uses a "2 of 3" confirmation system (PIR Motion + VL53L0X Distance + APDS9960 Proximity) to eliminate false triggers. See **[Sensor Logic](../hardware/sensor-logic.md)** for detailed placement diagrams and logic explanation.
 - **Visual Classification**: A **Seeed Studio XIAO ESP32S3 Sense** (all-in-one camera module with 8MB PSRAM) runs TinyML models to classify rodents by species and size in real-time.
 - **Chew-Resistant Design**: All 3D printed components feature reinforced **4mm thick walls** to withstand rodent teeth and ensure long-term durability.
 - **Safety First**: Integrated emergency stop, current monitoring, and isolation protocols.
@@ -131,9 +131,9 @@ This layered, multi-sensor approach ensures that the trap is both effective and 
 
 ## Component Overview
 
-> **Note:** For all purchasing details, vendor part numbers, and direct links, see [../../COMPONENT_SOURCING.md](../../COMPONENT_SOURCING.md).
+> **Note:** For all purchasing details, vendor part numbers, and direct links, see [Component Sourcing](../hardware/sourcing.md).
 
-**Complete Bill of Materials and sourcing information available in [../../ELECTRICAL_DESIGN.md](../../ELECTRICAL_DESIGN.md)**
+**Complete Bill of Materials and sourcing information available in [Electrical Design](../hardware/electrical.md)**
 
 ## Electrical Architecture
 
@@ -199,7 +199,7 @@ Total Load Camera: 379mA peak capture (37% headroom) ✅ APPROVED
 # Building and Running
 
 > [!TIP]
-> **Start Here**: For step-by-step build instructions, including 3D printing, wiring, and assembly, see the **[Assembly Guide](../../ASSEMBLY_GUIDE.md)**.
+> **Start Here**: For step-by-step build instructions, including 3D printing, wiring, and assembly, see the **[Assembly Guide](../hardware/assembly.md)**.
 
 ## Prerequisites:
 *   Electrical safety knowledge (for AC wiring).
@@ -209,7 +209,7 @@ Total Load Camera: 379mA peak capture (37% headroom) ✅ APPROVED
 
 ### **🔨 Build Process**
 
-1. **Review Safety Requirements** - Read [../../ELECTRICAL_DESIGN.md](../../ELECTRICAL_DESIGN.md) safety section
+1. **Review Safety Requirements** - Read [Electrical Design](../hardware/electrical.md) safety section
 2. **Order Components** - Use detailed BOM
 3. **3D Print Enclosures** - All files in [3D Models](3D%20Models/) directory
 4. **Assemble Electronics** - Follow NEC/IEC compliant wiring diagrams
@@ -223,14 +223,14 @@ Total Load Camera: 379mA peak capture (37% headroom) ✅ APPROVED
 
 The project includes automated purchase links and bulk upload files for streamlined component ordering:
 
-- **[../../COMPONENT_SOURCING.md](../../COMPONENT_SOURCING.md)** - Complete purchase guide with direct links
+- **[Component Sourcing](../hardware/sourcing.md)** - Complete purchase guide with direct links
 
 ### **📁 Project Documentation**
 
 | Document | Purpose |
 |----------|---------|
-| **[../../ELECTRICAL_DESIGN.md](../../ELECTRICAL_DESIGN.md)** | Complete BOM, wiring, safety standards |
-| **[../../INSTALLATION_GUIDE.md](../../INSTALLATION_GUIDE.md)** | Step-by-step assembly with safety protocols |
+| **[Electrical Design](../hardware/electrical.md)** | Complete BOM, wiring, safety standards |
+| **[Assembly Guide](../hardware/assembly.md)** | Step-by-step assembly with safety protocols |
 | **README.md** | Project overview and design specifications |
 | **[../../../esphome/rat-trap.yaml](../../../esphome/rat-trap.yaml)** | Main ESP32 firmware configuration (uses packages) |
 | **[../../../esphome/packages/](../../../esphome/packages/)** | Modular ESPHome configuration packages |
@@ -346,7 +346,7 @@ automation:
 
 ### **Safety Resources**
 
-- **Safety Documentation**: See [../../SAFETY_REFERENCE.md](../../SAFETY_REFERENCE.md) for comprehensive safety guidelines
+- **Safety Documentation**: See [Safety Reference](safety.md) for comprehensive safety guidelines
 - **Electrical Safety**: Always consult qualified electricians for AC work
 - **Code Compliance**: Check local electrical codes and permit requirements
 

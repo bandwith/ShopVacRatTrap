@@ -1,0 +1,40 @@
+graph TD
+    subgraph Power
+        AC[AC Mains 110/220V] --> Inlet[IEC Inlet w/ Fuse]
+        Inlet --> PSU[Mean Well LRS-35-5 (5V PSU)]
+        Inlet --> SSR_AC[SSR AC Load Side]
+        SSR_AC --> Outlet[IEC Outlet (To Vacuum)]
+        PSU --> |5V| ESP32_5V[ESP32 USB/Bat Pin]
+        PSU --> |GND| ESP32_GND[ESP32 GND]
+    end
+
+    subgraph Controller
+        ESP32[Adafruit ESP32-S3 Feather]
+    end
+
+    subgraph Sensors_I2C_Bus [I2C Bus A (SDA=3, SCL=4)]
+        Hub[STEMMA QT Hub]
+        ESP32 --> |I2C| Hub
+        Hub --> ToF[VL53L4CX Distance]
+        Hub --> APDS[APDS9960 Proximity]
+        Hub --> BME[BME280 Env Sensor]
+        Hub --> OLED[OLED Display]
+        Hub --> IMU[LSM6DSOX IMU]
+        Hub --> IR[STHS34PF80 IR Presence]
+    end
+
+    subgraph Camera_Module
+        ESP32 --> |D0-D7, Ctrl| Cam[OV5640 Camera]
+    end
+
+    subgraph GPIO_Connections
+        SSR_Ctrl[SSR Control Input] --> |GPIO5| ESP32
+        Stop[Emergency Stop] --> |GPIO6| ESP32
+        Btn[Reset Button] --> |GPIO9| ESP32
+        LED[IR LED] --> |GPIO21| ESP32
+    end
+
+    %% Wiring Details
+    PSU --> |5V| Hub
+    ESP32 --> |3.3V| Stop
+    ESP32 --> |3.3V| SSR_Ctrl

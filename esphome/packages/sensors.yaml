@@ -1,8 +1,41 @@
 ---
 # esphome/packages/sensors.yaml
+
 sensor:
+  # VL53L4CX ToF Distance Sensor
+  - platform: vl53l4cx
+    name: "ToF Distance"
+    id: distance_sensor
+    update_interval: 100ms
+    filters:
+      - sliding_window_moving_average:
+          window_size: 5
+
+  # LSM6DSOX IMU
+  - platform: lsm6dsox
+    accel_x:
+      name: "Accelerometer X"
+      id: accel_x
+    accel_y:
+      name: "Accelerometer Y"
+      id: accel_y
+    accel_z:
+      name: "Accelerometer Z"
+      id: accel_z
+    gyro_x:
+      name: "Gyroscope X"
+      id: gyro_x
+    gyro_y:
+      name: "Gyroscope Y"
+      id: gyro_y
+    gyro_z:
+      name: "Gyroscope Z"
+      id: gyro_z
+    update_interval: 50ms
+
   # BME280 environmental sensor via STEMMA QT (I2C)
   - platform: bme280_i2c
+    i2c_id: bus_a
     address: 0x77
     temperature:
       name: ${friendly_name} Environmental Temperature
@@ -75,6 +108,57 @@ sensor:
   - platform: uptime
     name: ${friendly_name} System Uptime
     id: uptime_sensor
+
+binary_sensor:
+  # STHS34PF80 IR Presence Sensor
+  - platform: sths34pf80
+    name: "IR Presence"
+    id: ir_presence
+    update_interval: 200ms
+
+  # Camera AI Detection Placeholder
+  - platform: template
+    name: "Camera Rodent Detected"
+    id: camera_detect
+    lambda: return false; // Placeholder for CV logic
+
+  # 4-of-5 Detection Logic
+  - platform: template
+    name: "Rodent Detected (4-of-5)"
+    id: rodent_detected
+    lambda: |-
+      int detections = 0;
+
+      // 1. Camera AI (placeholder - requires custom component)
+      // if (id(camera_detect).state) detections++;
+
+      // 2. Distance: object between 50-500mm
+      if (id(distance_sensor).state < 500 && id(distance_sensor).state > 50) detections++;
+
+      // 3. IR presence detected
+      if (id(ir_presence).state) detections++;
+
+      // 4. Vibration pattern (accelerometer threshold)
+      float accel_magnitude = sqrt(
+        id(accel_x).state * id(accel_x).state +
+        id(accel_y).state * id(accel_y).state +
+        id(accel_z).state * id(accel_z).state
+      );
+      if (accel_magnitude > 12.0) detections++;  // m/s² threshold
+
+      // 5. Environmental normal (fault detection)
+
+      return detections >= 4;
+
+    on_press:
+      - if:
+          condition:
+            and:
+              - binary_sensor.is_off: trap_triggered
+              - lambda: return (millis() - id(last_trigger_time) > (id(cooldown_period).state * id(ms_conversion_factor)));
+          then:
+            - logger.log: "4-of-5 Detection Confirmed! Activating Trap."
+            - script.execute: activate_trap_sequence
 
 text_sensor:
   - platform: template

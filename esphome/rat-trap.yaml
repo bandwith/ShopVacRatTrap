@@ -10,11 +10,69 @@ substitutions:
   device_name: rat-trap
   friendly_name: ShopVac Rat Trap
 
+esp32:
+  board: adafruit_feather_esp32s3_nopsram
+  variant: ESP32S3
+  framework:
+    type: arduino
+
+esphome:
+  name: ${device_name}
+  friendly_name: ${friendly_name}
+
+external_components:
+  - source:
+      type: local
+      path: components
+
+# I2C Buses
+i2c:
+  - id: bus_a
+    sda: GPIO3
+    scl: GPIO4
+    scan: true
+    frequency: 400kHz
+  - id: camera_i2c
+    sda: GPIO40
+    scl: GPIO41
+    scan: false
+    frequency: 100kHz
+
+# Camera Integration (OV5640)
+esp32_camera:
+  name: "Trap Camera"
+  external_clock:
+    pin: GPIO10
+    frequency: 20MHz
+  i2c_id: camera_i2c
+  data_pins: [GPIO15, GPIO17, GPIO18, GPIO16, GPIO14, GPIO12, GPIO11, GPIO48]
+  vsync_pin: GPIO38
+  href_pin: GPIO47
+  pixel_clock_pin: GPIO13
+  resolution: 1280x1024 # SXGA (closest to 720p supported)
+  max_framerate: 10fps
+  jpeg_quality: 12
+  vertical_flip: true
+  horizontal_mirror: false
+
+# IR LED Control
+output:
+  - platform: ledc
+    pin: GPIO21
+    id: ir_led_output
+    frequency: 1000Hz
+
+light:
+  - platform: monochromatic
+    output: ir_led_output
+    name: "IR LED"
+    id: ir_led
+
 script:
-  # Dummy scripts for non-camera variant
   - id: capture_evidence
     then:
-      - logger.log: "No camera configured - skipping capture"
-  - id: run_classification
-    then:
-      - logger.log: "No CV configured - skipping classification"
+      - light.turn_on: ir_led
+      - delay: 100ms
+      # - component.update: camera_detect # Trigger AI inference if implemented
+      - delay: 5s
+      - light.turn_off: ir_led

@@ -7,7 +7,7 @@ This document details the "Intelligent Hybrid Detection" system used in the Shop
 ![Sensor Placement Diagram](docs/images/sensor_placement_diagram.png)
 
 > [!TIP]
-> For physical mounting instructions, see the **[Assembly Guide](ASSEMBLY_GUIDE.md)**.
+> For physical mounting instructions, see the **[Assembly Guide](assembly.md)**.
 
 ## The "2 of 3" Confirmation Logic
 
