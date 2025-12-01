@@ -14,7 +14,8 @@ esp32:
   framework:
     type: arduino
 
-psram: {}
+psram:
+  mode: quad
 
 substitutions:
   line_voltage: 120V AC
