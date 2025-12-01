@@ -11,6 +11,13 @@ packages:
 external_components:
   - source: components
 
+i2c:
+  - id: bus_a
+    sda: GPIO3
+    scl: GPIO4
+    scan: true
+    frequency: 400kHz
+
 substitutions:
   device_name: rat-trap-camera
   friendly_name: ShopVac Rat Trap with STEMMA Camera
