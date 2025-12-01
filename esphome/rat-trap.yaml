@@ -10,12 +10,6 @@ substitutions:
   device_name: rat-trap
   friendly_name: ShopVac Rat Trap
 
-esp32:
-  board: adafruit_feather_esp32s3_nopsram
-  variant: ESP32S3
-  framework:
-    type: arduino
-
 esphome:
   name: ${device_name}
   friendly_name: ${friendly_name}

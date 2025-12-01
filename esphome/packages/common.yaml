@@ -14,6 +14,8 @@ esp32:
   framework:
     type: arduino
 
+psram: {}
+
 substitutions:
   line_voltage: 120V AC
   line_frequency: 60Hz
