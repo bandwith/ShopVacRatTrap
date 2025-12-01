@@ -8,6 +8,9 @@ packages:
   cv: !include packages/cv.yaml
   base: !include packages/rat-trap-base.yaml
 
+external_components:
+  - source: components
+
 substitutions:
   device_name: rat-trap-camera
   friendly_name: ShopVac Rat Trap with STEMMA Camera
