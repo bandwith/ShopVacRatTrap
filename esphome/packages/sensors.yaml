@@ -12,7 +12,6 @@ sensor:
     type: PROXIMITY
     name: "APDS9960 Proximity"
     id: apds_proximity
-    update_interval: 100ms
 
   # VL53L4CX ToF Distance Sensor
   - platform: vl53l4cx
