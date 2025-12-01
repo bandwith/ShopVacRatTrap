@@ -22,11 +22,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Close Stale Issues
-        uses: actions/stale@v10.1.0
+        uses: actions/stale@v9
         with:
           # Issues
-          days-before-issue-stale: 28  # 4 weeks
-          days-before-issue-close: 7   # 1 week after stale
+          days-before-issue-stale: 28 # 4 weeks
+          days-before-issue-close: 7 # 1 week after stale
           stale-issue-label: stale
           close-issue-label: auto-closed
           stale-issue-message: |
@@ -47,8 +47,8 @@ jobs:
           operations-per-run: 30
 
           # Pull Requests
-          days-before-pr-stale: 60  # 2 months for PRs
-          days-before-pr-close: 14  # 2 weeks after stale
+          days-before-pr-stale: 60 # 2 months for PRs
+          days-before-pr-close: 14 # 2 weeks after stale
           stale-pr-label: stale
           close-pr-label: auto-closed
           stale-pr-message: |

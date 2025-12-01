@@ -35,16 +35,16 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v5.0.0
+        uses: actions/checkout@v4
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v7.1.3
+        uses: astral-sh/setup-uv@v4
         with:
           enable-cache: true
           cache-dependency-glob: requirements.txt
 
       - name: Set up Python
-        uses: actions/setup-python@v6.0.0
+        uses: actions/setup-python@v5
         with:
           python-version: '3.13'
 
@@ -192,7 +192,7 @@ jobs:
 
       - name: Commit and push changes
         if: steps.set_validation_outputs.outputs.changes_detected == 'true' || github.event.inputs.force_update == 'true'
-        uses: stefanzweifel/git-auto-commit-action@v7.0.0
+        uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_user_email: action@github.com
           commit_user_name: GitHub Action
@@ -201,7 +201,7 @@ jobs:
 
       - name: Upload artifacts
         if: always()
-        uses: actions/upload-artifact@v5.0.0
+        uses: actions/upload-artifact@v4
         with:
           name: bom-validation-${{ github.run_number }}
           path: |
