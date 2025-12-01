@@ -1,6 +1,11 @@
 ---
 # esphome/packages/sensors.yaml
 
+apds9960:
+  i2c_id: bus_a
+  address: 0x39
+  update_interval: 100ms
+
 sensor:
   # APDS9960 Gesture/Proximity Sensor
   - platform: apds9960
