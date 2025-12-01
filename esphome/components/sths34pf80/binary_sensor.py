@@ -17,7 +17,5 @@ async def to_code(config):
     await cg.register_component(var, config)
 
     cg.add_library("https://github.com/adafruit/Adafruit_STHS34PF80.git", None)
-    cg.add_library("adafruit/Adafruit BusIO", "1.14.1")
-    cg.add_library("adafruit/Adafruit Unified Sensor", "1.1.9")
     cg.add_library("Wire", None)
     cg.add_library("SPI", None)
