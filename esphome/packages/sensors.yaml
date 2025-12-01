@@ -9,9 +9,9 @@ apds9960:
 sensor:
   # APDS9960 Gesture/Proximity Sensor
   - platform: apds9960
-    proximity:
-      name: "APDS9960 Proximity"
-      id: apds_proximity
+    type: PROXIMITY
+    name: "APDS9960 Proximity"
+    id: apds_proximity
     update_interval: 100ms
 
   # VL53L4CX ToF Distance Sensor
