@@ -1,4 +1,3 @@
-# Rodent classifier temporarily disabled for compilation testing
 external_components:
   - source:
       type: local
