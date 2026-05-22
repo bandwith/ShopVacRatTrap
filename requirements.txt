@@ -94,7 +94,7 @@ icmplib==3.0.4
     # via esphome
 identify==2.6.15
     # via pre-commit
-idna==3.11
+idna==3.15
     # via
     #   anyio
     #   requests
