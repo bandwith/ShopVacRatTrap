@@ -160,7 +160,7 @@ pluggy==1.6.0
     # via pytest
 pre-commit==4.5.0
     # via -r requirements.in
-protobuf==6.33.1
+protobuf==6.33.5
     # via aioesphomeapi
 puremagic==1.30
     # via esphome
