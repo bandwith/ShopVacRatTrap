@@ -210,7 +210,7 @@ pyyaml==6.0.3
     #   yamllint
 reedsolo==1.7.0
     # via esptool
-requests==2.32.5
+requests==2.33.0
     # via
     #   -r requirements.in
     #   detect-secrets
