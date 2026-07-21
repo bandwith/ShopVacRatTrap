@@ -231,7 +231,7 @@ ruff==0.14.7
     # via -r requirements.in
 semantic-version==2.10.0
     # via platformio
-setuptools==80.9.0
+setuptools==83.0.0
     # via pip-tools
 six==1.17.0
     # via python-dateutil
