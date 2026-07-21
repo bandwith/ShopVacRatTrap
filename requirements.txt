@@ -187,7 +187,7 @@ pyserial==3.5
     #   esphome
     #   esptool
     #   platformio
-pytest==9.0.1
+pytest==9.0.3
     # via
     #   -r requirements.in
     #   pytest-mock
