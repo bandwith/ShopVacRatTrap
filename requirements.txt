@@ -142,7 +142,7 @@ pathspec==0.12.1
     # via
     #   black
     #   yamllint
-pillow==11.3.0
+pillow==12.3.0
     # via
     #   cairosvg
     #   esphome
