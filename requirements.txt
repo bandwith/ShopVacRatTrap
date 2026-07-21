@@ -277,7 +277,7 @@ xlrd==2.0.2
     # via -r requirements.in
 yamllint==1.37.1
     # via -r requirements.in
-zeroconf==0.148.0
+zeroconf==0.149.16
     # via
     #   aioesphomeapi
     #   esphome
