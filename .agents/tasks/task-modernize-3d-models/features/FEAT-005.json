@@ -2,7 +2,7 @@
   "id": "FEAT-005",
   "type": "fix",
   "description": "Address 2 review issues from v2: (1) Fix bracket-to-box mounting hole Z-axis mismatch, (2) Give bait_cap() a render path for STL generation.",
-  "status": "in_progress",
+  "status": "completed",
   "steps": [
     "Fix mounting hole alignment between vacuum_adapter_universal.scad bracket and control_box_exit_mount.scad by updating the control box mount_hole_spacing_z and window_center_z offset to match bracket hole positions (Z=15 and Z=60, spacing=45, center=37.5)",
     "Give bait_cap() a render path by creating a separate bait_cap.scad file that includes trap_modules and calls bait_cap()"
@@ -18,5 +18,5 @@
     "Confirm vacuum adapter bracket holes unchanged at Z=15, Z=60"
   ],
   "blocked_reason": null,
-  "findings": null
+  "findings": "Both review issues resolved. (1) Control box mounting holes now at Z=15 and Z=60 (spacing=45, center=37.5) matching vacuum adapter bracket exactly. Introduced mount_hole_center_z variable to decouple hole center from window_center_z which is still used for the sensor window. (2) Created bait_cap.scad that includes trap_modules for shared params, defines bait-station-specific params locally, and uses bait_station.scad to import the bait_cap() module. The build script automatically picks up the new file since it iterates all .scad files excluding only trap_modules and helpers."
 }
