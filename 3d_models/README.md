@@ -15,6 +15,7 @@ This directory contains all 3D printable components for the IoT-enabled rat trap
 | `trap_body_rear.scad` | Rear body half (125mm), includes cable channel | No |
 | `vacuum_adapter_universal.scad` | Stepped adapter for shop vac hoses (multi-size) | No |
 | `bait_station.scad` | Tube section with external bait port and bayonet cap | No |
+| `bait_cap.scad` | Standalone bayonet-twist cap for bait station port | No |
 | `control_box_exit_mount.scad` | Electronics enclosure (ESP32, SSR, sensors) | No |
 | `control_box_lid.scad` | Control box lid with OLED display cutout | No |
 | `assembly.scad` | Full assembly visualization (not printed) | N/A |
@@ -223,6 +224,6 @@ See `../BOM_CONSOLIDATED.csv` for the complete bill of materials.
 ---
 
 **Last Updated:** 2025-01-15
-**Models:** 7 printable parts + 1 assembly visualization
+**Models:** 8 printable parts + 1 assembly visualization
 **Shared Libraries:** 2 (trap_modules.scad, helpers.scad)
 **Build Plate:** All parts fit 220x220mm

@@ -1,0 +1,22 @@
+{
+  "id": "FEAT-005",
+  "type": "fix",
+  "description": "Address 2 review issues from v2: (1) Fix bracket-to-box mounting hole Z-axis mismatch, (2) Give bait_cap() a render path for STL generation.",
+  "status": "in_progress",
+  "steps": [
+    "Fix mounting hole alignment between vacuum_adapter_universal.scad bracket and control_box_exit_mount.scad by updating the control box mount_hole_spacing_z and window_center_z offset to match bracket hole positions (Z=15 and Z=60, spacing=45, center=37.5)",
+    "Give bait_cap() a render path by creating a separate bait_cap.scad file that includes trap_modules and calls bait_cap()"
+  ],
+  "acceptance_criteria": [
+    "Control box rear mounting holes are at Z=15 and Z=60, matching vacuum adapter bracket holes exactly",
+    "bait_cap has its own .scad file that can be rendered to produce a standalone STL",
+    "All dimensional references remain consistent across files"
+  ],
+  "verification": [
+    "Confirm control box hole Z positions: window_center_z + mount_hole_spacing_z/2 = 60, window_center_z - mount_hole_spacing_z/2 = 15",
+    "Confirm bait_cap.scad exists and calls bait_cap() as its render target",
+    "Confirm vacuum adapter bracket holes unchanged at Z=15, Z=60"
+  ],
+  "blocked_reason": null,
+  "findings": null
+}
