@@ -18,6 +18,7 @@ hose_id_4 = 31.75;                 // 1.25" hose
 
 step_length = 25;                   // Length of each step section
 num_steps = 4;
+taper_length = 10;                  // Length of conical bore transition
 adapter_body_length = step_length * num_steps; // 100mm total
 
 // Control box mounting bracket
@@ -43,13 +44,13 @@ module vacuum_adapter_universal() {
             // --- FEMALE FLANGE JOINT (trap connection end) ---
             flange_joint_female();
 
-            // --- TRANSITION: tube OD down to first step ---
-            // Short cylinder matching tube OD bridging joint to stepped body
+            // --- TRANSITION: tube OD bridging joint to stepped body ---
+            // Includes extra length for the internal conical taper zone
             translate([0, 0, joint_height])
-                cylinder(d=tube_od, h=5);
+                cylinder(d=tube_od, h=5 + taper_length);
 
             // --- STEPPED ADAPTER BODY ---
-            translate([0, 0, joint_height + 5]) {
+            translate([0, 0, joint_height + 5 + taper_length]) {
                 // Step 1: largest (3" hose)
                 cylinder(d=hose_id_1 + 2*adapter_wall, h=step_length);
 
@@ -67,7 +68,7 @@ module vacuum_adapter_universal() {
             }
 
             // --- FRICTION RIBS (external rings for hose grip) ---
-            translate([0, 0, joint_height + 5]) {
+            translate([0, 0, joint_height + 5 + taper_length]) {
                 for (i = [0 : num_steps - 1]) {
                     step_od = [hose_id_1, hose_id_2, hose_id_3, hose_id_4][i] + 2*adapter_wall;
                     // Rib near the end of each step
@@ -103,12 +104,18 @@ module vacuum_adapter_universal() {
             }
         }
 
-        // --- INTERNAL BORE (tube ID through joint and transition) ---
+        // --- INTERNAL BORE (tube ID through joint and transition start) ---
         translate([0, 0, -1])
             cylinder(d=tube_id, h=joint_height + 5 + 2);
 
+        // --- CONICAL BORE TRANSITION (tube_id to hose_id_1) ---
+        // Smooth taper eliminates the sharp ledge that would accumulate debris
+        // and cause turbulence. Transitions from 95.2mm to 76.2mm over 10mm.
+        translate([0, 0, joint_height + 5 - 1])
+            cylinder(d1=tube_id, d2=hose_id_1, h=taper_length + 1);
+
         // --- STEPPED INTERNAL HOLLOWS ---
-        translate([0, 0, joint_height + 5]) {
+        translate([0, 0, joint_height + 5 + taper_length]) {
             // Step 1 hollow
             translate([0, 0, -1])
                 cylinder(d=hose_id_1, h=step_length + 2);

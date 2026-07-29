@@ -149,19 +149,13 @@ module flange_joint_female() {
            hole_d=bolt_hole_diameter, inset=bolt_hole_inset,
            hole_count=bolt_count);
 
-    // Socket ring (extends below flange)
+    // Socket body: single solid annulus from tube_id to socket_od.
+    // The male lip fills the annular gap between tube_id and socket_id;
+    // no coincident internal faces since this is one continuous piece.
     difference() {
         cylinder(d=socket_od, h=lip_length);
         translate([0, 0, -1])
-            cylinder(d=socket_id, h=lip_length + 2);
-    }
-
-    // Inner bore continuity (so tube ID is maintained through socket)
-    difference() {
-        cylinder(d=socket_id, h=lip_length);
-        translate([0, 0, -1])
             cylinder(d=tube_id, h=lip_length + 2);
-        // The male lip fills the annular gap between tube_id and socket_id
     }
 }
 

@@ -91,16 +91,18 @@ module trap_ramp_entrance() {
         }
 
         // --- HOLLOW INTERIOR ---
-        // Carve out the inside of the ramp to create a passageway
-        // Trapezoidal interior profile
+        // Carve out the inside of the ramp to create a passageway.
+        // The rear shape uses a cylinder matching the archway opening to
+        // avoid thin triangular slivers at square-to-circle corners.
         hull() {
-            // Front opening (wide, low)
+            // Front opening (wide, low rectangle)
             translate([ramp_floor_thickness, -(ramp_width/2 - side_wall_thickness), ramp_floor_thickness])
                 cube([1, ramp_width - 2*side_wall_thickness, side_wall_height_front - ramp_floor_thickness]);
 
-            // Rear opening (narrows to tube diameter)
-            translate([ramp_length - side_wall_thickness - 1, -tube_od/2 + wall_thickness, ramp_floor_thickness])
-                cube([1, tube_od - 2*wall_thickness, tube_od - 2*wall_thickness]);
+            // Rear opening (cylinder matching archway, avoids corner slivers)
+            translate([ramp_length - side_wall_thickness - 1, 0, archway_radius])
+                rotate([0, 90, 0])
+                    cylinder(d=tube_id, h=1);
         }
 
         // Ensure tube bore clears through the back wall and into the flange

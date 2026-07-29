@@ -1,0 +1,28 @@
+{
+  "project_type": "OpenSCAD 3D model library for IoT rodent trap system",
+  "language": "OpenSCAD",
+  "build_system": "OpenSCAD CLI via python build script (.github/scripts/build.py). Library files (trap_modules.scad, helpers.scad) are excluded from STL generation.",
+  "test_framework": "No formal tests for SCAD geometry. Validation is done by OpenSCAD compilation (no warnings/errors). OpenSCAD is NOT installed in this environment.",
+  "build_command": "openscad -o <file>.stl <file>.scad (not available in sandbox)",
+  "test_command": "Not available - OpenSCAD not installed. Validation must be done by code review for correctness.",
+  "verification_instructions": "Since OpenSCAD is not installed, verification is by static analysis: check that all modules referenced are defined, all variables are in scope, geometry operations are logically sound, and dimensions are consistent across files.",
+  "snapshot_or_generated_files": "STL files in 3d_models/ are generated from SCAD files. They will need regeneration after SCAD changes but cannot be regenerated in this environment.",
+  "setup_instructions": "No setup needed - pure SCAD source files.",
+  "environment_constraints": "OpenSCAD is NOT installed. Cannot compile or render SCAD files. All validation must be done by code review. STL files will be stale after changes.",
+  "contribution_requirements": "Library files (trap_modules.scad, helpers.scad) should not render geometry. All renderable files should have a single top-level module call. Parts should fit 220x220mm build plate.",
+  "key_patterns": "include <trap_modules.scad> for shared parameters. use <file.scad> for assembly imports. $fn=100 for smooth curves. Each part file defines its own module and calls it at the bottom.",
+  "relevant_files": [
+    "3d_models/trap_modules.scad",
+    "3d_models/helpers.scad",
+    "3d_models/trap_ramp_entrance.scad",
+    "3d_models/trap_body_front.scad",
+    "3d_models/trap_body_rear.scad",
+    "3d_models/vacuum_adapter_universal.scad",
+    "3d_models/control_box_exit_mount.scad",
+    "3d_models/control_box_lid.scad",
+    "3d_models/bait_station.scad",
+    "3d_models/assembly.scad",
+    "3d_models/README.md"
+  ],
+  "directory_structure": "3d_models/ contains all SCAD source and STL output. trap_modules.scad is the shared library. helpers.scad has tube() and flange() helpers. Each part has its own .scad and .stl file. assembly.scad brings everything together for visualization."
+}
