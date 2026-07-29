@@ -2,7 +2,7 @@
   "id": "FEAT-004",
   "type": "fix",
   "description": "Address 5 review issues: female joint coincident faces, bait cap tab/slot mismatch, vacuum adapter sharp bore step, ramp interior slivers, and OpenSCAD version documentation.",
-  "status": "in_progress",
+  "status": "completed",
   "steps": [
     "Fix flange_joint_female() in trap_modules.scad: merge two annuli into single difference() to eliminate coincident faces",
     "Fix bait cap tab position in bait_station.scad: align tab radial position to match slot geometry (port_od/2 - 1 = 19mm)",
@@ -23,5 +23,5 @@
     "Confirm dimensional consistency across files"
   ],
   "blocked_reason": null,
-  "findings": null
+  "findings": "All 5 review issues addressed. Female joint now uses single difference() (socket_id var retained for documentation). Bait cap tabs repositioned to port_od/2-1 with 2.7mm width (0.3mm clearance). Vacuum adapter adds 10mm conical taper (cylinder d1=tube_id d2=hose_id_1) between bore and first step. Ramp interior rear hull shape changed from square to cylinder(d=tube_id) matching archway. README documents OpenSCAD 2019.05+ in Requirements section and Generating STL Files section."
 }
