@@ -2,6 +2,10 @@
 
 This directory contains all 3D printable components for the IoT-enabled rat trap system. All parts are designed for standard FDM printers and fit on a **220x220mm build plate**.
 
+## Requirements
+
+- **OpenSCAD 2019.05 or later** is required. The bait station uses `rotate_extrude(angle=...)` which was introduced in 2019.05. Older versions silently ignore the `angle` parameter and produce a full 360-degree revolution, breaking bayonet slot geometry.
+
 ## Model Inventory
 
 | File | Description | Supports Needed |
@@ -105,6 +109,8 @@ The bait station cap uses a **bayonet-twist** system with 3 L-shaped slots for t
 | control_box_lid | Flat (outside face down) | Clean top surface |
 
 ## Generating STL Files
+
+> **Note:** OpenSCAD 2019.05+ is required. See [Requirements](#requirements) above.
 
 ### Build All Models
 
