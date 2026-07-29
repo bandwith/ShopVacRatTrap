@@ -106,7 +106,7 @@ To run these scripts locally:
 
 2. **Install Python dependencies (for BOM management):**
    ```bash
-   pip install -r requirements.txt
+   uv pip install -r requirements.txt
    ```
 
 3. **Make scripts executable:**
@@ -212,7 +212,7 @@ Add this to your GitHub repository secrets:
 ### Local Development
 
 1. Create a `.env` file with your Mouser API key
-2. Install dependencies: `pip install -r requirements.txt`
+2. Install dependencies: `uv pip install -r requirements.txt`
 3. Run scripts locally for testing
 
 ## Workflow Features
