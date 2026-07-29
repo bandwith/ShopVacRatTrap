@@ -2,7 +2,7 @@
   "task_id": "task-modernize-3d-models",
   "task_description": "Complete rewrite of all OpenSCAD 3D model files to fix dimensional inconsistencies, replace broken joint system, ensure manifold/printable geometry, and add proper FDM print tolerances. The current files have never produced working prints.",
   "status": "completed",
-  "feature_order": ["FEAT-001", "FEAT-002", "FEAT-003"],
+  "feature_order": ["FEAT-001", "FEAT-002", "FEAT-003", "FEAT-004"],
   "blocked_reason": null,
   "verification": {
     "build": "skipped",
