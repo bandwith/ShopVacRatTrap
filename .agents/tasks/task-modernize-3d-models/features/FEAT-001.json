@@ -2,7 +2,7 @@
   "id": "FEAT-001",
   "type": "fix",
   "description": "Rewrite the shared library files (trap_modules.scad and helpers.scad) to establish correct dimensions, a functional joint system, and proper print tolerances. This is the foundation that all other parts depend on.",
-  "status": "in_progress",
+  "status": "completed",
   "steps": [
     "Rewrite 3d_models/helpers.scad: The tube() module is fine but flange() references undefined global tube_od. Fix it by accepting center_hole_d as a parameter instead of relying on a global. Add a rounded_box() helper (currently duplicated in control_box_exit_mount.scad and control_box_lid.scad).",
     "Rewrite 3d_models/trap_modules.scad completely with these fixes: (a) Set tube dimensions to 101.6mm OD (4 inch PVC standard per README) with wall_thickness=3.2mm giving tube_id=95.2mm. This is the fundamental dimension the project is built around. (b) Define a print_tolerance parameter (0.3mm for FDM clearance). (c) Remove the broken twist-lock system entirely. Replace with a simpler, functional push-fit flange joint system: male end has a slightly undersized lip that slides into the female end ring, secured with 4x M4 bolt holes through aligned flanges. This is proven printable and requires no complex L-slot geometry. (d) Define joint parameters: flange_od (120mm), flange_thickness (5mm), lip_length (10mm), lip_clearance (print_tolerance). (e) Implement twist_lock_male() as flange_joint_male(): a lip cylinder (tube_od - 2*print_tolerance diameter, lip_length tall) on top of a flange ring (flange_od diameter, flange_thickness tall) with 4 M4 bolt holes at 90-degree intervals. (f) Implement twist_lock_female() as flange_joint_female(): a socket ring (tube_od + 2*wall_thickness outer, tube_od + print_tolerance inner, lip_length deep) below a matching flange ring with aligned M4 bolt holes. (g) Keep the cable_channel parameters (cable_channel_od=12, cable_channel_id=8). (h) Rewrite trap_module_base() to use the new joint system, passing male_end/female_end booleans. (i) Keep sensor_module() but fix it to use proper tube_id/tube_od. (j) REMOVE the assembly render calls at the bottom of the file - library files must not render geometry. (k) Add STEMMA QT sensor dimensions, PIR dimensions, and other BOM-derived constants documented in the README.",
@@ -25,5 +25,5 @@
     "Grep for 'twist_lock' to confirm old names are removed from library files"
   ],
   "blocked_reason": null,
-  "findings": ""
+  "findings": "Completed successfully. Part files (trap_body_front.scad, trap_body_rear.scad, trap_ramp_entrance.scad) still reference twist_lock_male()/twist_lock_female() and will need updating in subsequent features. The new modules are flange_joint_male() and flange_joint_female(). The flange() helper now requires center_hole_d as a parameter - any direct callers of flange() will need updating. Variables renamed: tube_wall -> wall_thickness, lock_len -> lip_length+flange_thickness."
 }
