@@ -1,11 +1,11 @@
 // ShopVac Rat Trap - Full Assembly Visualization
-// Shows complete assembly with all components
-// Created: 2025-11-29
-// Purpose: Validate component fitment and provide assembly reference
+// Shows complete assembly with all components for fitment validation.
+// Uses 'use' to import module definitions without executing them.
 
-include <trap_modules.scad>
+$fn = 100;
 
-// Import structural models
+use <trap_modules.scad>
+use <helpers.scad>
 use <trap_ramp_entrance.scad>
 use <trap_body_front.scad>
 use <trap_body_rear.scad>
@@ -14,45 +14,42 @@ use <control_box_exit_mount.scad>
 use <control_box_lid.scad>
 use <bait_station.scad>
 
-// ========== ASSEMBLY MODES ==========
-show_exploded = true;        // true = exploded view, false = assembled
-show_components = true;      // Show component placeholders
-explode_distance = 50;       // Distance between parts in exploded view
+// ========== ASSEMBLY PARAMETERS ==========
+
+// Shared dimensions (duplicated here since 'use' does not import variables)
+_tube_od = 101.6;
+_tube_id = 95.2;
+_flange_thickness = 5;
+_lip_length = 10;
+_joint_height = _lip_length + _flange_thickness; // 15mm per joint end
+
+// Body section lengths
+_body_length = 125;
+_bait_length = 80;
+
+show_exploded = true;               // true = exploded view, false = assembled
+show_components = true;             // Show electronic component placeholders
+explode_distance = 40;              // Gap between parts in exploded view
 
 // ========== COMPONENT PLACEHOLDER MODULES ==========
 
 module esp32_feather_placeholder() {
-    // Adafruit 5323: 50.8×22.9mm
     color("blue", 0.4) cube([50.8, 22.9, 7]);
 }
 
 module vl53l4cx_placeholder() {
-    // Adafruit 5425: 17.78×25.4mm STEMMA QT
     color("green", 0.4) cube([17.78, 25.4, 2]);
 }
 
 module sths34pf80_placeholder() {
-    // Adafruit 6426: 17.78×25.4mm STEMMA QT
     color("purple", 0.4) cube([17.78, 25.4, 2]);
 }
 
-module lsm6dsox_placeholder() {
-    // Adafruit 4438: 17.78×25.4mm STEMMA QT
-    color("red", 0.4) cube([17.78, 25.4, 2]);
-}
-
-module bme280_placeholder() {
-    // Adafruit 4816: 17.78×25.4mm STEMMA QT
-    color("orange", 0.4) cube([17.78, 25.4, 2]);
-}
-
 module oled_placeholder() {
-    // Adafruit 326: 27×27.5mm PCB
     color("yellow", 0.4) cube([27, 27.5, 4]);
 }
 
 module ov5640_placeholder() {
-    // Adafruit 5945: 32×32mm PCB with M12 lens
     color("cyan", 0.4)
         union() {
             cube([32, 32, 1.6]);
@@ -60,19 +57,12 @@ module ov5640_placeholder() {
         }
 }
 
-module ir_led_placeholder() {
-    // Adafruit 5639: 25.4×17.7mm
-    color("darkred", 0.6) cube([25.4, 17.7, 7]);
-}
-
 module ssr_placeholder() {
-    // Panasonic AQA411VL
-    color("black", 0.4) cube([40, 58, 25.5]);
+    color("black", 0.4) cube([25.5, 58, 40]);
 }
 
-module psu_placeholder() {
-    // Mean Well LRS-35-5
-    color("silver", 0.4) cube([99, 82, 30]);
+module pir_placeholder() {
+    color("darkgreen", 0.4) cube([24, 32, 10]);
 }
 
 // ========== FULL ASSEMBLY ==========
@@ -80,79 +70,68 @@ module psu_placeholder() {
 module full_assembly() {
     e = show_exploded ? explode_distance : 0;
 
-    // 1. Ramp Entrance
-    translate([-150 - e, 0, 0])
+    // Calculate z-positions for sequential assembly
+    // Each part with female end adds joint_height below z=0
+    // Each part with male end adds flange_thickness + lip_length above body
+
+    // Part 1: Ramp Entrance (at the start)
+    // The ramp connects via male joint at its rear end
+    color("tan", 0.8)
+    translate([-200 - e, 0, _tube_od/2])
         trap_ramp_entrance();
 
-    // 2. Trap Body Front
+    // Part 2: Trap Body Front
+    // Female at z=0 (receives ramp), Male at top
+    color("green", 0.6)
     translate([0, 0, 0])
         trap_body_front();
 
-    // 3. Trap Body Rear
-    translate([0, 0, 125 + e])
+    // Part 3: Trap Body Rear
+    // Female at z=0 (receives front body male), Male at top
+    front_total = _joint_height + _body_length + _flange_thickness + _lip_length;
+    color("darkgreen", 0.6)
+    translate([0, 0, front_total + e])
         trap_body_rear();
 
-    // 4. Universal Vacuum Adapter
-    translate([0, 0, 250 + e*2])
-        rotate([0, 0, 180]) // Align flange
-            vacuum_adapter_universal();
+    // Part 4: Vacuum Adapter
+    // Female at z=0 (receives rear body male)
+    rear_total = front_total + e + _joint_height + _body_length + _flange_thickness + _lip_length;
+    color("gray", 0.7)
+    translate([0, 0, rear_total + e])
+        vacuum_adapter_universal();
 
-    // 5. Control Box (Exit Mounted)
-    // Mounts to adapter flange. Adapter flange is at Z=250+e*2.
-    // Box mounts vertically on top of the flange?
-    // The adapter has a vertical plate "control box mounting flange".
-    // Let's position the box relative to that.
-    translate([-40 - e, 0, 260 + e*2])
-        rotate([0, -90, 0]) // Orient box vertically
-            control_box_exit_mount();
+    // Part 5: Bait Station (alternative to front body, shown offset)
+    color("orange", 0.6)
+    translate([150, 0, 0])
+        bait_station_module();
 
-    // 6. Control Box Lid
-    translate([-40 - e - 70 - e, 0, 260 + e*2]) // Pull lid away
-        rotate([0, -90, 0])
-            control_box_lid();
+    // Part 6: Control Box (mounted to adapter bracket)
+    color("slategray", 0.7)
+    translate([0, -_tube_od/2 - 30 - e, rear_total + e])
+        control_box_exit_mount();
 
-    // 7. Bait Station
-    translate([0, 0, 80])
-        rotate([0, 0, 0])
-            bait_station_module();
+    // Part 7: Control Box Lid
+    color("lightgray", 0.8)
+    translate([0, -_tube_od/2 - 30 - e, rear_total + e + 65 + box_lid_gap])
+        control_box_lid();
 
-    // ===== COMPONENTS =====
+    // Electronic components (if enabled)
     if (show_components) {
-        // Inside Control Box
-        translate([-40 - e, 0, 260 + e*2])
-        rotate([0, -90, 0]) {
-            // Sensor Plate (Camera, ToF, IR)
-            translate([60, -2, 10]) {
-                rotate([-90, 0, 0]) {
-                    translate([29-16, 35-16, 0]) ov5640_placeholder();
-                    translate([29-9, 20-12, 0]) vl53l4cx_placeholder();
-                    translate([29-9, 5-12, 0]) sths34pf80_placeholder();
-                    translate([5, 5, 0]) ir_led_placeholder();
-                }
-            }
+        // ESP32 inside control box
+        color("blue", 0.4)
+        translate([14, -_tube_od/2 - 25 - e, rear_total + e + 4 + 5])
+            esp32_feather_placeholder();
 
-            // ESP32
-            translate([10, 40, 5]) esp32_feather_placeholder();
+        // SSR inside control box
+        translate([79, -_tube_od/2 - 25 - e, rear_total + e + 4 + 5])
+            ssr_placeholder();
 
-            // SSR
-            translate([80, 40, 5]) ssr_placeholder();
-
-            // IMU (on wall)
-            translate([10, 10, 30]) rotate([90, 0, 0]) lsm6dsox_placeholder();
-
-            // BME280 (free floating/mounted)
-            translate([40, 80, 30]) bme280_placeholder();
-
-            // PSU (if it fits, or external?)
-            // LRS-35-5 is 99x82x30. Box is 120x100. It fits tight.
-            translate([10, 10, 35]) psu_placeholder();
-        }
-
-        // OLED on Lid
-        translate([-40 - e - 70 - e, 0, 260 + e*2])
-        rotate([0, -90, 0])
-            translate([60, 50, -4]) oled_placeholder();
+        // OLED on lid
+        translate([50, -_tube_od/2 - 30 - e - 10, rear_total + e + 65 + 2])
+            oled_placeholder();
     }
 }
+
+box_lid_gap = show_exploded ? explode_distance : 0;
 
 full_assembly();
