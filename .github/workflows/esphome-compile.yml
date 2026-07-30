@@ -124,13 +124,13 @@ jobs:
           files: rat-trap-firmware-${{ github.ref_name }}.zip
           fail_on_unmatched_files: true
           body: |
-            ## Firmware Files
+            ## 🔌 Firmware Files
 
             This release includes pre-compiled firmware for:
             - `rat-trap.yaml` - Standard configuration with ToF sensor
             - `rat-trap-stemma-camera.yaml` - Camera-enhanced configuration
 
-            ### Installation Methods
+            ### 📥 Installation Methods
 
             **Method 1: Web Flasher (Recommended for first install)**
             1. Connect ESP32 via USB
@@ -140,7 +140,7 @@ jobs:
             **Method 2: OTA Update (For existing installations)**
             1. Download the `.ota.bin` file
             2. Use Home Assistant ESPHome dashboard
-            3. Click "Install" -> "Manual download" -> Select file
+            3. Click "Install" → "Manual download" → Select file
 
             **Method 3: ESPHome CLI**
             ```bash
