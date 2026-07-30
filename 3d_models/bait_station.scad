@@ -78,7 +78,8 @@ module bait_cap() {
     // Bayonet-twist cap with grip ribs and gasket groove.
     // Tabs on cap engage L-slots on neck.
 
-    cap_id = port_od + 2*print_tolerance; // Fits over port neck with clearance
+    // Cavity must clear the bayonet ring (port_od + 2) with print tolerance
+    cap_id = port_od + 2 + 2*print_tolerance; // Fits over bayonet ring with clearance
 
     difference() {
         union() {
@@ -90,18 +91,6 @@ module bait_cap() {
                 rotate([0, 0, r])
                     translate([cap_od/2 - 0.5, -1, 2])
                         cube([2, 2, cap_height - 4]);
-            }
-
-            // --- BAYONET LOCKING TABS ---
-            // Tabs must match slot radii: inner at port_od/2 - 1 (19mm),
-            // radial width 2.7mm (3mm slot minus clearance). This aligns
-            // with the slot geometry cut at port_od/2 - 1 with 3mm depth.
-            translate([0, 0, cap_height - bayonet_tab_height]) {
-                for (i = [0 : bayonet_tab_count - 1]) {
-                    rotate([0, 0, i * (360 / bayonet_tab_count)])
-                        translate([port_od/2 - 1, -bayonet_tab_width/2, 0])
-                            cube([2.7, bayonet_tab_width, bayonet_tab_height]);
-                }
             }
         }
 
@@ -116,6 +105,18 @@ module bait_cap() {
                 translate([0, 0, -1])
                     cylinder(d=port_id, h=gasket_groove_depth + 2);
             }
+    }
+
+    // --- BAYONET LOCKING TABS (added after cavity subtraction) ---
+    // Tabs must match slot radii: inner at port_od/2 - 1 (19mm),
+    // radial width 2.7mm (3mm slot minus clearance). This aligns
+    // with the slot geometry cut at port_od/2 - 1 with 3mm depth.
+    translate([0, 0, cap_height - bayonet_tab_height]) {
+        for (i = [0 : bayonet_tab_count - 1]) {
+            rotate([0, 0, i * (360 / bayonet_tab_count)])
+                translate([port_od/2 - 1, -bayonet_tab_width/2, 0])
+                    cube([2.7, bayonet_tab_width, bayonet_tab_height]);
+        }
     }
 }
 

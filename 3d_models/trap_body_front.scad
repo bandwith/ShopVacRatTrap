@@ -84,12 +84,6 @@ module trap_body_front() {
                 translate([0, 0, -tube_od/2 - 1])
                     cylinder(d=bait_port_diameter,
                              h=tube_od + bait_port_boss_height + 2);
-
-        // --- TRIM CRADLE: remove anything above tube center ---
-        // The cradle should only exist below the tube
-        translate([0, 0, body_z_offset])
-            translate([-cradle_width, 0, -1])
-                cube([cradle_width * 2, tube_od, body_length + 2]);
     }
 }
 
