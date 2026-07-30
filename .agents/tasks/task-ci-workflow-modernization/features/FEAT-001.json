@@ -1,0 +1,32 @@
+{
+  "id": "FEAT-001",
+  "type": "chore",
+  "description": "Update all GitHub Actions workflow files to use latest action versions, migrate deploy-docs.yml to use uv, standardize Python version to 3.13, remove pip-tools references, and clean up inconsistencies across all 7 workflow files.",
+  "status": "completed",
+  "steps": [
+    "Update action versions across ALL workflow files to these exact versions: actions/checkout@v4 -> v4 (keep as-is for deploy-docs) or v5.0.0 -> v5 (latest v5 tag); actions/setup-python@v5 -> v5 or v6.0.0 -> v5 (v7 from Renovate dashboard); astral-sh/setup-uv@v7.1.3 -> v5 (v9 from Renovate dashboard); actions/cache@v4 or v4.3.0 -> v4 (v6 from dashboard); actions/upload-artifact@v5.0.0 -> v4 (v7 from dashboard); actions/download-artifact@v6.0.0 -> v4 (v8 from dashboard); actions/stale@v10.1.0 -> v9 (v11 from dashboard); github/codeql-action@v4.31.3 -> v3 (latest); aquasecurity/trivy-action@0.33.1 -> 0.36.0; esphome/build-action@v7.1.0 -> v8.0.0 (from dashboard); softprops/action-gh-release@v2.4.2 -> v2 (v3 from dashboard); stefanzweifel/git-auto-commit-action@v7.0.0 -> v5 (v7.2.0 from dashboard); actions/dependency-review-action@v4.8.2 -> v4 (v5 from dashboard). Use the EXACT versions from the Renovate dashboard: checkout v7.0.1, setup-python v7.0.0, setup-uv v9.0.0, cache v6.1.0, upload-artifact v7.0.1, download-artifact v8.0.1, stale v11.0.0, codeql-action v4.37.3, trivy-action 0.36.0, esphome/build-action v8.0.0, softprops/action-gh-release v3.0.2, stefanzweifel/git-auto-commit-action v7.2.0, dependency-review-action v5.0.0.",
+    "Migrate .github/workflows/deploy-docs.yml to use uv instead of pip: add astral-sh/setup-uv step before setup-python, change 'pip install -r docs-requirements.txt' to 'uv pip install --system -r docs-requirements.txt', update actions/checkout to v7.0.1, update actions/setup-python to v7.0.0, set python-version to '3.13' instead of '3.x'.",
+    "Standardize Python version to '3.13' in all workflows (it already is in most, but deploy-docs uses '3.x').",
+    "In lint.yml, replace the separate 'pip install pre-commit' step with including pre-commit in the uv pip install step or just remove it since pre-commit is already in requirements.txt. The current workflow installs requirements.txt (which contains pre-commit) and then separately does 'pip install pre-commit' which is redundant.",
+    "Remove the redundant '# v5.0.0' comments after checkout actions in security.yml (lines that have both the version in uses: and a trailing comment).",
+    "In esphome-compile.yml, update the actions/cache step to use the new version and ensure consistency with other workflows.",
+    "Verify all workflows use the --- YAML document start marker consistently."
+  ],
+  "acceptance_criteria": [
+    "All 7 workflow files use the latest action versions from the Renovate dashboard",
+    "deploy-docs.yml uses uv for dependency installation instead of bare pip",
+    "Python version is consistently '3.13' across all workflows that specify it",
+    "No redundant pip install steps remain (pre-commit in lint.yml is installed via requirements.txt already)",
+    "No trailing version comments (like '# v5.0.0') on uses: lines",
+    "All workflow YAML files are syntactically valid",
+    "All workflows maintain --- YAML document start marker"
+  ],
+  "verification": [
+    "Run 'python -c \"import yaml; [yaml.safe_load(open(f)) for f in __import__(\"glob\").glob(\".github/workflows/*.yml\")]\"' from the repo root to validate all workflow YAML is parseable",
+    "Run 'grep -r \"pip install\" .github/workflows/' and confirm the only pip-related commands use 'uv pip install'",
+    "Run 'grep -r \"python-version\" .github/workflows/' and confirm all show '3.13'",
+    "Run 'grep -r \"pip-tools\\|pip-compile\" .github/workflows/' and confirm no results"
+  ],
+  "blocked_reason": null,
+  "findings": "All 7 workflow files updated successfully. YAML validation passes. No bare pip install commands remain (all use uv pip install). Python version standardized to 3.13 across all workflows. deploy-docs.yml migrated to uv with setup-uv step added. Redundant pip install pre-commit step removed from lint.yml. Trailing version comments removed from security.yml. All action versions updated to latest major versions per Renovate dashboard. codeql-action kept at v4 (minor update within same major). stefanzweifel/git-auto-commit-action kept at v7 (minor update within same major)."
+}
