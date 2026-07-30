@@ -28,7 +28,7 @@ jobs:
             ${{ runner.os }}-pre-commit-
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v9
+        uses: astral-sh/setup-uv@v8
         with:
           enable-cache: true
           cache-dependency-glob: requirements.txt
