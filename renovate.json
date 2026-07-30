@@ -42,14 +42,20 @@
       "minimumReleaseAge": "1 day"
     },
     {
-      "description": "Python requirements - manual update workflow (frozen lockfile)",
+      "description": "Python requirements - auto-update with automerge for patch/minor",
       "matchManagers": ["pip_requirements"],
       "ignoreUnstable": false,
-      "enabled": false,
-      "postUpgradeTasks": {
-        "commands": [],
-        "fileFilters": ["requirements.in", "requirements.txt"]
-      }
+      "enabled": true,
+      "automerge": true,
+      "matchUpdateTypes": ["minor", "patch"],
+      "labels": ["dependencies", "python"]
+    },
+    {
+      "description": "Python requirements - major updates require review",
+      "matchManagers": ["pip_requirements"],
+      "matchUpdateTypes": ["major"],
+      "automerge": false,
+      "labels": ["dependencies", "python", "major"]
     }
   ]
 }
