@@ -59,11 +59,6 @@ module trap_body_rear() {
         // --- CABLE CHANNEL HOLLOW ---
         translate([0, tube_od/2 + cable_channel_od/2 - 2, body_z_offset - 1])
             cylinder(d=cable_channel_id, h=body_length + 2);
-
-        // --- TRIM CRADLE: remove anything above tube center ---
-        translate([0, 0, body_z_offset])
-            translate([-cradle_width, 0, -1])
-                cube([cradle_width * 2, tube_od, body_length + 2]);
     }
 }
 

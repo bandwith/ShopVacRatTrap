@@ -160,7 +160,7 @@ All trap tube sections include an integrated **top-mounted external cable condui
 
 ### Cable Path
 
-```
+```text
 Ramp Entrance --> Front Body --> Rear Body --> Vacuum Adapter
                                                      |
                                               Control Box

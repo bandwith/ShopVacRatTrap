@@ -1,0 +1,30 @@
+{
+  "project_type": "IoT hardware project with OpenSCAD 3D models, Python automation scripts, and ESPHome firmware",
+  "language": "OpenSCAD, Python, Markdown",
+  "build_system": "OpenSCAD CLI for STL generation, uv for Python dependency management",
+  "test_framework": "pytest in tests/ directory",
+  "build_command": "N/A (no formal build needed - just validate OpenSCAD syntax and Python)",
+  "test_command": "pytest",
+  "verification_instructions": "Verify OpenSCAD files have valid syntax, markdown is well-formed, Python deps are consistent",
+  "snapshot_or_generated_files": null,
+  "setup_instructions": "uv venv && source .venv/bin/activate && uv pip install -r requirements.txt",
+  "environment_constraints": "No internet access needed - all changes are local file edits to OpenSCAD models and documentation",
+  "contribution_requirements": "Follow existing code patterns, use uv for Python env management",
+  "key_patterns": "OpenSCAD files use include <trap_modules.scad> for shared parameters. Documentation uses markdown with fenced code blocks. requirements.txt is auto-generated from requirements.in via uv pip compile.",
+  "relevant_files": [
+    ".github/scripts/README.md",
+    "3d_models/bait_station.scad",
+    "3d_models/control_box_exit_mount.scad",
+    "3d_models/README.md",
+    "3d_models/trap_body_front.scad",
+    "3d_models/trap_body_rear.scad",
+    "3d_models/trap_modules.scad",
+    "3d_models/vacuum_adapter_universal.scad",
+    "docs/contributing/development.md",
+    "docs/getting-started/quick-start.md",
+    "docs/software/installation.md",
+    "requirements.txt",
+    "requirements.in"
+  ],
+  "directory_structure": "3d_models/ - OpenSCAD files; docs/ - mkdocs documentation; .github/scripts/ - automation; esphome/ - firmware configs; tests/ - pytest tests"
+}

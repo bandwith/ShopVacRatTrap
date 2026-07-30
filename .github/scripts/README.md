@@ -106,6 +106,8 @@ To run these scripts locally:
 
 2. **Install Python dependencies (for BOM management):**
    ```bash
+   uv venv --python 3.11
+   source .venv/bin/activate  # On Windows, use `.venv\Scripts\activate`
    uv pip install -r requirements.txt
    ```
 
@@ -139,7 +141,7 @@ To run these scripts locally:
 - GNU coreutils (stat, head, grep, etc.)
 
 **Required for BOM management:**
-- Python 3.8+
+- Python 3.11+
 - requests library
 - pandas library
 - python-dotenv
@@ -212,7 +214,12 @@ Add this to your GitHub repository secrets:
 ### Local Development
 
 1. Create a `.env` file with your Mouser API key
-2. Install dependencies: `uv pip install -r requirements.txt`
+2. Set up the virtual environment and install dependencies:
+   ```bash
+   uv venv --python 3.11
+   source .venv/bin/activate
+   uv pip install -r requirements.txt
+   ```
 3. Run scripts locally for testing
 
 ## Workflow Features

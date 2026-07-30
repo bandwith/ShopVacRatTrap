@@ -332,7 +332,7 @@ Before applying power, verify:
 #### **3.1 ESPHome Installation**
 ```bash
 # Set up virtual environment with uv
-uv venv
+uv venv --python 3.11
 source .venv/bin/activate
 
 # Install all dependencies (includes ESPHome)

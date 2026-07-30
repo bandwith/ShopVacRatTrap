@@ -50,26 +50,6 @@ module control_box_exit_mount() {
         union() {
             // --- MAIN BOX SHELL ---
             rounded_box(outer_length, outer_width, outer_height, 3);
-
-            // --- LID SCREW POSTS (inside corners, at top) ---
-            translate([box_wall, box_wall, 0]) {
-                // Four corner posts rising to top
-                post_positions = [
-                    [lid_post_inset, lid_post_inset],
-                    [internal_length - lid_post_inset, lid_post_inset],
-                    [lid_post_inset, internal_width - lid_post_inset],
-                    [internal_length - lid_post_inset, internal_width - lid_post_inset]
-                ];
-
-                for (pos = post_positions) {
-                    translate([pos[0], pos[1], box_wall])
-                        difference() {
-                            cylinder(d=lid_post_diameter, h=internal_height);
-                            translate([0, 0, internal_height - 8])
-                                cylinder(d=lid_screw_diameter, h=9);
-                        }
-                }
-            }
         }
 
         // --- INTERNAL CAVITY ---
@@ -109,6 +89,26 @@ module control_box_exit_mount() {
         translate([outer_length - 20, outer_width + 1, 20])
             rotate([90, 0, 0])
                 cylinder(d=cable_gland_diameter, h=box_wall + 2);
+    }
+
+    // --- LID SCREW POSTS (inside corners, at top) ---
+    translate([box_wall, box_wall, 0]) {
+        // Four corner posts rising to top
+        post_positions = [
+            [lid_post_inset, lid_post_inset],
+            [internal_length - lid_post_inset, lid_post_inset],
+            [lid_post_inset, internal_width - lid_post_inset],
+            [internal_length - lid_post_inset, internal_width - lid_post_inset]
+        ];
+
+        for (pos = post_positions) {
+            translate([pos[0], pos[1], box_wall])
+                difference() {
+                    cylinder(d=lid_post_diameter, h=internal_height);
+                    translate([0, 0, internal_height - 8])
+                        cylinder(d=lid_screw_diameter, h=9);
+                }
+        }
     }
 
     // --- INTERNAL COMPONENT MOUNTS ---

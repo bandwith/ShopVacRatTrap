@@ -33,9 +33,13 @@ The project has two main parts: the OpenSCAD 3D models and the Python scripts fo
 
 #### Python Scripts
 The Python scripts are used for BOM management and other automation tasks.
-- **Virtual Environment**: We use [uv](https://docs.astral.sh/uv/) for fast, reliable Python environment management.
+- **Prerequisites**: Install [uv](https://docs.astral.sh/uv/) for fast, reliable Python environment management:
   ```bash
-  uv venv
+  curl -LsSf https://astral.sh/uv/install.sh | sh
+  ```
+- **Virtual Environment**: Create a virtual environment pinned to the supported Python version:
+  ```bash
+  uv venv --python 3.11
   source .venv/bin/activate  # On Windows, use `.venv\Scripts\activate`
   ```
 - **Dependencies**: Install the required dependencies using `uv`:
@@ -44,7 +48,7 @@ The Python scripts are used for BOM management and other automation tasks.
   ```
 - **Updating requirements.txt**: When modifying `requirements.in`, recompile the lock file:
   ```bash
-  uv pip compile requirements.in -o requirements.txt
+  uv pip compile --upgrade requirements.in -o requirements.txt
   ```
 
 ## Coding Conventions

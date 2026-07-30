@@ -110,7 +110,7 @@ git clone https://github.com/bandwith/ShopVacRatTrap.git
 cd ShopVacRatTrap
 
 # Set up virtual environment with uv
-uv venv
+uv venv --python 3.11
 source .venv/bin/activate
 
 # Install all dependencies (includes ESPHome)

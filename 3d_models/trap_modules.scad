@@ -149,11 +149,14 @@ module flange_joint_female() {
            hole_d=bolt_hole_diameter, inset=bolt_hole_inset,
            hole_count=bolt_count);
 
-    // Socket body: single solid annulus from tube_id to socket_od.
-    // The male lip fills the annular gap between tube_id and socket_id;
-    // no coincident internal faces since this is one continuous piece.
+    // Socket body: outer wall at socket_od with receiving pocket at socket_id
+    // for the male lip, and a through-hole at tube_id for airflow.
     difference() {
         cylinder(d=socket_od, h=lip_length);
+        // Receiving pocket for male lip (socket_id diameter, full lip_length)
+        translate([0, 0, -1])
+            cylinder(d=socket_id, h=lip_length + 1);
+        // Through-hole for airflow (tube_id diameter)
         translate([0, 0, -1])
             cylinder(d=tube_id, h=lip_length + 2);
     }
