@@ -1,0 +1,21 @@
+{
+  "id": "FEAT-003",
+  "type": "docs",
+  "description": "Update the 3d_models/README.md to reflect the modernized design: new joint system, corrected dimensions, updated print instructions, and accurate module descriptions.",
+  "status": "completed",
+  "steps": [
+    "Update 3d_models/README.md: (a) Update the 'Shared Parameters' section to show tube_od=101.6, tube_id=95.2, wall_thickness=3.2, print_tolerance=0.3, and the new flange joint parameters. (b) Replace all references to 'twist-lock' with 'flange joint' or 'bolted flange' as appropriate. (c) Update the joint assembly instructions to describe the new M4-bolted flange system. (d) Update the print orientation table to reflect any changes in support requirements. (e) Update hardware required section (M4 screws are still used, O-ring may or may not still apply). (f) Remove references to files that no longer exist (trap_entrance.scad, trap_body_main.scad, vacuum_funnel.scad) if they were never real. (g) Update the 'Generating STL Files' section to note that helpers.scad should also be skipped. (h) Keep the cable routing documentation as-is (still accurate). (i) Keep the BOM cross-reference section. (j) Update the model inventory table to match actual files."
+  ],
+  "acceptance_criteria": [
+    "README references tube_od=101.6 consistently",
+    "No references to 'twist-lock' or 'bayonet' joint system for the main tube connections (the bait cap uses bayonet, main joints use bolted flanges)",
+    "Model inventory table lists only files that actually exist in the directory",
+    "Print settings section is accurate for the redesigned parts"
+  ],
+  "verification": [
+    "Read the updated README and confirm dimensional consistency with trap_modules.scad",
+    "Confirm no references to deprecated/nonexistent files"
+  ],
+  "blocked_reason": null,
+  "findings": "Completed full README rewrite. Removed all references to nonexistent files (trap_entrance.scad, vacuum_funnel.scad, trap_body_main.scad, display_bezel.scad, camera_mount.scad, stemma_qt_mount.scad, control_box_enclosure.scad). Documented bolted flange joint system for main connections and bayonet-twist for bait cap only. All parameters match trap_modules.scad. Reduced from ~290 lines of duplicated/conflicting content to ~148 lines of clean, accurate documentation."
+}

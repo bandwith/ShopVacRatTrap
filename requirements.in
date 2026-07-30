@@ -15,7 +15,6 @@ starlette<0.47 # Constrain starlette to be compatible with platformio
 # Development and testing tools
 detect-secrets>=1.5.0
 pre-commit>=3.0.0
-pip-tools>=6.0.0
 pytest>=8.0.0
 pytest-mock>=3.12.0
 flake8>=7.0.0

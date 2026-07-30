@@ -331,8 +331,12 @@ Before applying power, verify:
 
 #### **3.1 ESPHome Installation**
 ```bash
-# Install ESPHome
-pip3 install esphome
+# Set up virtual environment with uv
+uv venv --python 3.11
+source .venv/bin/activate
+
+# Install all dependencies (includes ESPHome)
+uv pip install -r requirements.txt
 
 # Or use Home Assistant Add-on
 # Navigate to Supervisor → Add-on Store → ESPHome

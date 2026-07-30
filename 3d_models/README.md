@@ -1,106 +1,117 @@
-# 3D Models
-
-This directory contains all the 3D models for the ShopVac Rat Trap.
-
-## Build Plate Compatibility
-
-All models are designed to fit on **standard 220x220mm build plates** (e.g., Ender 3, Prusa i3).
-
-| Model | Dimensions (X×Y×Z mm) | Build Plate Fit |
-|-------|----------------------|-----------------|
-| trap_entrance | 102×102×80 | ✅ Yes |
-| trap_body_front | 142×102×125 | ✅ Yes |
 # 3D Printable Models - ShopVac Rat Trap
 
-This directory contains all 3D printable components for the rat trap system, designed for standard FDM printers with **actual BOM component dimensions**.
+This directory contains all 3D printable components for the IoT-enabled rat trap system. All parts are designed for standard FDM printers and fit on a **220x220mm build plate**.
 
-## 📋 Model Inventory
+## Requirements
 
-## 📂 3D Printable Models
+- **OpenSCAD 2019.05 or later** is required. The bait station uses `rotate_extrude(angle=...)` which was introduced in 2019.05. Older versions silently ignore the `angle` parameter and produce a full 360-degree revolution, breaking bayonet slot geometry.
 
-### Current Models - Print These! ✅
+## Model Inventory
 
-| Model | Description | Print Time | Material | Notes |
-|-------|-------------|------------|----------|-------|
-| **trap_ramp_entrance.scad** | **Flat ramp entrance** | 5-6h | PETG/ASA | No supports needed! |
-| trap_entrance.scad | Sensor mounts | 3-4h | PETG/ASA | VL53L0X, APDS9960 + cable channels |
-| trap_body_front.scad | Front body (125mm) | 8-10h | PETG/ASA | PIR mount + vertical cable channel |
-| trap_body_rear.scad | Rear body (125mm) | 8-10h | PETG/ASA | Completes 250mm trap |
-| vacuum_funnel.scad | Vacuum adapter | 3-4h | PETG/ASA | 2.5" shop vac hose connection |
-| bait_station.scad | Bait holder | 2-3h | PETG/ASA | External mounting |
+| File | Description | Supports Needed |
+|------|-------------|-----------------|
+| `trap_ramp_entrance.scad` | Flat ramp entrance with archway transition to tube | No |
+| `trap_body_front.scad` | Front body half (125mm), includes bait port boss | No |
+| `trap_body_rear.scad` | Rear body half (125mm), includes cable channel | No |
+| `vacuum_adapter_universal.scad` | Stepped adapter for shop vac hoses (multi-size) | No |
+| `bait_station.scad` | Tube section with external bait port and bayonet cap | No |
+| `bait_cap.scad` | Standalone bayonet-twist cap for bait station port | No |
+| `control_box_exit_mount.scad` | Electronics enclosure (ESP32, SSR, sensors) | No |
+| `control_box_lid.scad` | Control box lid with OLED display cutout | No |
+| `assembly.scad` | Full assembly visualization (not printed) | N/A |
 
-### Control Box & Accessories
+### Shared Libraries (Not Printed)
 
-| Model | Description | Print Time | Material | Notes |
-|-------|-------------|------------|----------|-------|
-| control_box_enclosure.scad | Electronics housing | 12-14h | PETG/ASA | Fits Hammond PN-1334-C footprint |
-| control_box_lid.scad | Box cover | 4-5h | PETG/ASA | Matches enclosure |
-| display_bezel.scad | OLED mount | 1-2h | PETG/ASA | Front panel |
-| camera_mount.scad | OV5640 mount | 2-3h | PETG/ASA | Optional camera |
-| stemma_qt_mount.scad | Sensor mounting bracket | 1-2h | PETG/ASA | General purpose |
+| File | Purpose |
+|------|---------|
+| `trap_modules.scad` | All shared parameters, BOM dimensions, and reusable modules |
+| `helpers.scad` | Geometry primitives: `tube()`, `flange()`, `rounded_box()` |
 
-### Print Order (Recommended)
+## Shared Parameters
 
-1. **trap_ramp_entrance** (5-6h) - Entry point
-2. **trap_entrance** (3-4h) - Sensor section
-3. **trap_body_front** (8-10h) - Main body front
-4. **trap_body_rear** (8-10h) - Main body rear
-5. **vacuum_funnel** (3-4h) - Exit connection
-6. **control_box_enclosure** (12-14h) - Electronics
-7. **Accessories** (8-12h total) - Lid, bezels, mounts
+All parts include `trap_modules.scad` which defines consistent dimensions:
 
-**Total Print Time:** ~48-60 hours for complete systemmm/s*
+### Core Tube Dimensions (4" PVC Standard)
 
-## 🔧 Component Fitment
+```openscad
+tube_od = 101.6;          // 4" PVC outer diameter (mm)
+wall_thickness = 3.2;     // Tube wall thickness (mm)
+tube_id = 95.2;           // Inner diameter (tube_od - 2*wall_thickness)
+print_tolerance = 0.3;    // FDM clearance for mating parts (mm)
+```
 
-All models designed for **actual BOM components** with verified dimensions:
+### Flange Joint Parameters
 
-### STEMMA QT Sensors (Adafruit Standard)
-- **Board Size:** 17.78mm × 25.4mm (0.7" × 1.0")
-- **Mounting Holes:** M2.5, 12.7mm × 20.3mm spacing
-- **Compatible Models:**
-  - VL53L0X Time-of-Flight (3317)
-  - APDS9960 Proximity/Gesture (3595)
-  - BME280 Environmental (4816)
-- **Mount:** `stemma_qt_mount.scad` - universal design
+```openscad
+flange_od = 120;          // Outer diameter of flange ring (mm)
+flange_thickness = 5;     // Height of each flange plate (mm)
+lip_length = 10;          // Length of male lip / female socket depth (mm)
+bolt_hole_diameter = 4.5; // M4 clearance hole (mm)
+bolt_count = 4;           // Bolts evenly spaced at 90 degrees
+```
 
-### Camera System
-- **Board:** 32mm × 32mm square (Adafruit 5945 OV5640)
-- **Lens:** M12 mount, 14mm clearance hole
-- **Mounting:** 4× M2.5 corners, 28mm spacing
-- **Mount:** `camera_mount.scad` - OV5640 specific
+### Cable Channel
 
-### PIR Motion Sensor
-- **Board:** 32mm × 24mm (Adafruit 4871)
-- **Mounting:** 2× M3 holes, 28mm spacing
-- **Dome:** 12mm diameter, requires clearance
-- **Parameters:** Defined in `trap_modules.scad`
+```openscad
+cable_channel_od = 12;    // Outer diameter of external conduit (mm)
+cable_channel_id = 8;     // Inner diameter - fits JST SH connectors (mm)
+```
 
-### Control Box Components
-- **Enclosure:** Hammond PN-1334-C (200×120×75mm ext, 192×112×69mm int)
-- **ESP32 Feather:** 50.8×22.9mm, M2.5 holes at 48.26×20.32mm
-- **OLED Display:** 27×27.5mm, 2× M2.5 holes
-- **SSR:** Panasonic AQA411VL (40×58×25.5mm)
+## Joint System
 
-## 🖨️ Build Plate Compatibility
+### Bolted Flange Joints (Main Tube Connections)
 
-**Standard Build Plate:** 220mm × 220mm
+All major tube-to-tube connections use a **bolted flange joint** system:
 
-| Status | Model | Max Dimension | Notes |
-|--------|-------|---------------|-------|
-| ✅ | trap_entrance | ~130mm | Fits easily |
-| ✅ | trap_body_front | 125mm | Designed for compatibility |
-| ✅ | trap_body_rear | 125mm | Designed for compatibility |
-| ⚠️ | trap_body_main | 250mm | **LEGACY - DO NOT USE** |
-| ✅ | trap_funnel_adapter | ~150mm | Diagonal fit |
-| ✅ | vacuum_funnel | ~180mm | Fits on 220×220 |
-| ✅ | control_box_enclosure | 200mm | Fits lengthwise |
-| ✅ | stemma_qt_mount | ~26mm | Very small |
-| ✅ | camera_mount | ~40mm | Small |
+1. **Male end**: A slightly undersized lip (tube_od - 2*print_tolerance) extends from a flange plate
+2. **Female end**: A socket ring receives the male lip with clearance
+3. **Fastening**: 4x M4x16mm bolts pass through aligned flange plates to clamp the joint
+4. **Sealing**: The close-fitting lip provides a snug connection; O-ring groove available for split body joint
 
-**Compatibility:** 11 of 12 models (91.7%)
+**Assembly procedure:**
+1. Align male lip with female socket
+2. Slide parts together until flanges meet
+3. Insert 4x M4x16mm bolts through flange holes
+4. Tighten evenly in a cross pattern
 
-## 🔨 Generating STL Files
+### Bayonet-Twist Cap (Bait Station Only)
+
+The bait station cap uses a **bayonet-twist** system with 3 L-shaped slots for tool-free access. This is intentional -- the bait cap needs frequent removal and does not require bolt security.
+
+## Print Settings
+
+### Material
+
+- **PETG** (recommended) - Good strength, UV resistant, excellent layer adhesion
+- **ASA** (outdoor use) - Superior UV resistance and weatherproofing
+- **PLA** (not recommended) - Brittle, poor UV resistance, may warp in heat
+
+### Slicer Settings
+
+| Setting | Value | Notes |
+|---------|-------|-------|
+| Layer Height | 0.2mm | 0.3mm acceptable for draft prints |
+| Infill | 20-40% | 20% for non-structural, 40% for tube bodies |
+| Wall Count | 3-4 perimeters | Ensures rodent resistance |
+| Top/Bottom Layers | 4-5 | For water resistance |
+| Supports | Not needed | Parts designed for supportless printing |
+| Bed Adhesion | Brim recommended | For large tube parts |
+
+### Print Orientations
+
+| Model | Orientation | Notes |
+|-------|-------------|-------|
+| trap_ramp_entrance | Flat (ramp surface down) | Prints without supports |
+| trap_body_front | Upright (tube axis vertical) | Flanges at top/bottom |
+| trap_body_rear | Upright (tube axis vertical) | Flanges at top/bottom |
+| vacuum_adapter_universal | Large end down | Steps print cleanly |
+| bait_station | Upright (tube axis vertical) | Cap prints separately |
+| control_box_exit_mount | Upright (open side up) | Screw posts print upward |
+| control_box_lid | Flat (outside face down) | Clean top surface |
+
+## Generating STL Files
+
+> **Note:** OpenSCAD 2019.05+ is required. See [Requirements](#requirements) above.
 
 ### Build All Models
 
@@ -108,6 +119,8 @@ All models designed for **actual BOM components** with verified dimensions:
 cd 3d_models
 for file in *.scad; do
     [ "$file" = "trap_modules.scad" ] && continue  # Skip library
+    [ "$file" = "helpers.scad" ] && continue        # Skip library
+    [ "$file" = "assembly.scad" ] && continue       # Skip visualization
     openscad -o "${file%.scad}.stl" "$file"
 done
 ```
@@ -115,252 +128,102 @@ done
 ### Build Single Model
 
 ```bash
-openscad -o trap_entrance.stl trap_entrance.scad
+openscad -o trap_body_front.stl trap_body_front.scad
 ```
 
-## 📐 Shared Parameters
-
-`trap_modules.scad` contains shared dimensions and modules:
-
-### Core Parameters
-```openscad
-// Tube dimensions
-tube_outer_diameter = 101.6;  // 4" PVC standard
-tube_wall_thickness = 3.2;
-flange_diameter = 120;
-
-// STEMMA QT sensors (Adafruit standard)
-stemma_qt_board_width = 17.78;   // 0.7"
-stemma_qt_board_length = 25.4;   // 1.0"
-stemma_qt_hole_diameter = 2.7;   // M2.5 clearance
-
-// PIR sensor (Adafruit 4871)
-pir_board_width = 24;
-pir_board_length = 32;
-pir_hole_diameter = 3.2;  // M3 clearance
-
-// Center joint (for split body)
-alignment_pin_diameter = 6;   // 6mm pins
-oring_groove_width = 3;       // For 2.5mm O-ring
-```
-
-## 🛠️ Print Settings
-
-### Recommended Settings
-- **Material:** PETG or ASA (outdoor durability required)
-- **Layer Height:** 0.2mm (standard) or 0.3mm (draft)
-- **Infill:** 20% (structural) or 15% (non-structural)
-- **Wall Count:** 3-4 perimeters
-- **Top/Bottom Layers:** 4-5 layers
-- **Supports:** Required for overhangs >45°
-- **Bed Adhesion:** Brim recommended for large parts
-
-### Post-Processing
-1. Remove support material carefully
-2. Test fit components before final assembly
-3. Clean up layer lines on visible surfaces
-4. Install threaded inserts while plastic is hot (M3/M4 holes)
-
-## 🔌 Integrated Cable Routing
-
-All trap models include **hidden cable channels** for rodent-proof STEMMA QT cable routing. No external conduit required.
-
-### Design Features
-
-**Cable Channels:** 6mm wide × 3mm deep grooves
-**Connector Pockets:** 8×10×5mm recesses for JST SH connectors
-**Entry Ports:** 8-15mm diameter with chamfers for easy threading
-**Protection:** Cables enclosed in 4mm thick PETG/ASA walls
-
-### Cable Path Design
-
-```
-Sensor Mounts → Internal Channels → Central Junction
-     ↓                                    ↓
-Connector Pockets (8×10mm)    Exit Port (15mm diameter)
-                                          ↓
-                              Trap Body Vertical Channel (6mm)
-                                          ↓
-                              Control Box Cable Gland (PG13.5)
-```
-
-### Models with Cable Infrastructure
-
-| Model | Cable Features | Notes |
-|-------|----------------|-------|
-| **trap_entrance** | Radial channels + connector pockets | Routes 3 sensors to central junction |
-| **trap_body_front** | Vertical channel (rear wall) | Covered when joined with rear half |
-| **control_box_enclosure** | PG13.5 cable gland + internal channels | Already implemented |
-| **camera_mount** | Cable channel for STEMMA connector | Already implemented |
-| **stemma_qt_mount** | Cable channel notch | Already implemented |
-
-### Cable Assembly Procedure
-
-1. **Pre-Assembly**: Connect sensors to STEMMA QT cables
-2. **Position Connectors**: Snap JST SH connectors into pockets
-3. **Route to Junction**: Follow internal channels to central exit
-4. **Thread Through Body**: Before joining trap halves, thread bundle through vertical channel
-5. **Join Halves**: Cables are now enclosed in walls
-6. **Control Box Entry**: Pass through cable gland, hand-tighten
-
-### Cable Specifications
-
-**STEMMA QT Cables:**
-- Diameter: ~1-2mm (26AWG, 4-wire)
-- JST SH Connector: 5×7×3.5mm (clearance: 8×10×5mm)
-- Max Bundle: 5 cables fit in 6mm channel
-
-**Channel Dimensions:**
-- Cable groove: 6mm wide (snug fit for cables)
-- Connector pockets: 8×10mm (loose fit for connectors)
-- Entry ports: 8mm standard, 15mm at junctions
-
-### Maintenance Access
-
-**Cable Access**: Disassemble trap body flanges (4× M4 screws)
-**Service Loop**: 10cm extra cable inside control box
-**Connector Orientation**: JST SH latches face "up" in pockets
-
-### Benefits vs External Conduit
-
-| Feature | Integrated Channels | External Conduit |
-|---------|-------------------|------------------|
-| Cost | $0 (built-in) | +$15-20 |
-| Aesthetics | Invisible | Visible metal conduit |
-| Protection | 4mm PETG walls | Metal tube |
-| Assembly | 10-15 minutes | 30-45 minutes |
-| Maintenance | Flanged disassembly | Conduit removal |
-
-## 📦 Assembly Notes
-
-### Split Trap Body Assembly
-The trap body is split into front and rear halves for build plate compatibility:
-
-1. **Alignment:** 2× 6mm diameter pins on front half
-2. **Joining:** Pins fit into holes on rear half
-3. **Sealing:** O-ring groove in front half (use 2.5mm O-ring)
-4. **Fastening:** Flanges with M4 screws at 4 positions
-
-### Sensor Integration
-- Mount STEMMA QT sensors to `stemma_qt_mount.scad` first
-- Attach sensor mounts to trap entrance
-- Route STEMMA QT cables (500mm main run from entrance to control box)
-- PIR mounts internally in trap body front
-
-## 📊 Bill of Materials Cross-Reference
-
-See `../BOM_CONSOLIDATED.csv` for complete component list.
-
-**Key 3D Model → BOM Mappings:**
-- STEMMA QT sensors → Adafruit 3317, 3595, 4816
-- Camera → Adafruit 5945 (OV5640)
-- PIR → Adafruit 4871
-- Display → Adafruit 326 (OLED 128×64)
-- Enclosure → Hammond PN-1334-C (Bud Industries)
-
-## 📖 Additional Documentation
-
-- **Build Report:** `build_report.md` - Print time estimates and material usage
-- **Component Dimensions:** `../docs/hardware/component-dimensions.md` - Full specs
-- **Assembly Guide:** `../docs/hardware/assembly.md` - Step-by-step instructions
-
-## 🚀 Quick Start
-
-1. **Print structural parts first:** trap_body_front, trap_body_rear, funnel_adapter
-2. **Print sensor mounts:** stemma_qt_mount (print 3× for all sensors)
-3. **Print control box:** enclosure and lid
-4. **Test fit components** as you print
-5. **Assemble and integrate** following assembly guide
-
-**Total Print Time:** ~48-60 hours
-**Total Material:** ~1.5-2kg PETG/ASA filament
-
----
-
-**Last Updated:** 2024-11-27
-**STL Files Generated:** 12 models
-**Build Plate Compatibility:** 11/12 models (220×220mm)
-
-### Accessories
-
-- `vacuum_funnel.scad`: Funnel for connecting PVC pipe to shop vacuum hose.
-
-### Shared Modules
-
-- `trap_modules.scad`: Shared parameters and reusable modules (tubes, flanges, joints).
-
-## Generating STL Files
-
-To generate the STL files for printing:
+### Using the Build Script
 
 ```bash
 python .github/scripts/build.py --build
 ```
 
-This script will generate STL files for all SCAD files in this directory.
+## Hardware Required
 
-## Printing Recommendations
+### Flange Joint Fasteners (per joint)
 
-### Material
+- 4x M4x16mm bolts (stainless steel)
+- 4x M4 washers
 
-- **PETG** (recommended) - Great strength, UV resistant, good layer adhesion
-- **ASA** (outdoor use) - Excellent UV resistance, weatherproof
-- **PLA** (not recommended) - Brittle, poor UV resistance, may deform in heat
+The trap has 4 flange joints total (ramp-to-front, front-to-rear, rear-to-adapter, and bait station connections), requiring **16x M4x16mm bolts** and **16x M4 washers** for the complete assembly.
 
-### Print Settings
+### Split Body Seal
 
-| Setting | Value | Notes |
-|---------|-------|-------|
-| Layer Height | 0.2mm | Good balance of speed vs quality |
-| Infill | 40% | Gyroid pattern for strength |
-| Wall Thickness | 4mm | Ensures durability |
-| Top/Bottom Layers | 5 | For water resistance |
-| Supports | Required | See orientation guide below |
+- 1x O-ring (2.5mm cross-section, ~95mm ID, Buna-N or Viton)
 
-### Print Orientations
+### Alignment
 
-| Model | Orientation | Supports | Notes |
-|-------|-------------|----------|-------|
-| trap_entrance | Flat base down | Minimal | Sensor mounts may need support |
-| trap_body_front | Flat base down | Internal supports | For PIR mount overhang |
-| trap_body_rear | Flat base down | Minimal | Simple geometry |
-| trap_funnel_adapter | Wide end down | Yes | Funnel taper needs support |
-| bait_station | Flat side down | No | Simple print |
-| sensor_mount | Flat base down | Minimal | Clean underside |
-| camera_mount | Flat base down | Yes | Camera slot overhang |
-| control_box_enclosure | Upright (lid side up) | No | Prints well without supports |
-| control_box_lid | Flat (outside down) | No | Screw posts print upward |
-| vacuum_funnel | Wide end down | Yes | Conical shape |
+- 2x 6mm diameter alignment pins (front/rear body joint)
 
-## Assembly Notes
+## Cable Routing
 
-### Trap Body Assembly
+All trap tube sections include an integrated **top-mounted external cable conduit** (12mm OD, 8mm ID). This conduit runs along the outside of the tube and carries STEMMA QT cables between sections.
 
-1. Print both `trap_body_front` and `trap_body_rear`
-2. Test fit alignment pins (should slide smoothly but not loose)
-3. Install O-ring in groove on front half (2.5mm cross-section, ~95mm ID)
-4. Align rear half onto pins
-5. Secure with 4× M4×16mm screws and washers
-6. Tighten evenly in cross pattern
+### Cable Path
 
-### Hardware Required for Split Body
+```text
+Ramp Entrance --> Front Body --> Rear Body --> Vacuum Adapter
+                                                     |
+                                              Control Box
+```
 
-- 4× M4×16mm screws (stainless steel)
-- 4× M4 washers
-- 1× O-ring (2.5mm cross-section, 95-100mm inner diameter, Buna-N or Viton)
+### Cable Specifications
 
-## Post-Processing
+- **STEMMA QT cables**: ~1-2mm diameter (26AWG, 4-wire)
+- **JST SH connectors**: 5x7x3.5mm (fit within 8mm channel ID)
+- **Max bundle**: 5 cables fit in 6mm usable channel space
+- **Service loop**: 10cm extra cable inside control box
 
-1. **Remove supports** carefully with pliers and flush cutters
-2. **Clean holes** with appropriate drill bit (4mm for M4 holes)
-3. **Test fit** alignment pins and adjust with file if needed
-4. **Sand** flat surfaces for better gasket seal (220-400 grit)
-5. **Acetone vapor smooth** (ASA only) for weatherproofing
+### Maintenance Access
+
+Disconnect any flange joint (4x M4 bolts) to access cables for repair or replacement.
+
+## Assembly Order
+
+1. **Print all tube sections** (ramp, front body, rear body, vacuum adapter)
+2. **Print control box** (exit mount + lid)
+3. **Print bait station** (optional, can be added later)
+4. **Assemble tube** (ramp -> front -> rear -> adapter) using M4 bolts at each joint
+5. **Mount control box** to vacuum adapter bracket
+6. **Route cables** through conduit channels before final bolt-up
+7. **Connect vacuum hose** to adapter (friction fit with ribs)
+8. **Attach bait station** if used
+
+## Component Fitment (BOM Cross-Reference)
+
+All models use verified dimensions from BOM components:
+
+| Component | Adafruit Part | Mount Location |
+|-----------|---------------|----------------|
+| VL53L0X ToF Sensor | 3317 | Trap entrance (sensor module) |
+| APDS9960 Proximity | 3595 | Trap entrance (sensor module) |
+| BME280 Environmental | 4816 | Control box |
+| PIR Motion (4871) | 4871 | Front body (internal) |
+| OV5640 Camera | 5945 | Control box (optional) |
+| ESP32 Feather | - | Control box (internal mount) |
+| OLED 128x64 | 326 | Control box lid (display cutout) |
+| SSR (AQA411VL) | - | Control box (internal mount) |
+
+See `../BOM_CONSOLIDATED.csv` for the complete bill of materials.
 
 ## Design Philosophy
 
-- **Modular**: Easy to modify individual components
-- **Printable**: No supports needed for most parts
-- **Robust**: 4mm wall thickness withstands rodent damage
-- **Serviceable**: Flanged joints allow disassembly for cleaning
-- **Standard sized**: All parts fit common 220×220mm build plates
+- **Modular**: Each section is a separate print connected by bolted flanges
+- **Supportless**: All parts designed to print without support material
+- **Robust**: 3.2mm wall thickness resists rodent damage
+- **Serviceable**: Flange joints allow full disassembly for cleaning and cable access
+- **Standard sized**: Every part fits a 220x220mm build plate
+- **Consistent**: All dimensions derive from `trap_modules.scad` shared library
+
+## Post-Processing
+
+1. **Clean holes** with a 4mm drill bit (for M4 bolt holes)
+2. **Test fit** alignment pins and adjust with a file if needed
+3. **Sand** flange faces for better sealing (220-400 grit)
+4. **Dry-fit** all joints before final assembly with cables
+
+---
+
+**Last Updated:** 2025-01-15
+**Models:** 8 printable parts + 1 assembly visualization
+**Shared Libraries:** 2 (trap_modules.scad, helpers.scad)
+**Build Plate:** All parts fit 220x220mm
