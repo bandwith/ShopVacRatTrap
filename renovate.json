@@ -44,7 +44,6 @@
     {
       "description": "Python requirements - auto-update with automerge for patch/minor",
       "matchManagers": ["pip_requirements"],
-      "ignoreUnstable": false,
       "enabled": true,
       "automerge": true,
       "matchUpdateTypes": ["minor", "patch"],
