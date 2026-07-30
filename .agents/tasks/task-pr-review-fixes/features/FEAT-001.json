@@ -2,7 +2,7 @@
   "id": "FEAT-001",
   "type": "fix",
   "description": "Fix PR review findings across documentation and OpenSCAD 3D model files. Each finding must be verified against current code before fixing.",
-  "status": "in_progress",
+  "status": "completed",
   "steps": [
     "FINDING 1 - .github/scripts/README.md (line 109): The uv pip install command at line 109 (in the 'Local Development' section step 2) lacks venv creation/activation. Add 'uv venv' and 'source .venv/bin/activate' before 'uv pip install -r requirements.txt'. Similarly fix the duplicate section around line 215 ('Local Development' section step 2 that also says 'Install dependencies: uv pip install -r requirements.txt'). Make it self-contained with venv steps.",
     "FINDING 2 - docs/contributing/development.md (lines 36-44): Document uv installation as a prerequisite in the Python Scripts section. Add a note about installing uv itself (e.g. 'curl -LsSf https://astral.sh/uv/install.sh | sh' or 'pip install uv') before the venv creation steps.",
@@ -34,5 +34,5 @@
     "Ensure markdown files have proper fenced code blocks and formatting"
   ],
   "blocked_reason": null,
-  "findings": ""
+  "findings": "All 11 findings verified and fixed. Pre-existing test failure due to unsatisfiable requirements.txt dependency conflict (black==26.3.1 requires pytokens>=0.4.0 but pytokens==0.3.0 is pinned) - not caused by these changes. OpenSCAD not installed on host so syntax validation done via brace-balancing check only."
 }
