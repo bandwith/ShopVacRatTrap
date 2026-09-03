@@ -50,7 +50,7 @@ colorama==0.4.6
     # via
     #   esphome
     #   platformio
-cryptography==48.0.1
+cryptography==50.0.0
     # via
     #   aioesphomeapi
     #   chacha20poly1305-reuseable
