@@ -6,6 +6,14 @@ apds9960:
   address: 0x39
   update_interval: 100ms
 
+# LSM6DSOX IMU hub (native ESPHome driver, I2C). 4G / 500DPS mirrors the
+# ranges the previous custom component configured.
+motion:
+  - platform: lsm6ds
+    i2c_id: bus_a
+    accelerometer_range: 4G
+    gyroscope_range: 500DPS
+
 sensor:
   # APDS9960 Gesture/Proximity Sensor
   - platform: apds9960
@@ -22,27 +30,33 @@ sensor:
       - sliding_window_moving_average:
           window_size: 5
 
-  # LSM6DSOX IMU
-  - platform: lsm6dsox
-    accel_x:
-      name: "Accelerometer X"
-      id: accel_x
-    accel_y:
-      name: "Accelerometer Y"
-      id: accel_y
-    accel_z:
-      name: "Accelerometer Z"
-      id: accel_z
-    gyro_x:
-      name: "Gyroscope X"
-      id: gyro_x
-    gyro_y:
-      name: "Gyroscope Y"
-      id: gyro_y
-    gyro_z:
-      name: "Gyroscope Z"
-      id: gyro_z
-    update_interval: 50ms
+  # LSM6DSOX IMU (accelerometer axes feed the vibration signal in
+  # detection_logic.h). Uses ESPHome's native lsm6ds motion platform over I2C
+  # -- no external Adafruit libraries, so no library include-path issues.
+  - platform: motion
+    type: acceleration_x
+    name: "Accelerometer X"
+    id: accel_x
+  - platform: motion
+    type: acceleration_y
+    name: "Accelerometer Y"
+    id: accel_y
+  - platform: motion
+    type: acceleration_z
+    name: "Accelerometer Z"
+    id: accel_z
+  - platform: motion
+    type: gyroscope_x
+    name: "Gyroscope X"
+    id: gyro_x
+  - platform: motion
+    type: gyroscope_y
+    name: "Gyroscope Y"
+    id: gyro_y
+  - platform: motion
+    type: gyroscope_z
+    name: "Gyroscope Z"
+    id: gyro_z
 
   # BME280 environmental sensor via STEMMA QT (I2C)
   - platform: bme280_i2c
