@@ -1,5 +1,4 @@
 #pragma once
-// Force rebuild
 
 #include "esphome/core/component.h"
 #include "esphome/core/log.h"
@@ -9,52 +8,72 @@ namespace rodent_classifier {
 
 static const char *const TAG = "rodent_classifier";
 
+// Confidence returned by the placeholder implementation. Named and public so
+// it is obvious -- in code and in tests -- that this is a stub, not a real
+// inference result. When a model is wired up, classify_current_frame() should
+// stop returning this value.
+static const float PLACEHOLDER_CONFIDENCE = 0.85f;
+
+// RodentClassifier is an explicitly-declared *hypothetical seam*: the interface
+// (classify_current_frame() -> confidence in [0,1]) is the contract a future
+// TFLite Micro / Grove Vision AI implementation will satisfy, but there is only
+// one implementation today and it does no real inference. It is kept (rather
+// than deleted) because the camera build variant is built around CV being on
+// the roadmap; keeping the seam named and tested means the call sites and the
+// interface already exist when a model lands.
+//
+// Until then this is a placeholder, and is_placeholder() says so. Nothing in
+// the firmware should treat its result as a real detection: the one call site
+// in cv.yaml's run_classification script is intentionally not wired into the
+// trap sequence yet.
 class RodentClassifier : public Component {
  public:
   void setup() override {
-    ESP_LOGI(TAG, "Setting up Rodent Classifier...");
-    // Initialize TFLite Micro interpreter here
-    // Load model from flash or SD card
-    this->model_loaded_ = true; // Simulating successful load
+    ESP_LOGI(TAG, "Setting up Rodent Classifier (placeholder, no model)...");
+    // A real implementation loads a TFLite Micro model from flash/SD here and
+    // sets model_loaded_ accordingly. The placeholder has no model.
+    this->model_loaded_ = false;
   }
 
   void loop() override {
-    // Optional: Continuous classification if needed
+    // No continuous classification in the placeholder.
   }
 
   void dump_config() override {
-    ESP_LOGCONFIG(TAG, "Rodent Classifier:");
+    ESP_LOGCONFIG(TAG, "Rodent Classifier (PLACEHOLDER - no model loaded):");
     ESP_LOGCONFIG(TAG, "  Model Loaded: %s", this->model_loaded_ ? "YES" : "NO");
+    ESP_LOGCONFIG(TAG, "  Returns fixed placeholder confidence: %.2f",
+                  PLACEHOLDER_CONFIDENCE);
   }
 
-  // Function to trigger classification
+  // True while this is still the stub implementation (no model loaded). Lets
+  // callers and tests assert they are not relying on a real result yet.
+  bool is_placeholder() const { return !this->model_loaded_; }
+
+  // Classify the current camera frame and return a rodent-confidence in [0,1].
+  //
+  // Placeholder behaviour: returns PLACEHOLDER_CONFIDENCE. The real pipeline
+  // (grab framebuffer -> preprocess -> TFLite invoke -> read output) is the
+  // work this seam is waiting for; see the roadmap notes above.
   float classify_current_frame() {
-    if (!this->model_loaded_) {
-      ESP_LOGW(TAG, "Model not loaded, cannot classify");
-      return 0.0f;
+    if (this->is_placeholder()) {
+      ESP_LOGW(TAG,
+               "classify_current_frame() called on placeholder; returning "
+               "fixed confidence %.2f (NOT a real detection)",
+               PLACEHOLDER_CONFIDENCE);
+      return PLACEHOLDER_CONFIDENCE;
     }
 
-    ESP_LOGI(TAG, "Running inference on current frame...");
-
-    // 1. Get framebuffer from esp32_camera
+    // --- Real implementation goes here once a model is wired up ---
     // camera_fb_t *fb = esp_camera_fb_get();
-    // if (!fb) { ESP_LOGE(TAG, "Camera capture failed"); return 0.0f; }
-
-    // 2. Preprocess image (resize, normalize)
-
-    // 3. Run interpreter invoke
-
-    // 4. Get results
-    float confidence = 0.85f; // Dummy result
-
+    // ... preprocess, interpreter->Invoke(), read output tensor ...
     // esp_camera_fb_return(fb);
-
-    ESP_LOGI(TAG, "Classification result: Rodent (Confidence: %.2f)", confidence);
-    return confidence;
+    return PLACEHOLDER_CONFIDENCE;
   }
 
  protected:
-  // Placeholder for TFLite interpreter and model
+  // Flipped to true only by a real model-loading setup(). The placeholder
+  // leaves it false so is_placeholder() is honest.
   bool model_loaded_{false};
 };
 
