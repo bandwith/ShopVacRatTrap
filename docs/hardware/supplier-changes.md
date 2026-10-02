@@ -1,5 +1,13 @@
 # Supplier Consolidation Documentation
 
+> **⚠️ Historical / partially stale.** This document predates the current sensor
+> architecture and lists components (VL53L0X, APDS9960, PIR, LRS-50-5, various SSR
+> alternatives, Hammond enclosure, NEMA outlet, XIAO ESP32-S3) that no longer match
+> the shipping design. The authoritative component list is
+> [`BOM_CONSOLIDATED.csv`](https://github.com/bandwith/ShopVacRatTrap/blob/main/BOM_CONSOLIDATED.csv)
+> and [bom.md](bom.md). Treat the sourcing *rationale* below as background only;
+> defer to the BOM for actual part numbers, prices, and the ~$246 total.
+
 ## Overview
 
 This document details the consolidation of component suppliers to primarily use **Adafruit** as the international vendor, with specific rationale for each component category.

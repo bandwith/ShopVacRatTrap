@@ -215,12 +215,12 @@ All models use verified dimensions from BOM components:
 
 | Component | Adafruit Part | Mount Location |
 |-----------|---------------|----------------|
-| VL53L0X ToF Sensor | 3317 | Trap entrance (sensor module) |
-| APDS9960 Proximity | 3595 | Trap entrance (sensor module) |
+| VL53L4CX ToF Sensor | 5425 | Trap entrance (sensor module) |
+| STHS34PF80 IR Presence | 6426 | Trap entrance (sensor module) |
+| LSM6DSOX IMU (vibration) | 4438 | Front body (internal) |
 | BME280 Environmental | 2652 | Control box |
-| PIR Motion (4871) | 4871 | Front body (internal) |
-| OV5640 Camera | 5945 | Control box (optional) |
-| ESP32 Feather | - | Control box (internal mount) |
+| OV5640 Camera | 5946 | Control box (optional) |
+| ESP32 Feather | 5323 | Control box (internal mount) |
 | OLED 128x64 | 326 | Control box lid (display cutout) |
 | SSR (AQA411VL) | - | Control box (internal mount) |
 

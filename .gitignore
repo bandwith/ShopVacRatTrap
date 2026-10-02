@@ -58,3 +58,7 @@ secrets.yaml
 
 # OS
 Thumbs.db
+
+
+# Kiro IDE/session state (keep only intentionally-tracked config like mcp.json)
+.kiro/settings/lsp.json

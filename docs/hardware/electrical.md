@@ -8,6 +8,13 @@
 
 This document details the electrical design, theory of operation, and safety considerations for the ShopVac Rat Trap.
 
+> **Note on sensor naming:** the BOM tables in §2 reflect the current sensor set
+> (VL53L4CX ToF, STHS34PF80 IR presence, LSM6DSOX IMU). Some ASCII architecture
+> diagrams and power-budget blocks further down still name the older
+> VL53L0X / APDS9960 / PIR set and have not been re-drawn; use
+> [`BOM_CONSOLIDATED.csv`](BOM_CONSOLIDATED.csv) and the ESPHome configs in
+> `esphome/` as the authoritative source for sensors and pin assignments.
+
 > [!NOTE]
 > For practical wiring instructions and diagrams, please refer to the **[Assembly Guide](assembly.md)**.
 
@@ -40,7 +47,7 @@ For maximum safety and code compliance, all electronic components (both high and
 
 ## 2. Bill of Materials (BOM)
 
-**Total Project Cost: $183 (Standard) / $204 (Camera)**
+**Total Project Cost: ~$246 (see [BOM_CONSOLIDATED.csv](BOM_CONSOLIDATED.csv) for the authoritative total)**
 
 > **Note**: Complete vendor information and direct purchase links are available in [BOM_CONSOLIDATED.csv](BOM_CONSOLIDATED.csv).
 
@@ -50,9 +57,10 @@ For maximum safety and code compliance, all electronic components (both high and
 |-----|-----------|-------------|-------------|--------|-------|
 | 1 | ESP32-S3 Feather | 5323 | 8MB Flash, USB-C, STEMMA QT | Adafruit | $17.50 |
 | 1 | Feather Stacking Headers | 2830 | 12-pin and 16-pin female headers | Adafruit | $1.25 |
-| 1 | VL53L0X ToF Sensor | 3317 | Time-of-Flight distance sensor | Adafruit | $15.89 |
-| 1 | APDS9960 Proximity | 3595 | Proximity/Light/RGB/Gesture | Adafruit | $7.50 |
-| 1 | PIR Motion Sensor | 4871 | PIR Motion Sensor | Adafruit | $3.95 |
+| 1 | VL53L4CX ToF Sensor | 5425 | Time-of-Flight distance sensor (STEMMA QT) | Adafruit | $18.00 |
+| 1 | STHS34PF80 IR Presence | 6426 | IR temperature & presence sensor (STEMMA QT) | Adafruit | $11.95 |
+| 1 | LSM6DSOX IMU | 4438 | 6-DoF accelerometer + gyroscope (STEMMA QT) | Adafruit | $10.95 |
+| 1 | I2S MEMS Microphone | 3421 | SPH0645LM4H | Adafruit | $6.95 |
 | 1 | OLED Display 128x64 | 326 | 0.96" monochrome display | Adafruit | $17.50 |
 | 1 | BME280 Env. Sensor | 2652 | Temperature/Humidity/Pressure (STEMMA QT) | Adafruit | $14.95 |
 | 1 | STEMMA QT 5-Port Hub | 5625 | 5-Port STEMMA QT/Qwiic Hub | Adafruit | $2.50 |
@@ -69,16 +77,15 @@ For maximum safety and code compliance, all electronic components (both high and
 | 1 | Emergency Stop Button | XB6ETN521P | 16mm Red E-Stop Switch | Mouser | $22.13 |
 | 1 | Current Transformer | PCS020-EE0502KS | 20A Split Core CT | Mouser | $4.09 |
 | 1 | Optocoupler | 4N35-X007 | General Purpose Optocoupler | Mouser | $0.76 |
-| 1 | Large Arcade Button | 368 | Large Arcade Button | Adafruit | $2.00 |
-| 1 | Enclosure | PN-1334-C | Hammond 8"x6"x4" ABS | Mouser | $16.20 |
+| 1 | Arcade Button | 471 | Arcade Button 30mm Translucent Red | Adafruit | $2.50 |
+| 1 | PCB Terminal Block | TBC05-02-1-G-G | 2.54mm Pitch PCB Terminal Block | Mouser | $0.61 |
 
 ### 2.3. Cables & Hardware
 
 | Qty | Component | Part Number | Description | Vendor | Price |
 |-----|-----------|-------------|-------------|--------|-------|
-| 1 | STEMMA QT Cable 500mm | 4401 | 500mm JST SH cable | Adafruit | $1.25 |
-| 1 | STEMMA QT Cable 50mm | 4399 | 50mm JST SH cable | Adafruit | $0.95 |
-| 2 | STEMMA QT Cable 100mm | 4397 | 100mm JST SH cable | Adafruit | $1.90 |
+| 3 | STEMMA QT Cable 100mm | 4210 | 100mm JST SH 4-pin cable | Adafruit | $7.50 |
+| 1 | STEMMA JST PH Cable 200mm | 3893 | 200mm JST PH 3-pin to male header | Adafruit | $1.25 |
 | 1 | Wire - Red 26AWG | 1877 | Silicone cover 2m red wire | Adafruit | $0.95 |
 | 1 | Wire - Black 26AWG | 1881 | Silicone cover 2m black wire | Adafruit | $0.95 |
 

@@ -9,7 +9,7 @@
 **Recent Updates:**
 - ✅ Flat ramp entrance (no supports needed)
 - ✅ Integrated cable channels (rodent-proof routing)
-- ✅ BOM validated (14 components verified)
+- ✅ BOM validated (26 components verified)
 - ✅ Complete assembly visualization
 
 ## 🎯 Overview
@@ -17,12 +17,12 @@
 This project provides complete design files for a professional-grade, IoT-enabled rodent trap system that connects to a standard shop vacuum. Features automated detection using multiple sensors and safe high-voltage switching.
 
 **Key Features:**
-- Multi-sensor detection (VL53L0X ToF, APDS9960 proximity, PIR motion)
+- Multi-sensor detection (VL53L4CX ToF, STHS34PF80 IR presence, LSM6DSOX vibration)
 - ESPHome-based ESP32-S3 control
 - Solid-state relay for safe AC switching
 - Integrated cable protection (no external conduit needed)
 - 3D printable components (PETG/ASA)
-- Optional camera integration (OV5640)tion
+- Optional camera integration (OV5640)
 
 **Complete documentation:** [Read the Docs](https://shopvac-rat-trap.readthedocs.io) _(coming soon)_
 
@@ -35,13 +35,13 @@ This project provides complete design files for a professional-grade, IoT-enable
 
 - [🚨 Safety First](docs/getting-started/safety.md) - **Read before starting**
 - [⚡ Quick Start](docs/getting-started/quick-start.md) - Build in 5 steps
-- [🛒 Components](docs/hardware/bom.md) - Bill of Materials (~$150)
+- [🛒 Components](docs/hardware/bom.md) - Bill of Materials (~$246)
 - [🔧 Assembly](docs/hardware/assembly.md) - Step-by-step guide
 - [🏠 Home Assistant](docs/software/home-assistant.md) - Integration examples
 
 ## ✨ Features
 
-- **🎯 Hybrid Detection**: APDS9960 + VL53L0X + PIR ("2 of 3" confirmation)
+- **🎯 Hybrid Detection**: VL53L4CX + STHS34PF80 + LSM6DSOX ("4 of 5" confirmation)
 - **📸 5MP Camera**: Optional OV5640 with autofocus (camera variant)
 - **🔌 Zero-Solder**: Complete STEMMA QT plug-and-play assembly
 - **📊 OLED Display**: 128x64 integrated status screen
@@ -74,8 +74,8 @@ esphome run rat-trap.yaml
 
 | Configuration | Components | Total |
 |---------------|------------|-------|
-| **Standard** | ESP32 + Sensors + Display + Power + Safety | ~$183 |
-| **+ Camera** | Adds OV5640 + IR LED + SD Card | ~$204 |
+| **Standard** | ESP32 + Sensors + Display + Power + Safety | ~$222 |
+| **+ Camera** | Adds OV5640 + IR LED + SD Card | ~$246 |
 
 **Detailed BOM:** [Component Sourcing Guide](docs/hardware/sourcing.md)
 
