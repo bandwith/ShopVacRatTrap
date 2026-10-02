@@ -243,7 +243,7 @@ tzlocal==5.3.1
     # via
     #   aioesphomeapi
     #   esphome
-urllib3==2.7.0
+urllib3==2.8.0
     # via requests
 uvicorn==0.34.3
     # via platformio
