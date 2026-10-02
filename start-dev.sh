@@ -3,7 +3,7 @@
 # - Ensures a local Python venv at .venv (prefers uv if available)
 # - Activates the venv (when sourced)
 # - Installs requirements (fast with uv if available)
-# - Installs pre-commit hooks
+# - Installs prek hooks
 #
 # Usage (recommended):
 #   source ./start-dev.sh
@@ -77,12 +77,12 @@ else
   warn "No $REQUIREMENTS_FILE found; skipping dependency install"
 fi
 
-# 4) Install pre-commit hooks if available
-if have_cmd pre-commit; then
-  log "Installing pre-commit hooks..."
-  pre-commit install || warn "pre-commit install failed (continuing)"
+# 4) Install prek hooks if available
+if have_cmd prek; then
+  log "Installing prek hooks..."
+  prek install || warn "prek install failed (continuing)"
 else
-  warn "pre-commit not available; hooks not installed"
+  warn "prek not available; hooks not installed"
 fi
 
 # Helpful next steps
@@ -96,7 +96,7 @@ cat <<EOF
 Tips:
 - To (re)activate later: source $VENV_DIR/bin/activate
 - To update deps quickly: uv pip sync $REQUIREMENTS_FILE
-- To run hooks now: pre-commit run -a
+- To run hooks now: prek run -a
 
 EOF
 

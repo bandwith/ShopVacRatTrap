@@ -67,8 +67,8 @@ Thank you for your interest in contributing to the ShopVac Rat Trap project! Thi
    # ESPHome validation
    esphome config esphome/rat-trap.yaml
 
-   # Pre-commit hooks
-   pre-commit run --all-files
+   # prek hooks
+   prek run --all-files
    ```
 
 5. **Submit Pull Request**
@@ -83,7 +83,7 @@ See [Development Setup](development.md) for detailed instructions on:
 
 - Setting up Python environment
 - Installing ESPHome
-- Configuring pre-commit hooks
+- Configuring prek hooks
 - Running tests locally
 
 ## Code Style
@@ -109,7 +109,7 @@ The project uses automated code formatting and lint King:
 - Clear comments
 - Descriptive naming
 
-**All checks run automatically via pre-commit hooks.**
+**All checks run automatically via prek hooks.**
 
 ## Pull Request Guidelines
 

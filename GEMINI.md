@@ -61,7 +61,7 @@ To build and flash the firmware, you will need to use the ESPHome command-line t
 # Development Conventions
 
 ## Code Quality and Formatting:
-The project enforces code quality and formatting using pre-commit hooks:
+The project enforces code quality and formatting using [prek](https://prek.j178.dev) hooks (a Rust-based drop-in replacement for pre-commit):
 *   **Python:** `ruff-check` (linting) and `ruff-format` (formatting), adhering to PEP 8, type hinting, and requiring docstrings.
 *   **YAML:** `yamllint` and `yamlfmt` for linting and formatting YAML files. ESPHome YAML files are specifically excluded from generic YAML checks due to their unique syntax.
 *   **General:** Hooks for trailing whitespace, end-of-file newlines, and checking JSON/TOML files.
@@ -69,10 +69,10 @@ The project enforces code quality and formatting using pre-commit hooks:
 *   **Python Syntax:** `pyupgrade` ensures Python 3.11+ syntax.
 
 ## Security:
-*   The `detect-secrets` pre-commit hook is used to prevent sensitive information from being committed to the repository.
+*   The `detect-secrets` prek hook is used to prevent sensitive information from being committed to the repository.
 
 ## Dependency Management:
-*   `uv compile` pre-commit hooks are used to manage and synchronize `requirements.txt` with `requirements.in`.
+*   `uv compile` prek hooks are used to manage and synchronize `requirements.txt` with `requirements.in`.
 
 ## Automated Processes:
 *   **GitHub Actions:** Extensive use of GitHub Actions for:
