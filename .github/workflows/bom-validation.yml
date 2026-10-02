@@ -38,6 +38,7 @@ jobs:
     permissions:
       contents: write
       issues: write
+      pull-requests: write
 
     steps:
       - name: Checkout repository
@@ -199,14 +200,25 @@ jobs:
               --label "automation,pricing,review-needed"
           fi
 
-      - name: Commit and push changes
+      - name: Create pull request with BOM updates
         if: steps.set_validation_outputs.outputs.changes_detected == 'true' || github.event.inputs.force_update == 'true'
-        uses: stefanzweifel/git-auto-commit-action@v7
+        uses: peter-evans/create-pull-request@v7
         with:
-          commit_user_email: action@github.com
-          commit_user_name: GitHub Action
-          commit_message: 🤖 Auto-update BOM pricing and purchase links - $(date +%Y-%m-%d)
-          file_pattern: BOM_*.csv pricing_backup/ purchasing/
+          commit-message: "\U0001F916 Auto-update BOM pricing and purchase links"
+          author: GitHub Action <action@github.com>
+          branch: ci/auto-bom-update
+          delete-branch: true
+          title: "\U0001F916 Auto-update BOM pricing and purchase links"
+          body: |
+            Automated BOM pricing and purchase-link refresh from the weekly
+            validation run.
+
+            Opened as a PR because `main` is protected and cannot be pushed to
+            directly. Review the pricing/availability changes before merging.
+          add-paths: |
+            BOM_*.csv
+            pricing_backup/
+            purchasing/
 
       - name: Upload artifacts
         if: always()

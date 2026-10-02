@@ -88,17 +88,20 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: stl-files
-          path: 3d_models/*.stl
+          path: |
+            3d_models/*.stl
+            3d_models/build_report.md
 
   commit-changes:
     runs-on: ubuntu-latest
     needs: generate-stl
     if: needs.generate-stl.outputs.should_commit == 'true' && github.ref == 'refs/heads/main'
+    permissions:
+      contents: write
+      pull-requests: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Download all STL artifacts
         uses: actions/download-artifact@v8
@@ -106,10 +109,22 @@ jobs:
           name: stl-files
           path: 3d_models/
 
-      - name: Commit and push updated files
-        uses: stefanzweifel/git-auto-commit-action@v7
+      # main is a protected branch, so a direct push is rejected (GH006).
+      # Open (or update) a PR with the regenerated artifacts instead.
+      - name: Create pull request with regenerated STL files
+        uses: peter-evans/create-pull-request@v7
         with:
-          commit_user_email: action@github.com
-          commit_user_name: GitHub Action STL Generator
-          commit_message: 'ci: Auto-generate STL files and build report'
-          file_pattern: 3d_models/*.stl 3d_models/build_report.md
+          commit-message: 'ci: Auto-generate STL files and build report'
+          author: GitHub Action STL Generator <action@github.com>
+          branch: ci/auto-stl-regen
+          delete-branch: true
+          title: 'ci: regenerate STL files from SCAD'
+          body: |
+            Automated regeneration of STL files and the build report from the
+            SCAD sources on `main`.
+
+            Opened by the STL generation workflow because `main` is protected
+            and cannot be pushed to directly.
+          add-paths: |
+            3d_models/*.stl
+            3d_models/build_report.md
