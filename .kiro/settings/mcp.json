@@ -1,0 +1,18 @@
+{
+  "mcpServers": {
+    "openscad": {
+      "command": "uvx",
+      "args": ["openscad-mcp"],
+      "env": {
+        "OPENSCAD_PATH": "/usr/bin/openscad",
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "MCP_ALLOWED_PATHS": "${workspaceFolder}/3d_models"
+      },
+      "disabled": false,
+      "autoApprove": [
+        "render",
+        "measure"
+      ]
+    }
+  }
+}
