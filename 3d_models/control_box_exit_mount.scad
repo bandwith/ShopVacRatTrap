@@ -27,13 +27,9 @@ gasket_recess_depth = 2;           // Depth of gasket groove ledge
 gasket_recess_margin = 3;          // Extra margin around window for gasket
 
 // Mounting holes (to vacuum adapter bracket)
-// Must match vacuum_adapter_universal.scad bracket hole positions:
-// X: [-bracket_width/2 + 10, bracket_width/2 - 10] = [-30, +30] => spacing 60mm
-// Z: [15, bracket_height - 10] = [15, 60] => spacing 45mm, center 37.5mm
-mount_hole_spacing_x = 60;         // Horizontal spacing (matches bracket)
-mount_hole_spacing_z = 45;         // Vertical spacing (matches bracket: 60-15=45)
-mount_hole_center_z = 37.5;        // Vertical center of mounting holes (matches bracket: (15+60)/2)
-mount_hole_diameter = 3.5;         // M3 clearance
+// Spacing/diameter are defined once in trap_modules.scad
+// (mount_bolt_spacing_x/z, mount_bolt_diameter, mount_bolt_center_z) and
+// shared with vacuum_adapter_universal.scad via control_box_bolt_pattern().
 
 // Lid screw posts
 lid_post_diameter = 8;             // OD of screw post
@@ -70,14 +66,13 @@ module control_box_exit_mount() {
                   window_height + 2*gasket_recess_margin]);
 
         // --- MOUNTING HOLES (rear face, to attach to vacuum adapter bracket) ---
-        // Holes at Z=15 and Z=60 to align with bracket (center=37.5, spacing=45)
-        for (dx = [-mount_hole_spacing_x/2, mount_hole_spacing_x/2]) {
-            for (dz = [-mount_hole_spacing_z/2, mount_hole_spacing_z/2]) {
-                translate([window_center_x + dx, -1, mount_hole_center_z + dz])
+        // Shared pattern from trap_modules.scad keeps these aligned with the
+        // adapter bracket by construction (one source of truth).
+        translate([window_center_x, -1, mount_bolt_center_z])
+            control_box_bolt_pattern()
+                translate([0, 0, 0])
                     rotate([-90, 0, 0])
-                        cylinder(d=mount_hole_diameter, h=box_wall + 2);
-            }
-        }
+                        cylinder(d=mount_bolt_diameter, h=box_wall + 2);
 
         // --- CABLE GLAND HOLES (rear wall, Y=outer_width side) ---
         // Power cable gland (left side)
