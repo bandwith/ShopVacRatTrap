@@ -9,6 +9,16 @@ SCAD_EXTENSION = ".scad"
 STL_EXTENSION = ".stl"
 OPENSCAD_COMMAND = "openscad"
 
+# Library files that only define modules/constants and have no top-level
+# geometry, so they must never be rendered to STL. Centralized here (rather
+# than duplicated per function) so every code path agrees on what to skip.
+MODULE_ONLY_FILES = ("trap_modules.scad", "helpers.scad")
+
+
+def _is_module_only(file_path: str) -> bool:
+    """True if the given SCAD path is a non-renderable library file."""
+    return os.path.basename(file_path) in MODULE_ONLY_FILES
+
 
 def _iterate_model_files(extension: str):
     """Iterates through files in MODELS_DIR with a specific extension."""
@@ -19,40 +29,37 @@ def _iterate_model_files(extension: str):
 
 
 def get_changed_scad_files():
-    """Get a list of changed SCAD files."""
+    """Get a list of changed SCAD files (excluding module-only library files)."""
     cmd = "git diff --name-only --diff-filter=AMR HEAD^ HEAD"
     result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
     changed_files = result.stdout.strip().split("\n")
     scad_files = [
         f
         for f in changed_files
-        if f.endswith(SCAD_EXTENSION) and f.startswith(f"{MODELS_DIR}/")
+        if f.endswith(SCAD_EXTENSION)
+        and f.startswith(f"{MODELS_DIR}/")
+        # Skip module-only library files: editing trap_modules.scad/helpers.scad
+        # should rebuild the parts that include them, not render the library
+        # itself (which has no top-level geometry and errors as "empty").
+        and not _is_module_only(f)
     ]
     return scad_files
 
 
 def get_all_scad_files():
     """Get a list of all SCAD files (excluding module-only library files)."""
-    # Files that only contain module definitions and shouldn't be rendered
-    module_only_files = ["trap_modules.scad", "helpers.scad"]
-
     scad_files = []
     for file_path in _iterate_model_files(SCAD_EXTENSION):
-        # Skip module-only library files
-        if os.path.basename(file_path) not in module_only_files:
+        if not _is_module_only(file_path):
             scad_files.append(file_path)
     return scad_files
 
 
 def get_missing_stl_files():
     """Get a list of SCAD files that are missing their STL file (excluding module-only library files)."""
-    # Files that only contain module definitions and shouldn't be rendered
-    module_only_files = ["trap_modules.scad", "helpers.scad"]
-
     missing_files = []
     for scad_path in _iterate_model_files(SCAD_EXTENSION):
-        # Skip module-only library files
-        if os.path.basename(scad_path) in module_only_files:
+        if _is_module_only(scad_path):
             continue
 
         stl_path = scad_path.replace(SCAD_EXTENSION, STL_EXTENSION)
