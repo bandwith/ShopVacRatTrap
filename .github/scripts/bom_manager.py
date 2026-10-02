@@ -3,6 +3,7 @@ import json
 import os
 from pathlib import Path
 import csv
+from dataclasses import dataclass, asdict
 from datetime import datetime
 import re
 
@@ -13,6 +14,102 @@ class BOMManagerError(Exception):
     """Base exception for BOM Manager errors."""
 
     pass
+
+
+@dataclass
+class ValidationSummary:
+    """Typed summary of a BOM validation run.
+
+    This is the structured result the edges (markdown report, GitHub Actions
+    outputs, the workflow) consume. Previously these booleans only existed as
+    prose inside the generated markdown, which the CI workflow then re-derived
+    by grepping the report -- the same decision implemented twice, in two
+    languages, on opposite sides of the file boundary. Computing them once here
+    gives the "is this a significant/critical change?" rule a single home and a
+    real test surface.
+    """
+
+    total_components: int = 0
+    found_components: int = 0
+    changed_components: int = 0
+    total_change_percent: float = 0.0
+    changes_detected: bool = False
+    significant_changes: bool = False
+    unavailable_components: int = 0
+    low_stock_components: int = 0
+    critical_availability: bool = False
+
+    @property
+    def has_unavailable(self) -> bool:
+        return self.unavailable_components > 0
+
+    def as_github_outputs(self) -> dict[str, str]:
+        """Render the booleans the workflow needs as GitHub Actions output
+        strings (lower-case true/false)."""
+        return {
+            "changes_detected": "true" if self.changes_detected else "false",
+            "significant_changes": "true" if self.significant_changes else "false",
+            "unavailable_components": "true" if self.has_unavailable else "false",
+        }
+
+
+def summarize_validation(validation_results: dict) -> ValidationSummary:
+    """Pure reduction of a raw validation_results dict to a typed summary.
+
+    No filesystem, no environment, no network -- just data in, data out -- so
+    the pricing/availability decisions can be unit tested directly instead of
+    only through a rendered report.
+    """
+    pricing = validation_results.get("pricing_changes", {})
+    components = validation_results.get("components", [])
+
+    unavailable = 0
+    low_stock = 0
+    for component in components:
+        if not component.get("found"):
+            continue
+        stock = component.get("stock_qty", 0)
+        required = component.get("quantity", 1)
+        if stock == 0:
+            unavailable += 1
+        elif stock < required:
+            low_stock += 1
+
+    return ValidationSummary(
+        total_components=validation_results.get("total_components", 0),
+        found_components=validation_results.get("found_components", 0),
+        changed_components=pricing.get("changed_components", 0),
+        total_change_percent=pricing.get("total_change_percent", 0.0),
+        changes_detected=pricing.get("changes_detected", False),
+        significant_changes=pricing.get("significant_changes", False),
+        unavailable_components=unavailable,
+        low_stock_components=low_stock,
+        critical_availability=unavailable > 0,
+    )
+
+
+class GitHubOutputAdapter:
+    """Edge adapter: writes a ValidationSummary to the GITHUB_OUTPUT file.
+
+    The validation core never touches os.environ or opens the output file; this
+    adapter is the single place that bridges the pure summary to the CI runner.
+    """
+
+    def __init__(self, output_path: str | None = None):
+        # Resolve lazily so importing this module never requires the env var.
+        self.output_path = output_path or os.environ.get("GITHUB_OUTPUT")
+
+    @property
+    def enabled(self) -> bool:
+        return bool(self.output_path)
+
+    def write(self, summary: ValidationSummary) -> None:
+        if not self.enabled:
+            return
+        with open(self.output_path, "a") as f:
+            f.writelines(
+                f"{key}={value}\n" for key, value in summary.as_github_outputs().items()
+            )
 
 
 # Load environment variables from .env file if it exists (for local development)
@@ -177,8 +274,9 @@ class BOMValidator:
             # Process components with priority items first
             sorted_components = sorted(
                 components,
-                key=lambda c: c.get(BOMColumns.MANUFACTURER_PART_NUMBER, "")
-                in priority_set,
+                key=lambda c: (
+                    c.get(BOMColumns.MANUFACTURER_PART_NUMBER, "") in priority_set
+                ),
                 reverse=True,
             )
 
@@ -207,6 +305,21 @@ class BOMValidator:
                 # If total cost changed by more than 5%, mark as significant
                 if abs(total_change_percent) >= self.SIGNIFICANT_PRICE_CHANGE_THRESHOLD:
                     validation_results["pricing_changes"]["significant_changes"] = True
+
+            # Fold the availability counts into the result up front, so the
+            # typed summary and the markdown report agree and neither has to
+            # recompute them. (Previously only the markdown writer counted
+            # these.)
+            summary = summarize_validation(validation_results)
+            validation_results["availability_issues"]["unavailable_components"] = (
+                summary.unavailable_components
+            )
+            validation_results["availability_issues"]["low_stock_components"] = (
+                summary.low_stock_components
+            )
+            validation_results["availability_issues"]["critical_availability"] = (
+                summary.critical_availability
+            )
 
             return validation_results
 
@@ -518,12 +631,10 @@ class BOMReporter:
         with open("availability_report.md", "w") as f:
             f.write("\n".join(report))
 
-        # Set output variable for GitHub Actions
+        # Note: GitHub Actions outputs are emitted once from main() via
+        # GitHubOutputAdapter, not here -- this method is purely a markdown
+        # (and issue-title) renderer.
         has_unavailable = issues["unavailable_components"] > 0
-        with open(os.environ.get("GITHUB_OUTPUT", "github_output.txt"), "a") as f:
-            f.write(
-                f"unavailable_components={'true' if has_unavailable else 'false'}\n"
-            )
 
         # Generate dynamic issue title if there are unavailable components
         if has_unavailable:
@@ -1013,30 +1124,22 @@ def main():
                 json.dump(validation_results, f, indent=2)
             print(f"💾 Validation results saved to {output_file}")
 
+            # Reduce to a typed summary once, then let the edges consume it.
+            summary = summarize_validation(validation_results)
+
+            # Structured summary for the workflow to read directly (no grepping
+            # the markdown reports for booleans).
+            summary_file = os.path.join(args.output_dir, "validation_summary.json")
+            with open(summary_file, "w") as f:
+                json.dump(asdict(summary), f, indent=2)
+            print(f"💾 Validation summary saved to {summary_file}")
+
             reporter.generate_pricing_report(validation_results)
             reporter.generate_availability_report(validation_results)
 
-            # Set GitHub Actions outputs if running in GH Actions
-            if "GITHUB_OUTPUT" in os.environ:
-                with open(os.environ["GITHUB_OUTPUT"], "a") as f:
-                    f.write(
-                        f"changes_detected={validation_results['pricing_changes']['changes_detected']}\n"
-                    )
-                    f.write(
-                        f"significant_changes={validation_results['pricing_changes']['significant_changes']}\n"
-                    )
-
-                    # Availability checks
-                    if args.check_availability or do_all:
-                        has_unavailable = (
-                            validation_results["availability_issues"][
-                                "unavailable_components"
-                            ]
-                            > 0
-                        )
-                        f.write(
-                            f"unavailable_components={'true' if has_unavailable else 'false'}\n"
-                        )
+            # Emit GitHub Actions outputs via the edge adapter (the core never
+            # touches GITHUB_OUTPUT itself).
+            GitHubOutputAdapter().write(summary)
 
         # Update BOM pricing if changes detected
         if (
