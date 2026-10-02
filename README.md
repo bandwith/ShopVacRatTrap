@@ -111,8 +111,8 @@ Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 uv venv && source .venv/bin/activate
 uv pip install -r requirements.txt
 
-# Install pre-commit hooks
-pre-commit install
+# Install prek hooks
+prek install
 ```
 
 **Code style:** [Contributing Guide](docs/contributing/code-style.md)
