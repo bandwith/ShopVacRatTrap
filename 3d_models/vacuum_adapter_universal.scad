@@ -151,14 +151,12 @@ module vacuum_adapter_universal() {
         }
 
         // --- BRACKET MOUNTING HOLES (4x M3 clearance) ---
-        // Arranged in rectangle pattern for control box attachment
-        for (dx = [-bracket_width/2 + 10, bracket_width/2 - 10]) {
-            for (dz = [15, bracket_height - 10]) {
-                translate([dx, -tube_od/2 - bracket_thickness - 1, dz])
-                    rotate([-90, 0, 0])
-                        cylinder(d=3.5, h=bracket_thickness + 2);
-            }
-        }
+        // Shared rectangular pattern from trap_modules.scad so the adapter and
+        // the control box stay aligned by construction.
+        translate([0, -tube_od/2 - bracket_thickness - 1, mount_bolt_center_z])
+            control_box_bolt_pattern()
+                rotate([-90, 0, 0])
+                    cylinder(d=mount_bolt_diameter, h=bracket_thickness + 2);
     }
 }
 

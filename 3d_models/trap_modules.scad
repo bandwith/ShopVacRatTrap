@@ -109,8 +109,43 @@ hammond_int_width = 112;            // Internal width
 hammond_int_height = 69;            // Internal height
 
 // ============================================================
+// CONTROL BOX <-> VACUUM ADAPTER MOUNTING INTERFACE
+// ============================================================
+// Single source of truth for the bolted joint between the vacuum adapter's
+// mounting bracket and the exit-mounted control box. Previously these numbers
+// were hand-copied into both parts and kept in sync by a comment; now both
+// call control_box_bolt_pattern() so there is exactly one definition.
+mount_bolt_spacing_x = 60;          // Horizontal bolt spacing (mm)
+mount_bolt_spacing_z = 45;          // Vertical bolt spacing (mm)
+mount_bolt_diameter = 3.5;          // M3 clearance hole (mm)
+// Derived helpers so callers can position the pattern consistently.
+mount_bolt_center_z = 37.5;         // Vertical center of the pattern (= (15+60)/2)
+
+// ============================================================
 // MODULES
 // ============================================================
+
+// ---------- CONTROL BOX BOLT PATTERN ----------
+// Emits the four rectangular mounting positions for the control-box <-> adapter
+// joint, centered on the local origin in the X/Z plane. Each caller wraps it
+// and supplies the actual drill geometry (orientation differs per part) as a
+// child, e.g.:
+//
+//   translate([cx, face_y, mount_bolt_center_z])
+//       control_box_bolt_pattern()
+//           rotate([-90,0,0]) cylinder(d=mount_bolt_diameter, h=wall+2);
+//
+// Keeping the positions here means re-spacing the bolts is a one-line change
+// that both the adapter bracket and the control box inherit automatically.
+module control_box_bolt_pattern(spacing_x=mount_bolt_spacing_x,
+                                spacing_z=mount_bolt_spacing_z) {
+    for (dx = [-spacing_x/2, spacing_x/2]) {
+        for (dz = [-spacing_z/2, spacing_z/2]) {
+            translate([dx, 0, dz])
+                children();
+        }
+    }
+}
 
 // ---------- FLANGE JOINT MALE ----------
 // A lip cylinder on top of a flange ring, with bolt holes.
