@@ -11,7 +11,7 @@
 | 1 | 2830 | Feather Stacking Headers - 12-pin and 16... | $1.25 | [Buy](https://www.adafruit.com/product/2830) |
 | 1 | 3317 | VL53L0X Time of Flight Distance Sensor -... | $14.95 | [Buy](https://www.adafruit.com/product/3317) |
 | 1 | 326 | Monochrome 0.96" 128x64 OLED Display - S... | $14.95 | [Buy](https://www.adafruit.com/product/326) |
-| 1 | 4816 | BME280 Temperature Humidity Pressure Sen... | $14.95 | [Buy](https://www.adafruit.com/product/4816) |
+| 1 | 2652 | BME280 Temperature Humidity Pressure Sen... | $14.95 | [Buy](https://www.adafruit.com/product/2652) |
 | 1 | 5625 | STEMMA QT / Qwiic 5-Port Hub... | $7.50 | [Buy](https://www.adafruit.com/product/5625) |
 | 1 | 3595 | APDS9960 Proximity Light RGB Gesture Sen... | $7.95 | [Buy](https://www.adafruit.com/product/3595) |
 | 1 | 4871 | PIR (motion) sensor (HC-SR501) - STEMMA ... | $5.95 | [Buy](https://www.adafruit.com/product/4871) |
@@ -66,11 +66,18 @@
 ## Components Previously Not Found in Nexar - Updated Sources
 
 ### 1. STEMMA QT Camera System
-**Primary**: OV5640 5MP Camera with STEMMA QT
-**Adafruit 5945**: $14.95 - <https://www.adafruit.com/product/5945>
-**Features**: 5MP resolution, autofocus, built-in STEMMA QT connector, I2C interface
-**Alternative**: Generic OV5640 modules - lower cost but requires soldering
-**Note**: Zero-solder assembly with STEMMA QT, perfect for modular design
+**Primary**: OV5640 5MP Camera (DVP interface)
+**Adafruit 5946** (120° autofocus): $19.95 - <https://www.adafruit.com/product/5946>
+**Features**: 5MP OV5640 sensor, autofocus, DVP parallel interface (not I2C)
+**Note**: Replaces the previously-listed Adafruit 5945 (72° lens), which went out
+of stock at Mouser (485-5945). 5946 uses the identical OV5640 sensor and DVP
+pinout, so it is a drop-in with **no firmware change**. Other in-stock lenses
+in the same PiCowbell family (5947 160°, 5948 120° low-distortion, 5949 w/ reset
++ STEMMA QT) are also compatible.
+**Alternative**: OV2640 DVP module (e.g. ArduCam) - cheaper/2MP, but sourcing is
+inconsistent and may need pin/driver tweaks.
+**Caveat**: Despite the STEMMA-QT framing of the camera build, the camera is
+wired as a parallel DVP device in `rat-trap.yaml`, not on the I2C STEMMA QT bus.
 
 **High-Power IR LED System**:
 **Adafruit 5639**: $3.95 - <https://www.adafruit.com/product/5639>
@@ -86,10 +93,19 @@
 
 ### 2. Environmental Sensor
 **Primary**: BME280 Temperature/Humidity/Pressure Sensor - STEMMA QT
-**Adafruit 4816**: $14.95 - <https://www.adafruit.com/product/4816>
+**Adafruit 2652**: $14.95 - <https://www.adafruit.com/product/2652>
+**Note**: Replaces the previously-listed Adafruit 4816, which went out of stock
+at Mouser (485-4816). 2652 is the **same Bosch BME280 chip** on a STEMMA QT
+board at the same I2C address (0x77) — a true zero-solder, no-firmware-change
+drop-in.
+**STEMMA QT upgrade alternatives** (keep zero-solder; need a one-line ESPHome
+platform change):
+- **BME680/BME688** (Adafruit 3660 / 5046) — adds VOC gas sensing (`bme680`).
+- **BMP390** (Adafruit 4494) — better pressure, but no humidity (`bmp3xx`).
+- **SHT41/SHT45** — best temp/humidity accuracy, cheap, no pressure (`sht4x`).
 **SparkFun SEN-15440**: $19.95 - <https://www.sparkfun.com/products/15440>
-**Alternative**: DHT22/AM2302 (previous generation) - $4.95
-**Note**: BME280 STEMMA QT provides professional no-solder assembly
+**Note**: Only `env_temperature` is consumed by the firmware today, so any of
+the above satisfy the project goal.
 
 ### 3. Power Supply
 **Primary**: Mean Well LRS-35-5 (5V/7A)

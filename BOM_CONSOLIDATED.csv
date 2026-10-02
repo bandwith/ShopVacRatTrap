@@ -1,13 +1,13 @@
 Manufacturer,Manufacturer Part Number,Description,Quantity,Reference Designator,Distributor,Distributor Part Number,Unit Price,Extended Price
 Adafruit,5323,ESP32-S3 Feather with 8MB Flash No PSRAM,1,U1,Mouser,485-5323,17.50,17.50
 Adafruit,2830,Feather Stacking Headers - 12-pin and 16-pin female headers,1,CONN1,Mouser,485-2830,1.25,1.25
-Adafruit,5945,OV5640 5MP Camera with smaller lens - STEMMA QT,1,CAM1,Mouser,485-5945,14.95,14.95
+Adafruit,5946,OV5640 5MP Camera 120-deg Autofocus - DVP (in stock; replaces 5945),1,CAM1,Mouser,485-5946,19.95,19.95
 Adafruit,5639,High-Power IR LED - STEMMA JST PH 2mm,1,LED1,Mouser,485-5639,3.95,3.95
 Adafruit,5425,VL53L4CX Time of Flight Distance Sensor - STEMMA QT,1,U2,DigiKey,1528-4497-ND,18.00,18.00
 Adafruit,6426,STHS34PF80 IR Temperature & Presence Sensor - STEMMA QT,1,U5,Mouser,485-6426,11.95,11.95
 Adafruit,4438,LSM6DSOX 6-DoF Accelerometer and Gyroscope - STEMMA QT,1,U6,DigiKey,1528-2947-ND,10.95,10.95
 Adafruit,3421,I2S MEMS Microphone Breakout - SPH0645LM4H,1,MIC1,DigiKey,1528-2169-ND,6.95,6.95
-Adafruit,4816,BME280 Temperature Humidity Pressure Sensor - STEMMA QT,1,U4,Mouser,485-4816,10.95,10.95
+Adafruit,2652,BME280 Temperature Humidity Pressure Sensor - STEMMA QT,1,U4,Mouser,485-2652,14.95,14.95
 Adafruit,326,"Monochrome 0.96"" 128x64 OLED Display - STEMMA QT",1,U3,Mouser,485-326,17.50,17.50
 Adafruit,5625,STEMMA QT / Qwiic 5-Port Hub,1,HUB1,Mouser,485-5625,2.50,2.50
 Adafruit,4210,STEMMA QT / Qwiic JST SH 4-pin Cable - 100mm Long,3,CABLE1,Mouser,485-4210,2.50,7.50

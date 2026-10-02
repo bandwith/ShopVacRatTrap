@@ -54,7 +54,7 @@ For maximum safety and code compliance, all electronic components (both high and
 | 1 | APDS9960 Proximity | 3595 | Proximity/Light/RGB/Gesture | Adafruit | $7.50 |
 | 1 | PIR Motion Sensor | 4871 | PIR Motion Sensor | Adafruit | $3.95 |
 | 1 | OLED Display 128x64 | 326 | 0.96" monochrome display | Adafruit | $17.50 |
-| 1 | BME280 Env. Sensor | 4816 | Temperature/Humidity/Pressure | Adafruit | $10.95 |
+| 1 | BME280 Env. Sensor | 2652 | Temperature/Humidity/Pressure (STEMMA QT) | Adafruit | $14.95 |
 | 1 | STEMMA QT 5-Port Hub | 5625 | 5-Port STEMMA QT/Qwiic Hub | Adafruit | $2.50 |
 
 ### 2.2. Power & Safety Components

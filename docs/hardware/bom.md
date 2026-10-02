@@ -38,7 +38,7 @@ The BOM is automatically validated and updated via GitHub Actions. Check the lat
 | VL53L0X ToF Sensor (3317) | 1 | $15.89 |
 | APDS9960 Proximity (3595) | 1 | $7.50 |
 | PIR Motion Sensor (4871) | 1 | $3.95 |
-| BME280 Environmental (4816) | 1 | $10.95 |
+| BME280 Environmental (2652) | 1 | $14.95 |
 | OLED Display 128x64 (326) | 1 | $17.50 |
 | STEMMA QT 5-Port Hub (5625) | 1 | $2.50 |
 | STEMMA QT Cables (various) | 4 | $4.15 |
@@ -64,7 +64,7 @@ The BOM is automatically validated and updated via GitHub Actions. Check the lat
 
 | Component | Qty | Est. Price |
 |-----------|-----|------------|
-| OV5640 5MP Camera (5945) | 1 | $14.95 |
+| OV5640 5MP Camera (5946) | 1 | $19.95 |
 | High-Power IR LED (5639) | 1 | $3.95 |
 | Micro SD Card 8GB (1833) | 1 | $1.95 |
 | STEMMA JST PH Cable 200mm (3893) | 1 | $1.25 |

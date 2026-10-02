@@ -217,7 +217,7 @@ All models use verified dimensions from BOM components:
 |-----------|---------------|----------------|
 | VL53L0X ToF Sensor | 3317 | Trap entrance (sensor module) |
 | APDS9960 Proximity | 3595 | Trap entrance (sensor module) |
-| BME280 Environmental | 4816 | Control box |
+| BME280 Environmental | 2652 | Control box |
 | PIR Motion (4871) | 4871 | Front body (internal) |
 | OV5640 Camera | 5945 | Control box (optional) |
 | ESP32 Feather | - | Control box (internal mount) |

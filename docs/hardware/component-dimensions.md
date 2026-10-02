@@ -81,7 +81,7 @@
 - **Thickness:** ~7mm total
 - **3D Model Impact:** Front panel bezel mount
 
-#### Adafruit BME280 Environmental (4816)
+#### Adafruit BME280 Environmental (2652)
 - **PCB:** 17.78mm × 25.4mm (STEMMA QT standard)
 - **Mounting Holes:** 4× M2.5
 - **STEMMA QT:** Side-mounted
@@ -90,7 +90,7 @@
 
 ### Camera System (Optional)
 
-#### Adafruit OV5640 Camera (5945)
+#### Adafruit OV5640 Camera (5946)
 - **PCB:** 32mm × 32mm
 - **Lens:** 8mm diameter, M12 mount
 - **STEMMA QT:** Side-mounted
