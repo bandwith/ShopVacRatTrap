@@ -261,7 +261,7 @@ This phase covers the assembly of all electronic components inside the recommend
       ↓ (100mm STEMMA QT cable)
    VL53L0X ToF Sensor (Adafruit 4210)
       ↓ (100mm STEMMA QT cable)
-   BME280 Environmental Sensor (Adafruit 4816)
+   BME280 Environmental Sensor (Adafruit 2652)
       ↓ (200mm STEMMA QT cable)
    OLED Display (Adafruit 5027)
 

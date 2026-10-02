@@ -47,7 +47,7 @@ This document details the consolidation of component suppliers to primarily use 
 | VL53L0X ToF | Adafruit/Mouser | **Adafruit** | 3317 | STEMMA QT, direct source |
 | APDS9960 | Adafruit/Mouser | **Adafruit** | 3595 | STEMMA QT, direct source |
 | PIR Motion | Adafruit | **Adafruit** | 4871 | STEMMA connector |
-| BME280 Env | Adafruit/Mouser | **Adafruit** | 4816 | STEMMA QT |
+| BME280 Env | Adafruit/Mouser | **Adafruit** | 2652 | STEMMA QT |
 | STEMMA QT Hub | Adafruit/Mouser | **Adafruit** | 5625 | Direct source |
 
 **Status:** ✅ All consolidated to Adafruit
@@ -70,7 +70,7 @@ This document details the consolidation of component suppliers to primarily use 
 
 | Component | Previous Source | New Source | Part Number | Reason |
 |-----------|----------------|------------|-------------|---------|
-| OV5640 5MP Camera | Adafruit | **Adafruit** | 5945 | STEMMA QT, 5MP |
+| OV5640 5MP Camera | Adafruit | **Adafruit** | 5946 | DVP, 5MP, 120° AF |
 | IR LED High-Power | Adafruit | **Adafruit** | 5639 | STEMMA JST PH |
 | MicroSD 8GB | Adafruit | **Adafruit** | 1833 | Standard component |
 
