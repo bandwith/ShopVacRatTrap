@@ -204,11 +204,11 @@ jobs:
         if: steps.set_validation_outputs.outputs.changes_detected == 'true' || github.event.inputs.force_update == 'true'
         uses: peter-evans/create-pull-request@v7
         with:
-          commit-message: "\U0001F916 Auto-update BOM pricing and purchase links"
+          commit-message: 🤖 Auto-update BOM pricing and purchase links
           author: GitHub Action <action@github.com>
           branch: ci/auto-bom-update
           delete-branch: true
-          title: "\U0001F916 Auto-update BOM pricing and purchase links"
+          title: 🤖 Auto-update BOM pricing and purchase links
           body: |
             Automated BOM pricing and purchase-link refresh from the weekly
             validation run.
