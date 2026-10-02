@@ -1,7 +1,7 @@
 #ifndef ESPHOME_RAT_TRAP_DISPLAY_HELPERS_H
 #define ESPHOME_RAT_TRAP_DISPLAY_HELPERS_H
 
-#include "esphome/components/display/display_buffer.h"
+#include "esphome/components/display/display.h"
 #include "esphome/core/color.h"
 
 // Shared OLED drawing for the ShopVac Rat Trap.
@@ -22,11 +22,11 @@
 namespace esphome {
 namespace rat_trap_display {
 
-using display::DisplayBuffer;
-using display::Font;
+using display::BaseFont;
+using display::Display;
 
 // Top-left title plus a right-aligned WiFi/No-Net badge.
-inline void draw_header(DisplayBuffer &it, Font *font, const char *title,
+inline void draw_header(Display &it, BaseFont *font, const char *title,
                         bool wifi_connected) {
   it.printf(0, 0, font, "%s", title);
   if (wifi_connected) {
@@ -39,7 +39,7 @@ inline void draw_header(DisplayBuffer &it, Font *font, const char *title,
 // The master status band at y=38: the single source of truth for how the trap
 // reports emergency / vacuum-active / armed / disarmed. This is the one block
 // with real branching logic, so centralising it is the main win.
-inline void draw_trap_status(DisplayBuffer &it, Font *font, bool emergency_stop,
+inline void draw_trap_status(Display &it, BaseFont *font, bool emergency_stop,
                              bool trap_triggered, bool system_armed) {
   if (emergency_stop) {
     it.filled_rectangle(0, 38, 128, 12, COLOR_ON);
@@ -59,7 +59,7 @@ inline void draw_trap_status(DisplayBuffer &it, Font *font, bool emergency_stop,
 // an optional over-temperature "!" marker. The temperature source differs
 // between variants (ESP32 die temp vs environmental), so the caller passes the
 // value and whether it is over the warning threshold.
-inline void draw_stats_footer(DisplayBuffer &it, Font *font, float capture_count,
+inline void draw_stats_footer(Display &it, BaseFont *font, float capture_count,
                               float temperature_c, bool temp_over_warning) {
   it.printf(0, 54, font, "Captures: %.0f", capture_count);
   it.printf(70, 54, font, "Temp: %.1f°C", temperature_c);

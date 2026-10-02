@@ -152,6 +152,8 @@ binary_sensor:
   - platform: sths34pf80
     name: "IR Presence"
     id: ir_presence
+    i2c_id: bus_a
+    address: 0x5A
     update_interval: 200ms
 
   # Camera AI Detection Placeholder
