@@ -1,6 +1,10 @@
 ---
 # esphome/packages/display-base.yaml
 
+esphome:
+  includes:
+    - display_helpers.h
+
 font:
   - file: gfonts://Roboto Mono
     id: font_small
@@ -19,17 +23,14 @@ display:
     pages:
       - id: main_page
         lambda: |-
-          // Header
-          it.printf(0, 0, id(font_small), "Trap ${line_voltage} ${safety_standard}");
+          using namespace esphome::rat_trap_display;
 
-          // WiFi Status
-          if (id(wifi_component).is_connected()) {
-            it.printf(105, 0, id(font_small), "WiFi");
-          } else {
-            it.printf(100, 0, id(font_small), "No Net");
-          }
+          // Shared header + WiFi badge.
+          draw_header(it, id(font_small),
+                      "Trap ${line_voltage} ${safety_standard}",
+                      id(wifi_component).is_connected());
 
-          // Sensor Status
+          // Sensor rows (variant-specific: IR / ToF / Vib).
           it.printf(0, 12, id(font_medium), "Hybrid Detection:");
           it.printf(0, 26, id(font_small), "IR");
           it.printf(20, 26, id(font_small), "%s",
@@ -41,23 +42,12 @@ display:
           it.printf(115, 26, id(font_small), "%s",
                     (id(accel_x).state > 5.0 ? "✓" : "○"));
 
-          // System Status
-          if (id(emergency_stop).state) {
-            it.filled_rectangle(0, 38, 128, 12, COLOR_ON);
-            it.print(2, 40, id(font_small), COLOR_OFF, ">> EMERGENCY STOP <<");
-          } else if (id(trap_triggered).state) {
-            it.filled_rectangle(0, 38, 128, 12, COLOR_ON);
-            it.print(2, 40, id(font_small), COLOR_OFF, ">> VACUUM ACTIVE <<");
-          } else if (id(system_armed).state) {
-            it.print(0, 40, id(font_small), "Armed & Monitoring");
-            it.print(120, 40, id(font_small), "●");
-          } else {
-            it.print(0, 40, id(font_small), "System Disarmed");
-          }
+          // Shared status band.
+          draw_trap_status(it, id(font_small), id(emergency_stop).state,
+                           id(trap_triggered).state, id(system_armed).state);
 
-          // Stats
-          it.printf(0, 54, id(font_small), "Captures: %.0f", id(capture_count).state);
-          it.printf(70, 54, id(font_small), "Temp: %.1f°C", id(esp32_temp).state);
-          if (id(esp32_temp).has_state() && id(esp32_temp).state > ${esp32_temp_warning_threshold}) {
-            it.print(120, 56, id(font_small), "!");
-          }
+          // Shared footer (ESP32 die temperature source).
+          draw_stats_footer(it, id(font_small), id(capture_count).state,
+                            id(esp32_temp).state,
+                            id(esp32_temp).has_state() &&
+                                id(esp32_temp).state > ${esp32_temp_warning_threshold});
