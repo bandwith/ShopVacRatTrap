@@ -1,61 +1,74 @@
-#ifndef ESPHOME_DISPLAY_HELPERS_H
-#define ESPHOME_DISPLAY_HELPERS_H
+#ifndef ESPHOME_RAT_TRAP_DISPLAY_HELPERS_H
+#define ESPHOME_RAT_TRAP_DISPLAY_HELPERS_H
 
-#include "esphome/core/component.h"
 #include "esphome/components/display/display_buffer.h"
-#include "esphome/components/wifi/wifi_component.h"
-#include "esphome/components/text_sensor/text_sensor.h"
-#include "esphome/components/binary_sensor/binary_sensor.h"
-#include "esphome/components/number/number.h"
-#include "esphome/components/sensor/sensor.h"
+#include "esphome/core/color.h"
+
+// Shared OLED drawing for the ShopVac Rat Trap.
+//
+// Both display variants (display-base.yaml, display-camera.yaml) previously
+// inlined ~45 near-identical lines of render logic each: the header, the WiFi
+// badge, the emergency/vacuum/armed/disarmed status band, and the captures/
+// temperature footer were duplicated line-for-line. This header is the single
+// home for those shared blocks.
+//
+// Design note: unlike the previous (dead) version of this file, these helpers
+// take everything they need as arguments instead of reaching through global
+// `extern` pointers. That keeps them pure with respect to linkage -- each
+// display lambda passes its own `it`, fonts, and the resolved id() states in,
+// so there is nothing to wire up and nothing to keep in sync. Only the parts
+// that genuinely differ between variants (the sensor rows) stay in the lambdas.
 
 namespace esphome {
-namespace display {
+namespace rat_trap_display {
 
-// Forward declarations for IDs
-extern display::DisplayBuffer *display_buffer_ptr;
-extern wifi::WiFiComponent *wifi_component_ptr;
-extern binary_sensor::BinarySensor *trap_triggered_ptr;
-extern binary_sensor::BinarySensor *emergency_stop_ptr;
-extern binary_sensor::BinarySensor *system_armed_ptr;
-extern number::Number *capture_count_ptr;
+using display::DisplayBuffer;
+using display::Font;
 
-// Helper function to draw the common header
-void draw_common_header(display::DisplayBuffer &it, int x, int y, Font *font, const char *device_name, const char *line_voltage, const char *safety_standard) {
-  it.printf(x, y, font, TextAlign::TOP_LEFT, "%s %s %s", device_name, line_voltage, safety_standard);
-}
-
-// Helper function to draw WiFi status
-void draw_wifi_status(display::DisplayBuffer &it, int x_connected, int x_disconnected, int y, Font *font) {
-  if (wifi_component_ptr->is_connected()) {
-    it.printf(x_connected, y, font, TextAlign::TOP_LEFT, "WiFi");
+// Top-left title plus a right-aligned WiFi/No-Net badge.
+inline void draw_header(DisplayBuffer &it, Font *font, const char *title,
+                        bool wifi_connected) {
+  it.printf(0, 0, font, "%s", title);
+  if (wifi_connected) {
+    it.printf(105, 0, font, "WiFi");
   } else {
-    it.printf(x_disconnected, y, font, TextAlign::TOP_LEFT, "No Net");
+    it.printf(100, 0, font, "No Net");
   }
 }
 
-// Helper function to draw master trigger status
-void draw_master_trigger_status(display::DisplayBuffer &it, int x, int y, Font *font, Color on_color, Color off_color) {
-  if (emergency_stop_ptr->state) {
-    it.filled_rectangle(x, y, 128, 12, on_color);
-    it.print(2, y + 2, font, off_color, ">> EMERGENCY STOP <<");
-  } else if (trap_triggered_ptr->state) {
-    it.filled_rectangle(x, y, 128, 12, on_color);
-    it.print(2, y + 2, font, off_color, ">> VACUUM ACTIVE <<");
-  } else if (system_armed_ptr->state) {
-    it.print(x, y + 2, font, TextAlign::TOP_LEFT, "Armed & Monitoring");
-    it.print(120, y + 2, font, TextAlign::TOP_LEFT, "●");
+// The master status band at y=38: the single source of truth for how the trap
+// reports emergency / vacuum-active / armed / disarmed. This is the one block
+// with real branching logic, so centralising it is the main win.
+inline void draw_trap_status(DisplayBuffer &it, Font *font, bool emergency_stop,
+                             bool trap_triggered, bool system_armed) {
+  if (emergency_stop) {
+    it.filled_rectangle(0, 38, 128, 12, COLOR_ON);
+    it.print(2, 40, font, COLOR_OFF, ">> EMERGENCY STOP <<");
+  } else if (trap_triggered) {
+    it.filled_rectangle(0, 38, 128, 12, COLOR_ON);
+    it.print(2, 40, font, COLOR_OFF, ">> VACUUM ACTIVE <<");
+  } else if (system_armed) {
+    it.print(0, 40, font, "Armed & Monitoring");
+    it.print(120, 40, font, "●");
   } else {
-    it.print(x, y + 2, font, TextAlign::TOP_LEFT, "System Disarmed");
+    it.print(0, 40, font, "System Disarmed");
   }
 }
 
-// Helper function to draw capture count
-void draw_capture_count(display::DisplayBuffer &it, int x, int y, Font *font) {
-  it.printf(x, y, font, TextAlign::TOP_LEFT, "Captures: %.0f", capture_count_ptr->state);
+// Footer: capture count on the left, a temperature readout on the right with
+// an optional over-temperature "!" marker. The temperature source differs
+// between variants (ESP32 die temp vs environmental), so the caller passes the
+// value and whether it is over the warning threshold.
+inline void draw_stats_footer(DisplayBuffer &it, Font *font, float capture_count,
+                              float temperature_c, bool temp_over_warning) {
+  it.printf(0, 54, font, "Captures: %.0f", capture_count);
+  it.printf(70, 54, font, "Temp: %.1f°C", temperature_c);
+  if (temp_over_warning) {
+    it.print(120, 56, font, "!");
+  }
 }
 
-} // namespace display
-} // namespace esphome
+}  // namespace rat_trap_display
+}  // namespace esphome
 
-#endif // ESPHOME_DISPLAY_HELPERS_H
+#endif  // ESPHOME_RAT_TRAP_DISPLAY_HELPERS_H
