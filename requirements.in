@@ -22,3 +22,11 @@ yamllint>=1.32.0
 ruff>=0.12.9
 black
 isort
+
+# Security floors (transitive deps) - keep pinned lockfile from resolving below
+# the versions the Renovate security PRs require. See PRs #60/#79/#80/#81/#82.
+anyio>=4.14.2
+cryptography>=50
+tornado>=6.5.9
+urllib3>=2.8.0
+virtualenv>=21
