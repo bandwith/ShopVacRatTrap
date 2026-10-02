@@ -1,0 +1,27 @@
+Mouser Part Number,Quantity,Customer Part Number,Description
+485-5323,1,U1,ESP32-S3 Feather with 8MB Flash No PSRAM
+485-2830,1,CONN1,Feather Stacking Headers - 12-pin and 16-pin female headers
+485-5946,1,CAM1,OV5640 5MP Camera 120-deg Autofocus - DVP (in stock; replaces 5945)
+485-5639,1,LED1,High-Power IR LED - STEMMA JST PH 2mm
+485-5425,1,U2,VL53L4CX Time of Flight Distance Sensor - STEMMA QT
+485-6426,1,U5,STHS34PF80 IR Temperature & Presence Sensor - STEMMA QT
+485-4438,1,U6,LSM6DSOX 6-DoF Accelerometer and Gyroscope - STEMMA QT
+485-3421,1,MIC1,I2S MEMS Microphone Breakout - SPH0645LM4H
+485-2652,1,U4,BME280 Temperature Humidity Pressure Sensor - STEMMA QT
+485-326,1,U3,"Monochrome 0.96"" 128x64 OLED Display - STEMMA QT"
+485-5625,1,HUB1,STEMMA QT / Qwiic 5-Port Hub
+485-4210,3,CABLE1,STEMMA QT / Qwiic JST SH 4-pin Cable - 100mm Long
+485-3893,1,CABLE2,STEMMA JST PH 2mm 3-Pin to Male Header Cable - 200mm
+769-AQA411VL,1,K1,Solid State Relay 25A
+558-HSP-7,1,TP1,Thermal Pad for Single Phase Panel Mount SSRs
+782-4N35-X007,1,U7,General Purpose Optocoupler
+996-XB6ETN521P,1,SW1,Emergency Stop Switch 16mm Red
+485-471,1,BTN1,Arcade Button - 30mm Translucent Red
+640-TBC05-02-1-G-G,1,CONN3,2.54mm Pitch PCB Terminal Block
+709-LRS35-5,1,PS1,Switching Power Supply 5V 7A Chassis Mount
+652-PCS020-EE0502KS,1,CT1,20A Split Core Current Transformer
+693-DF112078001001,1,J1,IEC C14 Inlet with Integrated CB (TA45) & Switch
+693-6600.3100,1,J2,Panel Mount IEC C13 Outlet
+485-1877,1,W2,Silicone Cover Stranded-Core Wire - 2m 26AWG Red
+485-1881,1,W3,Silicone Cover Stranded-Core Wire - 2m 26AWG Black
+485-1833,1,SD1,Micro SD Card 8GB Class 10
