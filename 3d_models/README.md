@@ -6,6 +6,27 @@ This directory contains all 3D printable components for the IoT-enabled rat trap
 
 - **OpenSCAD 2019.05 or later** is required. The bait station uses `rotate_extrude(angle=...)` which was introduced in 2019.05. Older versions silently ignore the `angle` parameter and produce a full 360-degree revolution, breaking bayonet slot geometry.
 
+## AI-assisted modeling (OpenSCAD MCP)
+
+This repo ships an optional [OpenSCAD MCP server](https://github.com/robertcoop/openscad-mcp)
+configuration at `.kiro/settings/mcp.json`. When enabled, it gives an AI
+assistant tools to work on these parts with real geometry feedback instead of
+guessing:
+
+- `render` the `.scad` files (views, cross-sections, per-part colouring) with a
+  stated mm scale, so changes can be seen before printing.
+- `measure` exact geometry and extract holes/features — e.g. confirm the
+  control-box and vacuum-adapter bolt patterns actually line up (the kind of
+  hand-synced interface that previously drifted).
+- Check assemblies for **interference and clearance**, and judge
+  **printability**, which helps triage warnings like the stepped adapter's
+  known 2-manifold export warning.
+
+It runs via `uvx openscad-mcp` (no clone needed; `uv` is already a project
+dependency) and reads only `3d_models/` (`MCP_ALLOWED_PATHS`). It is purely a
+development aid — nothing in CI or the build depends on it, and it can be
+disabled by setting `"disabled": true` in the config.
+
 ## Model Inventory
 
 | File | Description | Supports Needed |
