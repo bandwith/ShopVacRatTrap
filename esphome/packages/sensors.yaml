@@ -132,7 +132,7 @@ binary_sensor:
 
   - platform: template
     id: tof_detection
-    lambda: return (id(distance_sensor).state < 500 && id(distance_sensor).state > 50);
+    lambda: return rat_trap::distance_in_range(id(distance_sensor).state, id(detection_near_mm).state, id(detection_far_mm).state);
 
   # STHS34PF80 IR Presence Sensor
   - platform: sths34pf80
@@ -146,33 +146,21 @@ binary_sensor:
     id: camera_detect
     lambda: return false; // Placeholder for CV logic
 
-  # 4-of-5 Detection Logic
+  # 4-of-5 Detection Logic (see packages/detection_logic.h for the rule)
   - platform: template
     name: "Rodent Detected (4-of-5)"
     id: rodent_detected
     lambda: |-
-      int detections = 0;
-
-      // 1. Camera AI (placeholder - requires custom component)
-      // if (id(camera_detect).state) detections++;
-
-      // 2. Distance: object between 50-500mm
-      if (id(distance_sensor).state < 500 && id(distance_sensor).state > 50) detections++;
-
-      // 3. IR presence detected
-      if (id(ir_presence).state) detections++;
-
-      // 4. Vibration pattern (accelerometer threshold)
-      float accel_magnitude = sqrt(
-        id(accel_x).state * id(accel_x).state +
-        id(accel_y).state * id(accel_y).state +
-        id(accel_z).state * id(accel_z).state
-      );
-      if (accel_magnitude > 12.0) detections++;  // m/s² threshold
-
-      // 5. Environmental normal (fault detection)
-
-      return detections >= 4;
+      // The scoring rule lives in the Detection module (detection_logic.h).
+      // Thresholds come from runtime number entities instead of magic numbers.
+      return rat_trap::is_rodent_detected(
+        id(camera_detect).state,                 // 1. camera AI (placeholder)
+        id(distance_sensor).state,               // 2. ToF distance (mm)
+        id(detection_near_mm).state,
+        id(detection_far_mm).state,
+        id(ir_presence).state,                   // 3. IR presence
+        id(accel_x).state, id(accel_y).state, id(accel_z).state,  // 4. vibration
+        id(vibration_threshold).state);
 
     on_press:
       - if:
