@@ -320,19 +320,20 @@ Moved detailed content to Read the Docs site. README now
 serves as quick overview with prominent docs link.
 ```
 
-## Pre-commit Hooks
+## Git Hooks (prek)
 
-All code quality checks run automatically via pre-commit:
+All code quality checks run automatically via [prek](https://prek.j178.dev)
+(a fast, Rust-based drop-in replacement for pre-commit):
 
 ```bash
 # Install hooks
-pre-commit install
+prek install
 
 # Run manually
-pre-commit run --all-files
+prek run --all-files
 
-# Update hooks
-pre-commit autoupdate
+# Update pinned hook revisions
+prek update
 ```
 
 **Configured checks:**
