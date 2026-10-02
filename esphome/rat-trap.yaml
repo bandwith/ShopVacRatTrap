@@ -63,6 +63,10 @@ light:
     id: ir_led
 
 script:
+  # capture_evidence is intentionally build-specific: this OV5640 variant drives
+  # the IR LED. The Grove UART variant defines its own capture_evidence in
+  # packages/camera.yaml. Exactly one is loaded per entry file (rat-trap.yaml
+  # vs rat-trap-stemma-camera.yaml); they must never both be included.
   - id: capture_evidence
     then:
       - light.turn_on: ir_led

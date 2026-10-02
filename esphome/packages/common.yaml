@@ -3,6 +3,8 @@
 esphome:
   name: ${device_name}
   friendly_name: ${friendly_name}
+  includes:
+    - detection_logic.h
   platformio_options:
     build_flags:
       - -DARDUINO_USB_CDC_ON_BOOT=1

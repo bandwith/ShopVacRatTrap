@@ -11,6 +11,9 @@ uart:
 # Results are typically in JSON format: {"type":"person","confidence":0.95}
 
 script:
+  # Build-specific capture_evidence for the Grove Vision AI (UART) variant.
+  # The OV5640 variant defines its own in rat-trap.yaml. Only one entry file's
+  # package set is ever loaded, so these two definitions never collide.
   - id: capture_evidence
     mode: single
     then:
