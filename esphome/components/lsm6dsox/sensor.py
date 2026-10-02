@@ -42,10 +42,14 @@ async def to_code(config):
     var = cg.new_Pvariable(config[CONF_ID])
     await cg.register_component(var, config)
 
-    # Add libraries
-    cg.add_library("adafruit/Adafruit LSM6DS", "4.7.0")
-    cg.add_library("adafruit/Adafruit BusIO", "1.14.1")
-    cg.add_library("adafruit/Adafruit Unified Sensor", "1.1.9")
+    # Use caret (compatible-with) ranges rather than exact pins: PlatformIO's
+    # registry drops old exact versions over time, and exact pins like
+    # "4.7.0"/"1.14.1" became unresolvable ("No version satisfies all
+    # requirements"), breaking the firmware build. Caret ranges resolve to the
+    # latest compatible release still in the registry.
+    cg.add_library("adafruit/Adafruit LSM6DS", "^4.7.0")
+    cg.add_library("adafruit/Adafruit BusIO", "^1.14.1")
+    cg.add_library("adafruit/Adafruit Unified Sensor", "^1.1.9")
     cg.add_library("Wire", None)
     cg.add_library("SPI", None)
 
