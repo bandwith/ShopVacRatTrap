@@ -1,0 +1,126 @@
+# Configuration file for `prek`, a git hook framework written in Rust.
+# See https://prek.j178.dev for more information.
+#:schema https://www.schemastore.org/prek.json
+
+[[repos]]
+repo = "https://github.com/pre-commit/pre-commit-hooks"
+rev = "v6.0.0"
+hooks = [
+  { id = "trailing-whitespace" },
+  { id = "end-of-file-fixer" },
+  {
+    id = "check-yaml",
+    exclude = '(^esphome/.*\.ya?ml$)|(^mkdocs\.yml$)'
+  },
+  { id = "check-json" },
+  {
+    id = "check-added-large-files",
+    args = [
+      "--maxkb=2048",
+      "--enforce-all"
+    ],
+    exclude = '\.stl$'
+  },
+  { id = "check-merge-conflict" },
+  { id = "check-case-conflict" },
+  { id = "check-symlinks" },
+  { id = "check-toml" }
+]
+
+[[repos]]
+repo = "https://github.com/astral-sh/ruff-pre-commit"
+rev = "v0.14.6"
+hooks = [
+  {
+    id = "ruff-check",
+    args = [
+      "--fix",
+      "--exit-non-zero-on-fix"
+    ]
+  },
+  { id = "ruff-format" }
+]
+
+[[repos]]
+repo = "https://github.com/Yelp/detect-secrets"
+rev = "v1.5.0"
+hooks = [
+  {
+    id = "detect-secrets",
+    args = [
+      "--baseline",
+      ".secrets.baseline"
+    ],
+    exclude = "^.github/workflows/esphome-compile.yml$",
+    stages = ["manual"]
+  }
+]
+
+[[repos]]
+repo = "local"
+hooks = [
+  {
+    id = "uv-compile",
+    name = "uv compile requirements.txt",
+    entry = "bash -c 'uv pip compile requirements.in -o requirements.txt.test && mv requirements.txt.test requirements.txt || true'",
+    language = "system",
+    pass_filenames = false,
+    files = '^requirements\.in$',
+    stages = ["manual"]
+  }
+]
+
+[[repos]]
+repo = "local"
+hooks = [
+  {
+    id = "openscad-syntax",
+    name = "OpenSCAD Syntax Check",
+    entry = """sh -c 'openscad -o /dev/null --export-format echo "$1" >/dev/null 2>&1' --""",
+    language = "system",
+    files = '\.scad$',
+    pass_filenames = true,
+    stages = ["manual"]
+  }
+]
+
+[[repos]]
+repo = "https://github.com/adrienverge/yamllint.git"
+rev = "v1.37.1"
+hooks = [
+  {
+    id = "yamllint",
+    args = ["--strict"],
+    exclude = '(^.github/workflows/gemini-.*\.ya?ml$)|(^esphome/.*\.ya?ml$)'
+  }
+]
+
+[[repos]]
+repo = "https://github.com/jumanjihouse/pre-commit-hook-yamlfmt"
+rev = "0.2.3"
+hooks = [
+  {
+    id = "yamlfmt",
+    args = [
+      "--mapping",
+      "2",
+      "--sequence",
+      "4",
+      "--offset",
+      "2",
+      "--width",
+      "120"
+    ],
+    exclude = '(^.yamllint.yaml$)|(^esphome/.*\.ya?ml$)'
+  }
+]
+
+[[repos]]
+repo = "https://github.com/asottile/pyupgrade"
+rev = "v3.21.2"
+hooks = [
+  {
+    id = "pyupgrade",
+    args = ["--py311-plus"]
+  }
+]
