@@ -24,6 +24,12 @@ on:
 env:
   MOUSER_API_KEY: ${{ secrets.MOUSER_API_KEY }}
 
+# Serialize runs (schedule + push can overlap). Don't cancel in-progress runs
+# because this workflow commits generated files; just prevent concurrent runs.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   validate-bom:
     runs-on: ubuntu-latest

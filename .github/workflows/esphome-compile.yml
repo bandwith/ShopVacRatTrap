@@ -6,10 +6,24 @@ on:
     branches: [main]
     tags:
       - v*
+    paths:
+      - esphome/**
+      - requirements.txt
+      - .github/workflows/esphome-compile.yml
   pull_request:
     branches: [main]
+    paths:
+      - esphome/**
+      - requirements.txt
+      - .github/workflows/esphome-compile.yml
   release:
     types: [created]
+
+# Cancel superseded runs on the same branch/PR to avoid burning Actions
+# minutes on firmware compiles that a newer push has already made obsolete.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   compile:

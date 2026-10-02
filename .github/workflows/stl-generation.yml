@@ -16,6 +16,11 @@ on:
         default: false
         type: boolean
 
+# Cancel superseded runs on the same branch/PR to conserve Actions minutes.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   generate-stl:
     runs-on: ubuntu-latest

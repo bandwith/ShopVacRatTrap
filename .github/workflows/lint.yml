@@ -11,6 +11,11 @@ on:
       - '**.yaml'
       - '**.yml'
 
+# Cancel superseded runs on the same branch/PR to conserve Actions minutes.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   lint:
     runs-on: ubuntu-latest
