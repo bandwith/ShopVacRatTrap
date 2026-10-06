@@ -1,0 +1,66 @@
+---
+name: Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    paths:
+      - '**.py'
+      - requirements.txt
+      - tests/**
+      - esphome/packages/*.h
+      - esphome/components/**
+      - .github/workflows/tests.yml
+
+# Cancel superseded runs on the same branch/PR to conserve Actions minutes.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  python:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v8.3.2
+        with:
+          enable-cache: true
+          cache-dependency-glob: requirements.txt
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+
+      - name: Install dependencies
+        run: uv pip install --system -r requirements.txt
+
+      - name: Run pytest
+        run: pytest tests/ --tb=short
+
+  firmware:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      # Host-side unit tests for the C++ firmware helpers (no ESPHome needed).
+      - name: Detection logic
+        run: |
+          g++ -std=c++17 -I esphome/packages \
+            tests/firmware/test_detection_logic.cpp -o "$RUNNER_TEMP/test_detection"
+          "$RUNNER_TEMP/test_detection"
+
+      - name: Rodent classifier interface
+        run: |
+          g++ -std=c++17 -I tests/firmware/stubs \
+            -I esphome/components/rodent_classifier \
+            tests/firmware/test_rodent_classifier.cpp -o "$RUNNER_TEMP/test_rc"
+          "$RUNNER_TEMP/test_rc"
