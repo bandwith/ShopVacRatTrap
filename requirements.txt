@@ -24,7 +24,7 @@ bitarray==3.11.0
     # via bitstring
 bitstring==4.4.0
     # via esptool
-black==26.5.1
+black==26.10.1
     # via -r requirements.in
 bleak==3.0.2
     # via esphome
