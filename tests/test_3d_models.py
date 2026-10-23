@@ -38,7 +38,11 @@ MAX_BED_Z_MM = 250.0
 def _parse_stl(
     stl_path: Path,
 ) -> list[
-    tuple[tuple[float, float, float], tuple[float, float, float], tuple[float, float, float]]
+    tuple[
+        tuple[float, float, float],
+        tuple[float, float, float],
+        tuple[float, float, float],
+    ]
 ]:
     """Parse an ASCII or binary STL file into a list of vertex triples."""
     data = stl_path.read_bytes()
@@ -65,12 +69,16 @@ def _parse_stl(
     return tris
 
 
-def _quantize(pt: tuple[float, float, float], tol: float = 1e-4) -> tuple[int, int, int]:
+def _quantize(
+    pt: tuple[float, float, float], tol: float = 1e-4
+) -> tuple[int, int, int]:
     """Quantize a 3D vertex coordinate to integer grid keys for topology checks."""
     return (round(pt[0] / tol), round(pt[1] / tol), round(pt[2] / tol))
 
 
-def _analyze_mesh(stl_path: Path) -> dict[str, float | int | bool | tuple[float, float, float]]:
+def _analyze_mesh(
+    stl_path: Path,
+) -> dict[str, float | int | bool | tuple[float, float, float]]:
     """Compute bounding box, manifoldness, connected solid count, and bed contact area."""
     tris = _parse_stl(stl_path)
     assert tris, f"{stl_path.name} contains no triangles"
@@ -81,8 +89,12 @@ def _analyze_mesh(stl_path: Path) -> dict[str, float | int | bool | tuple[float,
     z_min, z_max = min(zs), max(zs)
     bbox_size = (max(xs) - min(xs), max(ys) - min(ys), z_max - z_min)
 
-    directed_edges: dict[tuple[ tuple[int, int, int], tuple[int, int, int] ], int] = defaultdict(int)
-    undirected_edges: dict[tuple[ tuple[int, int, int], tuple[int, int, int] ], list[int]] = defaultdict(list)
+    directed_edges: dict[tuple[tuple[int, int, int], tuple[int, int, int]], int] = (
+        defaultdict(int)
+    )
+    undirected_edges: dict[
+        tuple[tuple[int, int, int], tuple[int, int, int]], list[int]
+    ] = defaultdict(list)
     degenerate_count = 0
     bed_contact_area = 0.0
 
@@ -170,7 +182,9 @@ def test_printable_part_manifold_and_print_orientation(part_name: str) -> None:
     stats = _analyze_mesh(stl_path)
     sx, sy, sz = stats["bbox_size"]  # type: ignore[misc]
 
-    assert stats["open_edges"] == 0, f"{part_name}.stl has {stats['open_edges']} open edges"
+    assert stats["open_edges"] == 0, (
+        f"{part_name}.stl has {stats['open_edges']} open edges"
+    )
     assert stats["non_manifold_edges"] == 0, (
         f"{part_name}.stl has {stats['non_manifold_edges']} non-manifold edges"
     )
@@ -219,12 +233,12 @@ def test_assembly_horizontal_layout_and_mating_interfaces() -> None:
     trap_mods = (MODELS_DIR / "trap_modules.scad").read_text(encoding="utf-8")
     flange_od_match = re.search(r"flange_od\s*=\s*(\d+(?:\.\d+)?)\s*;", trap_mods)
     assert flange_od_match and float(flange_od_match.group(1)) == 130.0
-    assert "control_box_bolt_pattern()" in (MODELS_DIR / "vacuum_adapter_universal.scad").read_text(
-        encoding="utf-8"
-    )
-    assert "control_box_bolt_pattern()" in (MODELS_DIR / "control_box_exit_mount.scad").read_text(
-        encoding="utf-8"
-    )
+    assert "control_box_bolt_pattern()" in (
+        MODELS_DIR / "vacuum_adapter_universal.scad"
+    ).read_text(encoding="utf-8")
+    assert "control_box_bolt_pattern()" in (
+        MODELS_DIR / "control_box_exit_mount.scad"
+    ).read_text(encoding="utf-8")
 
     asm_stl = MODELS_DIR / "assembly.stl"
     assert asm_stl.exists(), "Missing assembly.stl"
@@ -233,7 +247,9 @@ def test_assembly_horizontal_layout_and_mating_interfaces() -> None:
     zs = [v[2] for tri in tris for v in tri]
     x_span = max(xs) - min(xs)
     z_min = min(zs)
-    assert abs(z_min) < 1e-3, f"Assembled rat trap should rest on ground plane z=0 (got {z_min})"
+    assert abs(z_min) < 1e-3, (
+        f"Assembled rat trap should rest on ground plane z=0 (got {z_min})"
+    )
     assert x_span > 550.0, (
         f"Assembled rat trap should extend horizontally along +X (>550mm, got {x_span:.1f}mm)"
     )
