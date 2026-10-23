@@ -74,12 +74,12 @@ def generate_build_report():
     report.append("# STL Build Report")
     report.append("| SCAD File | STL File |")
     report.append("|-----------|----------|")
-    for stl_path in _iterate_model_files(STL_EXTENSION):
+    for stl_path in sorted(_iterate_model_files(STL_EXTENSION)):
         file = os.path.basename(stl_path)
         scad_file = file.replace(STL_EXTENSION, SCAD_EXTENSION)
         report.append(f"| {scad_file} | {file} |")
     with open(os.path.join(MODELS_DIR, "build_report.md"), "w") as f:
-        f.write("\n".join(report))
+        f.write("\n".join(report) + "\n")
 
 
 def build_stl_files(scad_files):

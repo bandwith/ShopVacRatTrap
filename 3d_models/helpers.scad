@@ -20,13 +20,14 @@ module tube(length, od, wall) {
 // Generates a flange ring with a center hole and evenly-spaced bolt holes.
 // All dimensions are explicit parameters - no globals referenced.
 // Parameters:
-//   d            - outer diameter of flange
-//   thick        - thickness (height) of flange
+//   d             - outer diameter of flange
+//   thick         - thickness (height) of flange
 //   center_hole_d - diameter of center bore
-//   hole_d       - bolt hole diameter
-//   inset        - distance from flange edge to bolt hole center
-//   hole_count   - number of bolt holes (default 4, evenly spaced)
-module flange(d, thick, center_hole_d, hole_d, inset, hole_count=4) {
+//   hole_d        - bolt hole diameter
+//   inset         - distance from flange edge to bolt hole center
+//   hole_count    - number of bolt holes (default 4, evenly spaced)
+//   angle_offset  - angular offset in degrees for first bolt hole (default 0)
+module flange(d, thick, center_hole_d, hole_d, inset, hole_count=4, angle_offset=0) {
     angle_step = 360 / hole_count;
     difference() {
         cylinder(d=d, h=thick);
@@ -37,7 +38,7 @@ module flange(d, thick, center_hole_d, hole_d, inset, hole_count=4) {
 
         // Bolt holes evenly spaced
         for (i = [0 : hole_count - 1]) {
-            rotate([0, 0, i * angle_step])
+            rotate([0, 0, angle_offset + i * angle_step])
                 translate([d/2 - inset, 0, -1])
                     cylinder(d=hole_d, h=thick + 2);
         }

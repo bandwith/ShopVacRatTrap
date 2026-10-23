@@ -19,8 +19,8 @@ guessing:
   control-box and vacuum-adapter bolt patterns actually line up (the kind of
   hand-synced interface that previously drifted).
 - Check assemblies for **interference and clearance**, and judge
-  **printability**, which helps triage warnings like the stepped adapter's
-  known 2-manifold export warning.
+  **printability** (ensuring all parts export as watertight 2-manifold single
+  solids with supportless print orientations).
 
 It runs via `uvx openscad-mcp` (no clone needed; `uv` is already a project
 dependency) and reads only `3d_models/` (`MCP_ALLOWED_PATHS`). It is purely a
@@ -64,11 +64,13 @@ print_tolerance = 0.3;    // FDM clearance for mating parts (mm)
 ### Flange Joint Parameters
 
 ```openscad
-flange_od = 120;          // Outer diameter of flange ring (mm)
+flange_od = 130;          // Outer diameter of flange ring (mm)
 flange_thickness = 5;     // Height of each flange plate (mm)
 lip_length = 10;          // Length of male lip / female socket depth (mm)
 bolt_hole_diameter = 4.5; // M4 clearance hole (mm)
-bolt_count = 4;           // Bolts evenly spaced at 90 degrees
+bolt_hole_inset = 6.5;    // Bolt circle radius 58.5mm (clears socket wall)
+bolt_count = 4;           // Bolts spaced at 90 degrees
+bolt_angle_offset = 45;   // 45/135/225/315 deg clears top conduit & bottom cradle
 ```
 
 ### Cable Channel
@@ -120,15 +122,18 @@ The bait station cap uses a **bayonet-twist** system with 3 L-shaped slots for t
 
 ### Print Orientations
 
+All printable `.scad` files are modeled directly in their as-printed orientation (`z >= 0` resting flat on the build plate, requiring no slicer rotation or supports):
+
 | Model | Orientation | Notes |
 |-------|-------------|-------|
-| trap_ramp_entrance | Flat (ramp surface down) | Prints without supports |
-| trap_body_front | Upright (tube axis vertical) | Flanges at top/bottom |
-| trap_body_rear | Upright (tube axis vertical) | Flanges at top/bottom |
-| vacuum_adapter_universal | Large end down | Steps print cleanly |
-| bait_station | Upright (tube axis vertical) | Cap prints separately |
-| control_box_exit_mount | Upright (open side up) | Screw posts print upward |
-| control_box_lid | Flat (outside face down) | Clean top surface |
+| `trap_ramp_entrance` | Upright (wide entrance face down at `z=0`) | Tapers smoothly to top male flange without supports |
+| `trap_body_front` | Upright (female flange down at `z=0`) | Side bayonet port + full-length cradle print without supports |
+| `trap_body_rear` | Upright (female flange down at `z=0`) | Flanges at top/bottom, full-length cradle base |
+| `vacuum_adapter_universal` | Upright (female flange down at `z=0`) | Conical 45° step transitions print as a single manifold solid |
+| `bait_station` | Upright (female flange down at `z=0`) | Side bayonet port prints without supports |
+| `bait_cap` | Flat (closed outer face down at `z=0`) | 45° chamfered bayonet tabs print without supports |
+| `control_box_exit_mount` | Flat (base down at `z=0`, open top up) | 45° gabled sensor window and fused internal mounts |
+| `control_box_lid` | Flat (outside face down at `z=0`) | Registration lip and PCB recess face upward (`+Z`) |
 
 ## Generating STL Files
 
