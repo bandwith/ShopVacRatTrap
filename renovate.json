@@ -16,7 +16,7 @@
   "prHourlyLimit": 2,
   "prConcurrentLimit": 10,
   "branchPrefix": "renovate/",
-  "description": "Renovate config for ShopVacRatTrap with frozen requirements",
+  "description": "Renovate config for ShopVacRatTrap (uv-managed Python deps)",
   "packageRules": [
     {
       "description": "Prioritize security updates - no approval needed",
@@ -42,16 +42,16 @@
       "minimumReleaseAge": "1 day"
     },
     {
-      "description": "Python requirements - auto-update with automerge for patch/minor",
-      "matchManagers": ["pip_requirements"],
+      "description": "Python deps (pyproject.toml/uv.lock) - auto-update with automerge for patch/minor",
+      "matchManagers": ["pep621"],
       "enabled": true,
       "automerge": true,
       "matchUpdateTypes": ["minor", "patch"],
       "labels": ["dependencies", "python"]
     },
     {
-      "description": "Python requirements - major updates require review",
-      "matchManagers": ["pip_requirements"],
+      "description": "Python deps (pyproject.toml/uv.lock) - major updates require review",
+      "matchManagers": ["pep621"],
       "matchUpdateTypes": ["major"],
       "automerge": false,
       "labels": ["dependencies", "python", "major"]

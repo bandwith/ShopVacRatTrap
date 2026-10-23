@@ -26,9 +26,9 @@ The system employs a multi-sensor detection logic ("2 of 3" sensor confirmation)
 
 ## Python Environment Setup:
 The project uses Python for various scripts, particularly for BOM management.
-1.  **Create a virtual environment:**
+1.  **Create the virtual environment and install dependencies:**
     ```bash
-    uv venv
+    uv sync                    # add --group firmware for ESPHome
     ```
 2.  **Activate the virtual environment:**
     *   On Linux/macOS:
@@ -39,10 +39,6 @@ The project uses Python for various scripts, particularly for BOM management.
         ```bash
         .venv\Scripts\activate
         ```
-3.  **Install dependencies:**
-    ```bash
-    uv pip install -r requirements.txt
-    ```
 
 ## ESPHome Firmware:
 The ESPHome configurations define the device's behavior and sensor logic.
@@ -72,7 +68,7 @@ The project enforces code quality and formatting using [prek](https://prek.j178.
 *   The `detect-secrets` prek hook is used to prevent sensitive information from being committed to the repository.
 
 ## Dependency Management:
-*   `uv compile` prek hooks are used to manage and synchronize `requirements.txt` with `requirements.in`.
+*   Dependencies are declared in `pyproject.toml` (with `dev`, `firmware` and `docs` groups) and locked in `uv.lock`. The `uv-lock` prek hook fails if the lockfile is stale.
 
 ## Automated Processes:
 *   **GitHub Actions:** Extensive use of GitHub Actions for:

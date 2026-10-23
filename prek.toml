@@ -60,13 +60,12 @@ hooks = [
 repo = "local"
 hooks = [
   {
-    id = "uv-compile",
-    name = "uv compile requirements.txt",
-    entry = "bash -c 'uv pip compile requirements.in -o requirements.txt.test && mv requirements.txt.test requirements.txt || true'",
+    id = "uv-lock",
+    name = "uv.lock is up to date",
+    entry = "uv lock --check",
     language = "system",
     pass_filenames = false,
-    files = '^requirements\.in$',
-    stages = ["manual"]
+    files = '^(pyproject\.toml|uv\.lock)$'
   }
 ]
 

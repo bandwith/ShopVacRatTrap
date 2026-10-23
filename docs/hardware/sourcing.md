@@ -55,7 +55,7 @@
 - ✅ **Complete component data** (availability, datasheets, lifecycle)
 - ✅ **Single command** replaces multiple shell scripts
 
-**Requirements**: pandas and openpyxl (already in requirements.txt)
+**Requirements**: pandas and openpyxl (installed by `uv sync`)
 
 **Bulk Ordering**: Upload BOM_MOUSER_TEMPLATE.xlsx to Mouser BOM tools for instant pricing and cart creation.
 

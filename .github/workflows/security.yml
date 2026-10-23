@@ -65,11 +65,13 @@ jobs:
       - name: Install pip-audit and sarif-tools
         run: uv pip install --system pip-audit sarif-tools
 
-      - name: Run pip-audit on requirements.txt
+      - name: Run pip-audit on uv.lock
         continue-on-error: true
         run: |
+          uv export --locked --all-groups --format requirements-txt \
+            --output-file "$RUNNER_TEMP/requirements-audit.txt"
           pip-audit --disable-pip \
-            -r requirements.txt \
+            -r "$RUNNER_TEMP/requirements-audit.txt" \
             --format json \
             --output pip-audit-results.json
 
@@ -134,7 +136,7 @@ jobs:
                       "locations": [{
                           "physicalLocation": {
                               "artifactLocation": {
-                                  "uri": "requirements.txt"
+                                  "uri": "uv.lock"
                               },
                               "region": {
                                   "startLine": 1

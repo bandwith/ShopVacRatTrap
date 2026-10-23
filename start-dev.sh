@@ -1,12 +1,14 @@
 #!/usr/bin/env bash
 # Simple dev bootstrapper for ShopVacRatTrap
-# - Ensures a local Python venv at .venv (prefers uv if available)
+# - Syncs the uv-managed venv at .venv from pyproject.toml/uv.lock
+#   (Python version comes from .python-version; uv downloads it if needed)
 # - Activates the venv (when sourced)
-# - Installs requirements (fast with uv if available)
 # - Installs prek hooks
 #
 # Usage (recommended):
 #   source ./start-dev.sh
+#
+# Set SKIP_FIRMWARE=1 to skip the ESPHome toolchain (much smaller install).
 #
 # If you run it without "source", it will set up the venv and deps
 # but activation will only apply to the subshell. Prefer sourcing.
@@ -16,74 +18,30 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
 cd "$REPO_ROOT"
 
-PY_VERSION="${PY_VERSION:-3.12}"
-VENV_DIR="${VENV_DIR:-.venv}"
-REQUIREMENTS_FILE="${REQUIREMENTS_FILE:-requirements.txt}"
-
-have_cmd() { command -v "$1" >/dev/null 2>&1; }
-
 log() { printf "[start-dev] %s\n" "$*"; }
 warn() { printf "[start-dev][warn] %s\n" "$*" >&2; }
 
-# 0) If venv exists but is on Python 3.14, recreate (known build issues for some deps)
-if [[ -d "$VENV_DIR" ]]; then
-  EXISTING_PY_VER="$({ test -x "$VENV_DIR/bin/python" && "$VENV_DIR/bin/python" -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")' ; } 2>/dev/null || echo)"
-  if [[ "$EXISTING_PY_VER" == "3.14" && "${ALLOW_PY314:-0}" != "1" ]]; then
-    warn "Detected existing venv with Python 3.14; recreating with Python ${PY_VERSION} to avoid build failures (e.g., ruamel-yaml-clib)."
-    rm -rf "$VENV_DIR"
-  fi
+if ! command -v uv >/dev/null 2>&1; then
+  warn "uv is required: https://docs.astral.sh/uv/getting-started/installation/"
+  return 1 2>/dev/null || exit 1
 fi
 
-# 1) Create venv if missing (prefer uv)
-if [[ ! -d "$VENV_DIR" ]]; then
-  if have_cmd uv; then
-    log "Creating venv with uv (python ${PY_VERSION})..."
-    if ! uv venv --python "${PY_VERSION}" "$VENV_DIR" 2>/dev/null; then
-      log "Fallback: uv venv (default python)"
-      uv venv "$VENV_DIR"
-    fi
-  else
-    warn "uv not found; falling back to python -m venv"
-    if have_cmd "python${PY_VERSION}"; then
-      "python${PY_VERSION}" -m venv "$VENV_DIR"
-    else
-      python3 -m venv "$VENV_DIR"
-    fi
-  fi
-  log "Created venv at $VENV_DIR"
-else
-  log "Found existing venv at $VENV_DIR"
+# 1) Sync dependencies (creates .venv if missing)
+SYNC_ARGS=(--locked)
+if [[ "${SKIP_FIRMWARE:-0}" != "1" ]]; then
+  SYNC_ARGS+=(--group firmware)
 fi
+log "Syncing dependencies: uv sync ${SYNC_ARGS[*]}"
+uv sync "${SYNC_ARGS[@]}"
 
 # 2) Activate venv (only persists if this script is sourced)
-# shellcheck disable=SC1090
-source "$VENV_DIR/bin/activate"
+# shellcheck disable=SC1091
+source .venv/bin/activate
 log "Activated venv: ${VIRTUAL_ENV:-unknown}"
 
-# 3) Install dependencies
-if [[ -f "$REQUIREMENTS_FILE" ]]; then
-  if have_cmd uv; then
-    log "Installing dependencies via uv pip sync (from $REQUIREMENTS_FILE)..."
-    # Use sync to install exact versions without re-resolving dependencies
-    # This respects our manually frozen requirements.txt where ESPHome metadata
-    # is strict but newer versions work in practice
-    uv pip sync "$REQUIREMENTS_FILE"
-  else
-    log "Installing dependencies via pip (from $REQUIREMENTS_FILE)..."
-    python -m pip install --upgrade pip
-    pip install -r "$REQUIREMENTS_FILE"
-  fi
-else
-  warn "No $REQUIREMENTS_FILE found; skipping dependency install"
-fi
-
-# 4) Install prek hooks if available
-if have_cmd prek; then
-  log "Installing prek hooks..."
-  prek install || warn "prek install failed (continuing)"
-else
-  warn "prek not available; hooks not installed"
-fi
+# 3) Install prek hooks
+log "Installing prek hooks..."
+prek install || warn "prek install failed (continuing)"
 
 # Helpful next steps
 cat <<EOF
@@ -91,11 +49,11 @@ cat <<EOF
 [start-dev] Ready.
 - Venv: $VIRTUAL_ENV
 - Python: $(python -c 'import sys; print(sys.version.split()[0])')
-- uv: $(have_cmd uv && echo present || echo missing)
 
 Tips:
-- To (re)activate later: source $VENV_DIR/bin/activate
-- To update deps quickly: uv pip sync $REQUIREMENTS_FILE
+- To (re)activate later: source .venv/bin/activate
+- To update deps after a pull: uv sync ${SYNC_ARGS[*]}
+- To run tests: uv run pytest
 - To run hooks now: prek run -a
 
 EOF
