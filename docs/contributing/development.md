@@ -37,19 +37,14 @@ The Python scripts are used for BOM management and other automation tasks.
   ```bash
   curl -LsSf https://astral.sh/uv/install.sh | sh
   ```
-- **Virtual Environment**: Create a virtual environment pinned to the supported Python version:
+- **Dependencies**: Dependencies are declared in `pyproject.toml` and locked in `uv.lock`. `uv sync` creates `.venv` with the Python version from `.python-version`:
   ```bash
-  uv venv --python 3.11
+  uv sync                    # BOM scripts + dev tools (pytest, ruff, prek)
+  uv sync --group firmware   # also install the ESPHome toolchain
   source .venv/bin/activate  # On Windows, use `.venv\Scripts\activate`
   ```
-- **Dependencies**: Install the required dependencies using `uv`:
-  ```bash
-  uv pip install -r requirements.txt
-  ```
-- **Updating requirements.txt**: When modifying `requirements.in`, recompile the lock file:
-  ```bash
-  uv pip compile --upgrade requirements.in -o requirements.txt
-  ```
+  Or run `source ./start-dev.sh` to sync, activate and install the prek hooks in one step.
+- **Changing dependencies**: Use `uv add <pkg>` (or `uv add --group dev <pkg>`), or edit `pyproject.toml` and run `uv lock`. Commit `pyproject.toml` and `uv.lock` together.
 
 ## Coding Conventions
 

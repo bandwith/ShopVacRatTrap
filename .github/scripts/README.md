@@ -106,9 +106,8 @@ To run these scripts locally:
 
 2. **Install Python dependencies (for BOM management):**
    ```bash
-   uv venv --python 3.11
+   uv sync
    source .venv/bin/activate  # On Windows, use `.venv\Scripts\activate`
-   uv pip install -r requirements.txt
    ```
 
 3. **Make scripts executable:**
@@ -216,9 +215,8 @@ Add this to your GitHub repository secrets:
 1. Create a `.env` file with your Mouser API key
 2. Set up the virtual environment and install dependencies:
    ```bash
-   uv venv --python 3.11
+   uv sync
    source .venv/bin/activate
-   uv pip install -r requirements.txt
    ```
 3. Run scripts locally for testing
 

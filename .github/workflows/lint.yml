@@ -10,6 +10,8 @@ on:
       - '**.py'
       - '**.yaml'
       - '**.yml'
+      - pyproject.toml
+      - uv.lock
 
 # Cancel superseded runs on the same branch/PR to conserve Actions minutes.
 concurrency:
@@ -36,18 +38,12 @@ jobs:
         uses: astral-sh/setup-uv@v8.3.2
         with:
           enable-cache: true
-          cache-dependency-glob: requirements.txt
-
-      - name: Set up Python
-        uses: actions/setup-python@v7
-        with:
-          python-version: '3.13'
+          cache-dependency-glob: uv.lock
 
       - name: Install dependencies
-        run: uv pip install --system -r requirements.txt
-
-      - name: Install prek
-        run: uv tool install prek
+        run: |
+          uv sync --locked --only-group dev
+          echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
 
       - name: Run prek hooks
         run: |

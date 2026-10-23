@@ -109,12 +109,9 @@ Supports: Yes, for overhangs
 git clone https://github.com/bandwith/ShopVacRatTrap.git
 cd ShopVacRatTrap
 
-# Set up virtual environment with uv
-uv venv --python 3.11
+# Set up virtual environment with uv (includes ESPHome)
+uv sync --group firmware
 source .venv/bin/activate
-
-# Install all dependencies (includes ESPHome)
-uv pip install -r requirements.txt
 
 cd esphome
 ```

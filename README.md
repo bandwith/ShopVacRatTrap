@@ -107,9 +107,9 @@ Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 **Quick setup:**
 ```bash
-# Install dependencies
-uv venv && source .venv/bin/activate
-uv pip install -r requirements.txt
+# Install dependencies (add --group firmware for the ESPHome toolchain)
+uv sync
+source .venv/bin/activate
 
 # Install prek hooks
 prek install
