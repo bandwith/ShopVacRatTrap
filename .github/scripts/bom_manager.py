@@ -88,6 +88,9 @@ def summarize_validation(validation_results: dict) -> ValidationSummary:
     )
 
 
+_OUTPUT_UNSET = object()
+
+
 class GitHubOutputAdapter:
     """Edge adapter: writes a ValidationSummary to the GITHUB_OUTPUT file.
 
@@ -95,9 +98,12 @@ class GitHubOutputAdapter:
     adapter is the single place that bridges the pure summary to the CI runner.
     """
 
-    def __init__(self, output_path: str | None = None):
+    def __init__(self, output_path: str | None | object = _OUTPUT_UNSET):
         # Resolve lazily so importing this module never requires the env var.
-        self.output_path = output_path or os.environ.get("GITHUB_OUTPUT")
+        if output_path is _OUTPUT_UNSET:
+            self.output_path = os.environ.get("GITHUB_OUTPUT")
+        else:
+            self.output_path = output_path  # type: ignore[assignment]
 
     @property
     def enabled(self) -> bool:

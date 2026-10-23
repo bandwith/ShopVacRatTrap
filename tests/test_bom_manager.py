@@ -143,8 +143,13 @@ def test_github_output_adapter_writes_only_when_enabled(tmp_path):
     assert "unavailable_components=false" in content
 
 
-def test_github_output_adapter_disabled_is_noop():
+def test_github_output_adapter_disabled_is_noop(monkeypatch):
+    monkeypatch.delenv("GITHUB_OUTPUT", raising=False)
     adapter = GitHubOutputAdapter(output_path=None)
     assert adapter.enabled is False
     # Must not raise even though there is nowhere to write.
     adapter.write(ValidationSummary())
+
+    # Default with unset env var is also disabled
+    default_adapter = GitHubOutputAdapter()
+    assert default_adapter.enabled is False

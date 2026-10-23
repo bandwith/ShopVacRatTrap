@@ -111,7 +111,7 @@ hooks = [
       "--width",
       "120"
     ],
-    exclude = '(^.yamllint.yaml$)|(^esphome/.*\.ya?ml$)'
+    exclude = '(^.yamllint.yaml$)|(^esphome/.*\.ya?ml$)|(^mkdocs\.yml$)'
   }
 ]
 
