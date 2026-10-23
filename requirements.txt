@@ -30,7 +30,7 @@ bleak==3.0.2
     # via esphome
 bottle==0.13.4
     # via platformio
-brotli==1.2.0
+brotli==1.2.1
     # via py7zr
 cbor2==6.1.5
     # via smp
