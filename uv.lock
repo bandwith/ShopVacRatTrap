@@ -12,15 +12,6 @@ resolution-markers = [
     "python_full_version < '3.13' and platform_machine == 'x86_64' and sys_platform == 'darwin'",
 ]
 
-[manifest]
-constraints = [
-    { name = "anyio", specifier = ">=4.14.2" },
-    { name = "certifi", specifier = ">=2026.10.19" },
-    { name = "tornado", specifier = ">=6.5.9" },
-    { name = "urllib3", specifier = ">=2.8.0" },
-    { name = "virtualenv", specifier = ">=21" },
-]
-
 [[package]]
 name = "aioesphomeapi"
 version = "46.3.0"
