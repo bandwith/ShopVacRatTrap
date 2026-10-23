@@ -59,10 +59,7 @@ jobs:
         run: uv pip install --system -r requirements.txt
 
       - name: Run unit tests
-        run: |
-          # Run tests if they exist, but don't fail if no tests are found
-          pytest .github/scripts/ --tb=short || [ $? -eq 5 ] && echo "No tests found - continuing"
-        continue-on-error: false
+        run: pytest tests/ --tb=short
 
       - name: Create backup of current BOM and manage older backups
         run: |
