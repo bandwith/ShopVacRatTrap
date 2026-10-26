@@ -120,7 +120,7 @@ jobs:
                           "id": rule_id,
                           "name": rule_id,
                           "shortDescription": {"text": issue.get('description', 'Security vulnerability')},
-                          "helpUri": issue.get('fix_versions', [{}])[0].get('link', ''),
+                          "helpUri": f"https://osv.dev/vulnerability/{rule_id}",
                           "properties": {
                               "security-severity": "7.0"
                           }

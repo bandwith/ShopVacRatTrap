@@ -6,9 +6,7 @@
 // current result is a known placeholder, not a real detection.
 //
 // Build & run (stubs out the ESPHome logging/Component headers):
-//   g++ -std=c++17 -I tests/firmware/stubs \
-//       -I esphome/components/rodent_classifier \
-//       tests/firmware/test_rodent_classifier.cpp -o /tmp/test_rc && /tmp/test_rc
+//   g++ -std=c++17 -Wall -Wextra -Werror -I tests/firmware/stubs -I esphome/components/rodent_classifier tests/firmware/test_rodent_classifier.cpp -o /tmp/test_rc && /tmp/test_rc
 
 #include <cassert>
 #include <iostream>

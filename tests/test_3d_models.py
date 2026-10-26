@@ -384,6 +384,16 @@ def test_build_script_skips_already_updated_stls(monkeypatch: pytest.MonkeyPatch
     assert "3d_models/bait_cap.scad" in changed
     assert "3d_models/trap_modules.scad" not in changed
 
+    # 4. Shared library updated alongside updated STLs -> skips unaffected SCADs
+    monkeypatch.setattr(
+        build_script.subprocess,
+        "run",
+        lambda *a, **kw: DummyResult(
+            "3d_models/trap_modules.scad\n3d_models/bait_cap.scad\n3d_models/bait_cap.stl\n"
+        ),
+    )
+    assert build_script.get_changed_scad_files() == []
+
 
 def test_component_allowances_and_rodent_resistance() -> None:
     """Verify electronic component variation allowances, tool-free access, and rodent resistance."""

@@ -176,7 +176,9 @@ binary_sensor:
         id(detection_far_mm).state,
         id(ir_presence).state,                   // 3. IR presence
         id(accel_x).state, id(accel_y).state, id(accel_z).state,  // 4. vibration
-        id(vibration_threshold).state);
+        id(vibration_threshold).state,
+        rat_trap::kDefaultDetectionQuorum,
+        id(apds_detection).state);               // 5. APDS9960 proximity
 
     on_press:
       - if:
