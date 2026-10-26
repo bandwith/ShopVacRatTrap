@@ -9,6 +9,11 @@ on:
       - docs/**
       - mkdocs.yml
       - .github/workflows/deploy-docs.yml
+  pull_request:
+    paths:
+      - docs/**
+      - mkdocs.yml
+      - .github/workflows/deploy-docs.yml
   workflow_dispatch:
 
 permissions:
@@ -17,7 +22,7 @@ permissions:
   id-token: write
 
 concurrency:
-  group: pages
+  group: pages-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
@@ -42,14 +47,16 @@ jobs:
 
       - name: Build MkDocs Site
         run: |
-          mkdocs build
+          mkdocs build --strict
 
       - name: Upload artifact
+        if: github.event_name != 'pull_request'
         uses: actions/upload-pages-artifact@v3
         with:
           path: site
 
   deploy:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

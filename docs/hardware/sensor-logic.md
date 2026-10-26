@@ -4,7 +4,7 @@ This document details the "Intelligent Hybrid Detection" system used in the Shop
 
 ## Sensor Placement Diagram
 
-![Sensor Placement Diagram](docs/images/sensor_placement_diagram.png)
+![Sensor Placement Diagram](../images/sensor_placement_diagram.png)
 
 > [!TIP]
 > For physical mounting instructions, see the **[Assembly Guide](assembly.md)**.

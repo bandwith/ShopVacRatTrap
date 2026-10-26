@@ -211,9 +211,9 @@ Total Load Camera: 379mA peak capture (37% headroom) ✅ APPROVED
 
 1. **Review Safety Requirements** - Read [Electrical Design](../hardware/electrical.md) safety section
 2. **Order Components** - Use detailed BOM
-3. **3D Print Enclosures** - All files in [3D Models](3D%20Models/) directory
+3. **3D Print Enclosures** - All files in [`3d_models/`](https://github.com/bandwith/ShopVacRatTrap/tree/main/3d_models) directory
 4. **Assemble Electronics** - Follow NEC/IEC compliant wiring diagrams
-5. **Flash Firmware** - Use [rat-trap.yaml](../../../esphome/rat-trap.yaml) configuration
+5. **Flash Firmware** - Use [`esphome/rat-trap.yaml`](https://github.com/bandwith/ShopVacRatTrap/blob/main/esphome/rat-trap.yaml) configuration
 6. **Test & Calibrate** - Complete safety and function testing
 7. **Deploy** - Install with proper weatherproofing and electrical inspection
 
@@ -231,9 +231,9 @@ The project includes automated purchase links and bulk upload files for streamli
 |----------|---------|
 | **[Electrical Design](../hardware/electrical.md)** | Complete BOM, wiring, safety standards |
 | **[Assembly Guide](../hardware/assembly.md)** | Step-by-step assembly with safety protocols |
-| **README.md** | Project overview and design specifications |
-| **[../../../esphome/rat-trap.yaml](../../../esphome/rat-trap.yaml)** | Main ESP32 firmware configuration (uses packages) |
-| **[../../../esphome/packages/](../../../esphome/packages/)** | Modular ESPHome configuration packages |
+| **[README.md](https://github.com/bandwith/ShopVacRatTrap/blob/main/README.md)** | Project overview and design specifications |
+| **[`esphome/rat-trap.yaml`](https://github.com/bandwith/ShopVacRatTrap/blob/main/esphome/rat-trap.yaml)** | Main ESP32 firmware configuration (uses packages) |
+| **[`esphome/packages/`](https://github.com/bandwith/ShopVacRatTrap/tree/main/esphome/packages)** | Modular ESPHome configuration packages |
 
 ## System Operation
 

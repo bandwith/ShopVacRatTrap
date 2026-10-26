@@ -12,7 +12,7 @@ This document details the electrical design, theory of operation, and safety con
 > (VL53L4CX ToF, STHS34PF80 IR presence, LSM6DSOX IMU). Some ASCII architecture
 > diagrams and power-budget blocks further down still name the older
 > VL53L0X / APDS9960 / PIR set and have not been re-drawn; use
-> [`BOM_CONSOLIDATED.csv`](BOM_CONSOLIDATED.csv) and the ESPHome configs in
+> [`BOM_CONSOLIDATED.csv`](https://github.com/bandwith/ShopVacRatTrap/blob/main/BOM_CONSOLIDATED.csv) and the ESPHome configs in
 > `esphome/` as the authoritative source for sensors and pin assignments.
 
 > [!NOTE]
@@ -47,9 +47,9 @@ For maximum safety and code compliance, all electronic components (both high and
 
 ## 2. Bill of Materials (BOM)
 
-**Total Project Cost: ~$246 (see [BOM_CONSOLIDATED.csv](BOM_CONSOLIDATED.csv) for the authoritative total)**
+**Total Project Cost: ~$246 (see [BOM_CONSOLIDATED.csv](https://github.com/bandwith/ShopVacRatTrap/blob/main/BOM_CONSOLIDATED.csv) for the authoritative total)**
 
-> **Note**: Complete vendor information and direct purchase links are available in [BOM_CONSOLIDATED.csv](BOM_CONSOLIDATED.csv).
+> **Note**: Complete vendor information and direct purchase links are available in [BOM_CONSOLIDATED.csv](https://github.com/bandwith/ShopVacRatTrap/blob/main/BOM_CONSOLIDATED.csv).
 
 ### 2.1. Core Electronics
 
@@ -119,7 +119,7 @@ For maximum safety and code compliance, all electronic components (both high and
 
 **Critical Safety Rule**: GPIO5 is reserved ONLY for SSR control - never use for other purposes.
 
-![ESP32-S3 Feather Pinout](../images/esp32_s3_feather_pinout.png)
+![Wiring Diagram](../images/wiring_diagram.png)
 
 > [!TIP]
 > For a detailed pin mapping table and full system wiring diagram, please refer to the **[Wiring Diagram](../WIRING_DIAGRAM.md)**.

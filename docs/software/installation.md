@@ -24,7 +24,7 @@ The 2025 version features a revolutionary **STEMMA QT camera system** that provi
 Installation Guide
 ==================
 
-> **Note:** For all purchasing details, vendor part numbers, and direct links, see [COMPONENT_SOURCING.md](COMPONENT_SOURCING.md).
+> **Note:** For all purchasing details, vendor part numbers, and direct links, see [Component Sourcing](../hardware/sourcing.md).
 
 ## Pre-Installation Safety Notice
 
