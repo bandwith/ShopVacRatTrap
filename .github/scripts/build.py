@@ -39,9 +39,13 @@ def get_changed_scad_files():
     if not changed_scad:
         return []
 
-    # If a shared library file (trap_modules.scad / helpers.scad) changed,
-    # all buildable SCAD files depend on it.
-    if any(_is_module_only(f) for f in changed_scad):
+    changed_stl = {
+        f for f in changed_files if f.endswith(STL_EXTENSION) and f.startswith(f"{MODELS_DIR}/")
+    }
+
+    # If a shared library file (trap_modules.scad / helpers.scad) changed and no
+    # STL files were updated in the commit, rebuild all buildable SCAD files.
+    if any(_is_module_only(f) for f in changed_scad) and not changed_stl:
         candidates = sorted(get_all_scad_files())
     else:
         candidates = sorted(f for f in changed_scad if not _is_module_only(f))
