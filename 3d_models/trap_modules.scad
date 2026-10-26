@@ -50,13 +50,13 @@ bait_port_id = 36;                  // Inner bore of bait port (mm)
 bait_port_od = 40;                  // Outer diameter of port neck (mm)
 bait_port_neck_height = 15;         // How far neck extends beyond tube_od/2 (mm)
 bait_cap_od = 46;                   // Cap outer diameter (mm)
-bait_cap_height = 18;               // Total cap height (mm)
+bait_cap_height = 10;               // Total cap height (mm)
 bayonet_tab_count = 3;              // Number of locking tabs
 bayonet_tab_width = 8;              // Nominal tab width (mm)
 bayonet_entry_angle = 26;           // Angular width of vertical entry slot (deg)
 bayonet_tab_angle = 20;             // Angular width of locking tab on cap (deg)
-bayonet_tab_height = 3;             // Axial thickness of locking tab (mm)
-bayonet_slot_depth = 5;             // Axial drop of L-slot (mm)
+bayonet_tab_height = 2;             // Axial thickness of locking tab (mm)
+bayonet_slot_depth = 6;             // Axial drop of L-slot ring (mm)
 bayonet_rotation = 30;              // Degrees to twist for lock
 gasket_groove_width = 2.5;          // Width of sealing groove (mm)
 gasket_groove_depth = 1.5;          // Depth of sealing groove (mm)
@@ -337,7 +337,7 @@ module tube_cradle_base(body_length, cradle_width=70) {
 // Uses a 45-deg teardrop inner bore ceiling, a 45-deg lower support gusset up to
 // the cap skirt stop, and a 45-deg lower tip bevel so the entire port prints
 // vertically with zero >20mm unsupported overhangs and zero degenerate triangles.
-bayonet_angle_offset = 55;          // Places 3 slots at 55, 175, 295 deg (clears 0-deg bottom)
+bayonet_angle_offset = 42;          // Places 3 slots symmetrically clear of 0-deg bottom bevel
 
 module bayonet_bait_port_boss(z_center) {
     port_tip_x = tube_od/2 + bait_port_neck_height; // 65.8mm
@@ -395,8 +395,8 @@ module bayonet_bait_port_boss(z_center) {
 
 module bayonet_bait_port_cuts(z_center) {
     port_tip_x = tube_od/2 + bait_port_neck_height; // 65.8mm
-    ring_len = bayonet_slot_depth + bayonet_tab_height; // 8mm
-    slot_base_x = port_tip_x - ring_len; // 57.8mm
+    slot_base_x = port_tip_x - 4.8;      // 61.0mm (aligned with top of lower support gusset)
+    slot_len = port_tip_x - slot_base_x; // 4.8mm
     slot_inner_r = bait_port_od/2 - 1;   // 19mm
     bore_r = 12.5;                       // 25mm inner bore with 45-deg teardrop top
 
@@ -419,14 +419,19 @@ module bayonet_bait_port_cuts(z_center) {
                         // Axial entry slot (opens through tip of port)
                         rotate([0, 0, -bayonet_entry_angle/2])
                             rotate_extrude(angle=bayonet_entry_angle)
-                                translate([slot_inner_r - 0.15, 0.2])
-                                    square([4.5, ring_len + 1]);
+                                translate([slot_inner_r - 0.15, 0])
+                                    square([4.5, slot_len + 1]);
 
-                        // Rotational lock channel at base of slot
+                        // Rotational lock channel at base of slot (with 45-deg upper bevel
+                        // matching the 45-deg print-support chamfer on bait_cap's tabs)
                         rotate([0, 0, 2])
                             rotate_extrude(angle=bayonet_rotation + bayonet_entry_angle/2 - 2)
-                                translate([slot_inner_r, 0.2])
-                                    square([4.2, bayonet_tab_height + 0.2]);
+                                polygon(points=[
+                                    [slot_inner_r, 0],
+                                    [slot_inner_r + 4.2, 0],
+                                    [slot_inner_r + 4.2, bayonet_tab_height + 4.6],
+                                    [slot_inner_r, bayonet_tab_height + 0.4]
+                                ]);
                     }
                 }
             }

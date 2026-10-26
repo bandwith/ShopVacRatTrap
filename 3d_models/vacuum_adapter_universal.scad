@@ -2,8 +2,10 @@
 // Stepped adapter connecting the trap tube (4" PVC) to various shop vac hoses.
 // Oriented in printable perspective: female flange flat on build plate (z=0),
 // stepped hose cones tapering upward (+Z) with 45-deg self-supporting transitions.
-// Includes friction ribs for hose grip and control box mounting bracket with
-// aligned sensor window cutout.
+// Uses the same assembly transform (rotate([90, 0, 90])) as all other tube sections:
+//   +z_local -> +X_world (along trap axis)
+//   +x_local -> +Y_world (side of trap; control box bracket at x_local = -65mm)
+//   +y_local -> +Z_world (vertical; bottom cradle/bracket base at y_local = -65mm = Z_world 0)
 
 include <trap_modules.scad>
 
@@ -35,14 +37,40 @@ num_steps = 4;
 taper_length = 14;                  // Main conical transition from tube_od to grip_od_1
 adapter_body_length = step_length * num_steps; // 100mm total
 
-// Control box mounting bracket (outer mounting face flush with -cradle_ground_offset = -65mm)
-bracket_width = 80;                 // Width of mounting bracket (X)
-bracket_thickness = 4;              // Bracket plate thickness (Y)
-bracket_height = 70;                // Height of bracket plate (Z)
-bracket_face_y = -cradle_ground_offset; // -65mm (matches flange outer radius)
-gusset_thickness = 4;               // Gusset rib thickness
+// Control box mounting bracket on -X side (outer face at x_local = -65mm -> Y_world = -65mm).
+// Spans y_local = -65..+4mm (Z_world = 0..69mm, matching control_box_exit_mount height)
+// and z_local = 0..80mm (X_world = x_adapter..x_adapter+80mm, resting on z_local = 0 bed).
+bracket_face_x = -cradle_ground_offset; // -65mm (flush with flange outer radius)
+bracket_thickness = 4;              // Bracket plate thickness along X (mm)
+bracket_height_y = 69;              // Vertical height in assembly along Y_local (Z_world = 0..69mm)
+bracket_length_z = 80;              // Axial width in assembly along Z_local (X_world span = 80mm)
+bracket_center_z = bracket_length_z / 2; // 40mm axial center for bolts & sensor window
+gusset_thickness = 5;               // Gusset rib thickness in Y_local (mm)
 
 // ========== MODULES ==========
+
+module adapter_sensor_window_cut() {
+    // Cutout through the x_local = -65..-61mm bracket plate that aligns with
+    // control_box_exit_mount's sensor window (44mm along trap axis, Z_world = 12..42mm)
+    // and adds a 45-deg gable at the top (+z_local) edge for supportless vertical printing.
+    win_y_min = -cradle_ground_offset + sensor_window_base_z; // -53mm (Z_world = 12mm)
+    win_y_max = win_y_min + sensor_window_rect_height;        // -23mm (Z_world = 42mm)
+    win_y_mid = (win_y_min + win_y_max) / 2;                  // -38mm (Z_world = 27mm)
+    win_z_min = bracket_center_z - sensor_window_width / 2;   // 18mm
+    win_z_max = bracket_center_z + sensor_window_width / 2;   // 62mm
+    gable_h = sensor_window_rect_height / 2;                  // 15mm (45-deg roof in +Z)
+
+    translate([bracket_face_x - 1, 0, 0])
+        rotate([0, 90, 0])
+            linear_extrude(height=bracket_thickness + 4)
+                polygon(points=[
+                    [-win_z_min, win_y_min],
+                    [-win_z_max, win_y_min],
+                    [-(win_z_max + gable_h), win_y_mid],
+                    [-win_z_max, win_y_max],
+                    [-win_z_min, win_y_max]
+                ]);
+}
 
 module vacuum_adapter_universal() {
     joint_height = lip_length + flange_thickness; // 15mm
@@ -55,6 +83,8 @@ module vacuum_adapter_universal() {
 
     socket_id = tube_od + 2*lip_clearance;
     inner_taper_h = (socket_id - tube_id) / 2;
+
+    bolt_y_center = -cradle_ground_offset + mount_bolt_center_z; // -30mm (Z_world = 35mm)
 
     difference() {
         union() {
@@ -99,32 +129,33 @@ module vacuum_adapter_universal() {
                 }
             }
 
-            // --- CONTROL BOX MOUNTING BRACKET ---
-            // Outer mounting face at Y = bracket_face_y (-65mm, flush with flange edge).
-            translate([-bracket_width/2, bracket_face_y, 0])
-                cube([bracket_width, bracket_thickness, bracket_height]);
+            // --- CONTROL BOX MOUNTING BRACKET (-X side, outer face at x_local = -65mm) ---
+            translate([bracket_face_x, -cradle_ground_offset, 0])
+                cube([bracket_thickness, bracket_height_y, bracket_length_z]);
 
-            // Base flange tie-in plate at z = 0..flange_thickness
+            // Base flange tie-in plate at z = 0..flange_thickness (fuses bracket to flange on bed)
             hull() {
-                translate([-bracket_width/2, bracket_face_y, 0])
-                    cube([bracket_width, bracket_thickness, flange_thickness]);
-                translate([-bracket_width/2, -tube_id/2 + 5, 0])
-                    cube([bracket_width, 4, flange_thickness]);
+                translate([bracket_face_x, -cradle_ground_offset, 0])
+                    cube([bracket_thickness, bracket_height_y, flange_thickness]);
+                translate([-tube_id/2 + 5, -cradle_ground_offset, 0])
+                    cube([4, bracket_height_y, flange_thickness]);
             }
 
-            // Dual structural gussets at X = +/-24.5mm (between window edge |X|=22
-            // and mounting bolts |X|=30, fused directly into the adapter wall).
-            for (gx = [-22.5 - gusset_thickness, 22.5]) {
+            // Dual full-height structural gussets (start on build plate at z=0, fuse into
+            // adapter wall, and clear the sensor window and M3 mounting bolts).
+            // Gusset 1: y_local = -22..-17mm (between window top at -23mm and upper bolts at -7.5mm)
+            // Gusset 2: y_local = -1..+4mm (above upper bolts at -7.5mm, at tube equator)
+            for (gy = [-22, -1]) {
                 hull() {
-                    translate([gx, bracket_face_y, 0])
-                        cube([gusset_thickness, bracket_thickness, bracket_height]);
-                    translate([gx, -22, 0])
-                        cube([gusset_thickness, 4, 32]);
+                    translate([bracket_face_x, gy, 0])
+                        cube([bracket_thickness, gusset_thickness, bracket_length_z]);
+                    translate([-22, gy, 0])
+                        cube([4, gusset_thickness, bracket_length_z]);
                 }
             }
         }
 
-        // --- FEMALE SOCKET POCKET & TRANSITION (keep clear of bracket/gussets) ---
+        // --- FEMALE SOCKET POCKET & TRANSITION ---
         translate([0, 0, -1])
             cylinder(d=socket_id, h=lip_length + 1.01);
         translate([0, 0, lip_length])
@@ -154,23 +185,18 @@ module vacuum_adapter_universal() {
             }
         }
 
-        // --- SIDE CABLE PASS-THROUGH HOLES IN FLANGE ---
-        // Allows top cable conduit from trap_body_rear to pass through flange
-        // even when adapter is rotated 90 degrees to side-mount the control box.
-        for (cx = [-cable_channel_y, cable_channel_y]) {
-            translate([cx, 0, -1])
-                cylinder(d=cable_channel_id, h=flange_thickness + 2);
-        }
-
         // --- ALIGNED SENSOR WINDOW CUTOUT IN BRACKET ---
-        translate([0, bracket_face_y + bracket_thickness/2, sensor_window_base_z])
-            printable_sensor_window(depth=bracket_thickness + 4);
+        adapter_sensor_window_cut();
 
-        // --- BRACKET MOUNTING HOLES (4x M3 clearance, shared with control box) ---
-        translate([0, bracket_face_y - 1, mount_bolt_center_z])
-            control_box_bolt_pattern()
-                rotate([-90, 0, 0])
-                    cylinder(d=mount_bolt_diameter, h=bracket_thickness + 4);
+        // --- BRACKET MOUNTING HOLES (4x M3 clearance, shared with control_box_exit_mount) ---
+        // Under rotate([90, 0, 90]), z_local -> X_world (spacing 60mm) and y_local -> Z_world (spacing 45mm).
+        for (dz = [-mount_bolt_spacing_x/2, mount_bolt_spacing_x/2]) {
+            for (dy = [-mount_bolt_spacing_z/2, mount_bolt_spacing_z/2]) {
+                translate([bracket_face_x - 1, bolt_y_center + dy, bracket_center_z + dz])
+                    rotate([0, 90, 0])
+                        cylinder(d=mount_bolt_diameter, h=bracket_thickness + 4);
+            }
+        }
     }
 }
 

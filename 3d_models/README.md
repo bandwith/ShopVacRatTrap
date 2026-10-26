@@ -32,14 +32,14 @@ disabled by setting `"disabled": true` in the config.
 | File | Description | Supports Needed |
 |------|-------------|-----------------|
 | `trap_ramp_entrance.scad` | Flat ramp entrance with archway transition to tube | No |
-| `trap_body_front.scad` | Front body half (125mm), includes bait port boss | No |
-| `trap_body_rear.scad` | Rear body half (125mm), includes cable channel | No |
-| `vacuum_adapter_universal.scad` | Stepped adapter for shop vac hoses (multi-size) | No |
-| `bait_station.scad` | Tube section with external bait port and bayonet cap | No |
+| `trap_body_front.scad` | Front body half (125mm), includes cradle base & cable conduit | No |
+| `bait_station.scad` | Inline bait station section (80mm) with side bayonet port | No |
 | `bait_cap.scad` | Standalone bayonet-twist cap for bait station port | No |
-| `control_box_exit_mount.scad` | Electronics enclosure (ESP32, SSR, sensors) | No |
-| `control_box_lid.scad` | Control box lid with OLED display cutout | No |
-| `assembly.scad` | Full assembly visualization (not printed) | N/A |
+| `trap_body_rear.scad` | Rear body half (125mm), includes cradle base & cable conduit | No |
+| `vacuum_adapter_universal.scad` | Stepped shop vac hose adapter with `-X` control box bracket | No |
+| `control_box_exit_mount.scad` | Upright electronics enclosure (`Z=0..69mm`) bolted to adapter | No |
+| `control_box_lid.scad` | Top control box lid with OLED display cutout | No |
+| `assembly.scad` | Full 8-part assembly visualization (not printed) | N/A |
 
 ### Shared Libraries (Not Printed)
 
@@ -187,9 +187,9 @@ All trap tube sections include an integrated **top-mounted external cable condui
 ### Cable Path
 
 ```text
-Ramp Entrance --> Front Body --> Rear Body --> Vacuum Adapter
-                                                     |
-                                              Control Box
+Ramp Entrance --> Front Body --> Bait Station --> Rear Body --> Vacuum Adapter
+                                                                      |
+                                                                Control Box
 ```
 
 ### Cable Specifications
