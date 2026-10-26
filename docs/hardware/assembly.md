@@ -94,7 +94,7 @@ The system features **integrated cable channels** to protect wires from rodents.
 > [!WARNING]
 > **High Voltage Hazard**: This project controls mains voltage (120V/240V). Ensure the device is unplugged while wiring the relay.
 
-![ESP32-S3 Feather Pinout](../images/esp32_s3_feather_pinout.png)
+![Wiring Diagram](../images/wiring_diagram.png)
 
 > [!TIP]
 > For the complete system wiring diagram, see the **[Wiring Diagram](../WIRING_DIAGRAM.md)**.

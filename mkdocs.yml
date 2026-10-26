@@ -2,7 +2,7 @@
 site_name: ShopVac Rat Trap
 site_description: Professional IoT-based rodent control system with ESP32, hybrid sensor detection, and Home Assistant integration
 site_author: bandwith
-site_url: https://shopvac-rat-trap.readthedocs.io
+site_url: https://bandwith.github.io/ShopVacRatTrap/
 
 repo_name: bandwith/ShopVacRatTrap
 repo_url: https://github.com/bandwith/ShopVacRatTrap
@@ -145,13 +145,16 @@ nav:
   - Home: index.md
   - Getting Started:
       - getting-started/index.md
+      - System Overview: getting-started/overview.md
       - Safety First: getting-started/safety.md
       - Quick Start: getting-started/quick-start.md
   - Hardware:
       - hardware/index.md
       - Bill of Materials: hardware/bom.md
       - Component Sourcing: hardware/sourcing.md
+      - Component Dimensions: hardware/component-dimensions.md
       - Electrical Design: hardware/electrical.md
+      - Wiring Diagram: WIRING_DIAGRAM.md
       - Assembly Guide: hardware/assembly.md
       - Sensor Logic: hardware/sensor-logic.md
       - Supplier Changes: hardware/supplier-changes.md
