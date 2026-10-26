@@ -1,15 +1,26 @@
 {
     "VENDOR_PREFIXES": {
         "Adafruit": "485",
-        "SparkFun": "474",
-        "Mean Well": "709",
-        "Schurter": "693",
+        "Bourns": "652",
+        "Crydom": "558",
+        "GCT": "523",
         "Leviton": "546",
+        "Mean Well": "709",
+        "Panasonic": "769",
+        "Schneider Electric": "996",
+        "Schurter": "693",
+        "SparkFun": "474",
+        "Vishay": "78",
         "default": ""
     },
     "PRIORITY_COMPONENTS": [
+        "5323",
+        "5946",
+        "5425",
+        "6426",
+        "AQA411VL",
+        "LRS-35-5",
         "ESP32-S3-Feather",
-        "COM-13015",
-        "LRS-35-5"
+        "COM-13015"
     ]
 }

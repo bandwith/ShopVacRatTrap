@@ -11,16 +11,16 @@ This document provides guidelines for contributing to the project. Please read i
 ## How to Contribute
 
 We welcome contributions in several forms:
-- **Bug Reports**: If you find a bug in the design, code, or documentation, please [create an issue](<https://github.com/your-repo/link/issues>).
-- **Feature Requests**: If you have an idea for a new feature or an improvement to an existing one, please [create an issue](https://github.com/your-repo/link/issues) to discuss it first.
+- **Bug Reports**: If you find a bug in the design, code, or documentation, please [create an issue](https://github.com/bandwith/ShopVacRatTrap/issues).
+- **Feature Requests**: If you have an idea for a new feature or an improvement to an existing one, please [create an issue](https://github.com/bandwith/ShopVacRatTrap/issues) to discuss it first.
 - **Pull Requests**: If you've fixed a bug or implemented a new feature, we welcome pull requests.
 
 ## Getting Started
 
 To get started, you'll need to fork the repository and clone it to your local machine:
 ```bash
-git clone https://github.com/your-username/ShopVac-Rat-Trap-.git
-cd ShopVac-Rat-Trap-
+git clone https://github.com/bandwith/ShopVacRatTrap.git
+cd ShopVacRatTrap
 ```
 
 ### Development Environment
@@ -28,8 +28,8 @@ cd ShopVac-Rat-Trap-
 The project has two main parts: the OpenSCAD 3D models and the Python scripts for automation.
 
 #### OpenSCAD
-- **Installation**: Download and install [OpenSCAD](<https://openscad.org/downloads.html>) for your operating system.
-- **Usage**: You can open the `.scad` files in the `3d_models/` directory to view and modify the designs. The main assembly files are `Complete_System_Assembly.scad` (for visualization) and `Complete_Trap_Tube_Assembly.scad` (for the main printable part).
+- **Installation**: Download and install [OpenSCAD](https://openscad.org/downloads.html) for your operating system.
+- **Usage**: You can open the `.scad` files in the `3d_models/` directory to view and modify the designs. The complete system visualization is in `3d_models/assembly.scad` and shared parametric dimensions/joints are defined in `3d_models/trap_modules.scad`.
 
 #### Python Scripts
 The Python scripts are used for BOM management and other automation tasks.
@@ -61,9 +61,7 @@ The Python scripts are used for BOM management and other automation tasks.
 
 ## Running Tests
 
-## Running Tests
-
-The project uses `pytest` for testing the Python scripts. Tests are located in the `tests/` directory.
+The project uses `pytest` for testing the Python scripts and 3D model meshes. Tests are located in the `tests/` directory.
 
 - **Run Tests**: To run the tests, simply run `pytest` from the root directory:
   ```bash

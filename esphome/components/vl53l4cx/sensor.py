@@ -1,11 +1,10 @@
 import esphome.codegen as cg
 import esphome.config_validation as cv
+
 from esphome.components import sensor
 
 vl53l4cx_ns = cg.esphome_ns.namespace("vl53l4cx")
-VL53L4CXComponent = vl53l4cx_ns.class_(
-    "VL53L4CXComponent", cg.PollingComponent, sensor.Sensor
-)
+VL53L4CXComponent = vl53l4cx_ns.class_("VL53L4CXComponent", cg.PollingComponent, sensor.Sensor)
 
 CONFIG_SCHEMA = sensor.sensor_schema(
     VL53L4CXComponent,

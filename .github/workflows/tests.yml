@@ -10,6 +10,7 @@ on:
       - '**.py'
       - pyproject.toml
       - uv.lock
+      - 3d_models/**
       - tests/**
       - esphome/packages/*.h
       - esphome/components/**

@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
-from collections import defaultdict, deque
 import math
-from pathlib import Path
 import re
 import struct
+from collections import defaultdict, deque
+from pathlib import Path
 
 import pytest
 
@@ -69,9 +69,7 @@ def _parse_stl(
     return tris
 
 
-def _quantize(
-    pt: tuple[float, float, float], tol: float = 1e-4
-) -> tuple[int, int, int]:
+def _quantize(pt: tuple[float, float, float], tol: float = 1e-4) -> tuple[int, int, int]:
     """Quantize a 3D vertex coordinate to integer grid keys for topology checks."""
     return (round(pt[0] / tol), round(pt[1] / tol), round(pt[2] / tol))
 
@@ -89,12 +87,10 @@ def _analyze_mesh(
     z_min, z_max = min(zs), max(zs)
     bbox_size = (max(xs) - min(xs), max(ys) - min(ys), z_max - z_min)
 
-    directed_edges: dict[tuple[tuple[int, int, int], tuple[int, int, int]], int] = (
-        defaultdict(int)
+    directed_edges: dict[tuple[tuple[int, int, int], tuple[int, int, int]], int] = defaultdict(int)
+    undirected_edges: dict[tuple[tuple[int, int, int], tuple[int, int, int]], list[int]] = (
+        defaultdict(list)
     )
-    undirected_edges: dict[
-        tuple[tuple[int, int, int], tuple[int, int, int]], list[int]
-    ] = defaultdict(list)
     degenerate_count = 0
     bed_contact_area = 0.0
 
@@ -182,9 +178,7 @@ def test_printable_part_manifold_and_print_orientation(part_name: str) -> None:
     stats = _analyze_mesh(stl_path)
     sx, sy, sz = stats["bbox_size"]  # type: ignore[misc]
 
-    assert stats["open_edges"] == 0, (
-        f"{part_name}.stl has {stats['open_edges']} open edges"
-    )
+    assert stats["open_edges"] == 0, f"{part_name}.stl has {stats['open_edges']} open edges"
     assert stats["non_manifold_edges"] == 0, (
         f"{part_name}.stl has {stats['non_manifold_edges']} non-manifold edges"
     )
@@ -233,12 +227,12 @@ def test_assembly_horizontal_layout_and_mating_interfaces() -> None:
     trap_mods = (MODELS_DIR / "trap_modules.scad").read_text(encoding="utf-8")
     flange_od_match = re.search(r"flange_od\s*=\s*(\d+(?:\.\d+)?)\s*;", trap_mods)
     assert flange_od_match and float(flange_od_match.group(1)) == 130.0
-    assert "control_box_bolt_pattern()" in (
-        MODELS_DIR / "vacuum_adapter_universal.scad"
-    ).read_text(encoding="utf-8")
-    assert "control_box_bolt_pattern()" in (
-        MODELS_DIR / "control_box_exit_mount.scad"
-    ).read_text(encoding="utf-8")
+    assert "control_box_bolt_pattern()" in (MODELS_DIR / "vacuum_adapter_universal.scad").read_text(
+        encoding="utf-8"
+    )
+    assert "control_box_bolt_pattern()" in (MODELS_DIR / "control_box_exit_mount.scad").read_text(
+        encoding="utf-8"
+    )
 
     asm_stl = MODELS_DIR / "assembly.stl"
     assert asm_stl.exists(), "Missing assembly.stl"
@@ -247,9 +241,47 @@ def test_assembly_horizontal_layout_and_mating_interfaces() -> None:
     zs = [v[2] for tri in tris for v in tri]
     x_span = max(xs) - min(xs)
     z_min = min(zs)
-    assert abs(z_min) < 1e-3, (
-        f"Assembled rat trap should rest on ground plane z=0 (got {z_min})"
-    )
+    assert abs(z_min) < 1e-3, f"Assembled rat trap should rest on ground plane z=0 (got {z_min})"
     assert x_span > 550.0, (
         f"Assembled rat trap should extend horizontally along +X (>550mm, got {x_span:.1f}mm)"
     )
+
+
+def test_build_script_skips_already_updated_stls(monkeypatch: pytest.MonkeyPatch) -> None:
+    """build.get_changed_scad_files must skip SCADs whose STL was updated in the same commit."""
+    import sys
+
+    scripts_dir = str(REPO_ROOT / ".github" / "scripts")
+    if scripts_dir not in sys.path:
+        sys.path.insert(0, scripts_dir)
+    import build as build_script  # type: ignore[import-not-found]
+
+    class DummyResult:
+        def __init__(self, stdout: str) -> None:
+            self.stdout = stdout
+
+    # 1. Both SCAD and STL updated in same commit -> nothing to rebuild
+    monkeypatch.setattr(
+        build_script.subprocess,
+        "run",
+        lambda *a, **kw: DummyResult("3d_models/bait_cap.scad\n3d_models/bait_cap.stl\n"),
+    )
+    assert build_script.get_changed_scad_files() == []
+
+    # 2. Only SCAD updated -> returns that SCAD
+    monkeypatch.setattr(
+        build_script.subprocess,
+        "run",
+        lambda *a, **kw: DummyResult("3d_models/bait_cap.scad\n"),
+    )
+    assert build_script.get_changed_scad_files() == ["3d_models/bait_cap.scad"]
+
+    # 3. Shared library updated without STLs -> returns all buildable SCADs
+    monkeypatch.setattr(
+        build_script.subprocess,
+        "run",
+        lambda *a, **kw: DummyResult("3d_models/trap_modules.scad\n"),
+    )
+    changed = build_script.get_changed_scad_files()
+    assert "3d_models/bait_cap.scad" in changed
+    assert "3d_models/trap_modules.scad" not in changed

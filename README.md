@@ -2,7 +2,9 @@
 
 > **⚠️ Work in Progress ⚠️**
 >
-> This project is under active development. Documentation, features, and hardware## ✨ Project Status
+> This project is under active development. Documentation, features, and hardware recommendations are subject to change.
+
+## ✨ Project Status
 
 **Current:** Ready for production printing (2025-11-27)
 
@@ -28,7 +30,8 @@ This project provides complete design files for a professional-grade, IoT-enable
 
 **Local preview:**
 ```bash
-{{ ... }}
+uv sync --group docs
+uv run mkdocs serve
 ```
 
 ### Quick Links
@@ -103,7 +106,7 @@ esphome run rat-trap.yaml
 
 ## 🤝 Contributing
 
-Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+Contributions welcome! See [Contributing Guide](docs/contributing/development.md) for guidelines.
 
 **Quick setup:**
 ```bash
@@ -119,7 +122,7 @@ prek install
 
 ## 📜 License
 
-Licensed under the Apache License 2.0 - see [LICENSE](LICENSE) file.
+Licensed under the CERN Open Hardware Licence Version 2 - Permissive (`CERN-OHL-P-2.0`) - see [LICENSE](LICENSE) file.
 
 ## ⚠️ Legal Disclaimer
 

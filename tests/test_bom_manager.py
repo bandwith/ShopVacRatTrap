@@ -11,6 +11,7 @@ sys.path.append(str(scripts_path))
 from bom_manager import (  # noqa: E402
     BOMColumns,
     BOMManagerError,
+    BOMUpdater,
     BOMValidator,
     GitHubOutputAdapter,
     ValidationSummary,
@@ -34,9 +35,7 @@ def test_bom_manager_error():
 
 def test_load_bom_components_success():
     """Test loading BOM components successfully."""
-    csv_content = (
-        "Manufacturer Part Number,Quantity,Unit Price\nPART1,10,1.50\nPART2,5,2.00"
-    )
+    csv_content = "Manufacturer Part Number,Quantity,Unit Price\nPART1,10,1.50\nPART2,5,2.00"
     with patch("builtins.open", mock_open(read_data=csv_content)):
         components = load_bom_components("dummy.csv")
         assert len(components) == 2
@@ -153,3 +152,52 @@ def test_github_output_adapter_disabled_is_noop(monkeypatch):
     # Default with unset env var is also disabled
     default_adapter = GitHubOutputAdapter()
     assert default_adapter.enabled is False
+
+
+def test_bom_updater_handles_first_column_index_zero(tmp_path):
+    """Ensure BOMUpdater works when MPN or Unit Price is at column index 0."""
+    bom_csv = tmp_path / "bom.csv"
+    bom_csv.write_text(
+        "Manufacturer Part Number,Unit Price,Quantity,Extended Price\n5323,15.00,2,30.00\n",
+        encoding="utf-8",
+    )
+    validation_results = {
+        "components": [
+            {
+                "mpn": "5323",
+                "found": True,
+                "updated_price": 17.50,
+                "quantity": 2,
+            }
+        ]
+    }
+    updater = BOMUpdater()
+    assert updater.update_bom_pricing(str(bom_csv), validation_results) is True
+    lines = bom_csv.read_text(encoding="utf-8").splitlines()
+    assert lines[1] == "5323,17.50,2,35.00"
+
+
+def test_bom_validator_computes_total_cost_and_priority(tmp_path):
+    """Ensure BOMValidator records total_cost and priority flags."""
+    bom_csv = tmp_path / "bom.csv"
+    bom_csv.write_text(
+        "Manufacturer,Manufacturer Part Number,Description,Quantity,Unit Price\n"
+        "Adafruit,5323,ESP32-S3 Feather,2,15.00\n",
+        encoding="utf-8",
+    )
+    mock_mouser_validator = MagicMock()
+    mock_mouser_validator.validate_single_component.return_value = {
+        "found": True,
+        "availability": "50 In Stock",
+        "datasheet": "https://example.com/ds.pdf",
+        "product_url": "https://example.com/part",
+        "pricing": {
+            "unit_price": 17.50,
+            "total_price": 35.00,
+        },
+    }
+    validator = BOMValidator(mock_mouser_validator)
+    results = validator.validate_bom(str(bom_csv), priority_components=["5323"])
+    assert results["total_cost"] == 35.00
+    assert results["components"][0]["is_priority"] is True
+    assert results["pricing_changes"]["changes_detected"] is True
