@@ -7,7 +7,7 @@
 This project implements a professional-grade, IoT-based rodent control system. It features a hybrid sensor detection system, an integrated status display, and is designed for simplified assembly.
 
 ## Key Technologies:
-*   **Hardware:** ESP32-S3 Feather, various STEMMA QT sensors (APDS9960, VL53L0X, PIR, OV5640 camera), OLED display.
+*   **Hardware:** ESP32-S3 Feather, various STEMMA QT sensors (VL53L4CX, STHS34PF80, LSM6DSOX, BME280, SPH0645LM4H, OV5640 camera), OLED display.
 *   **Firmware:** ESPHome for ESP32 configuration and logic.
 *   **Software:** Python for Bill of Materials (BOM) management, component sourcing automation, and other utility scripts.
 *   **3D Modeling:** OpenSCAD for designing 3D printable enclosures and trap components.
@@ -42,7 +42,7 @@ The project uses Python for various scripts, particularly for BOM management.
 
 ## ESPHome Firmware:
 The ESPHome configurations define the device's behavior and sensor logic.
-*   **Standard Configuration:** `esphome/rat-trap-.yaml`
+*   **Standard Configuration:** `esphome/rat-trap.yaml`
 *   **Camera Variant Configuration:** `esphome/rat-trap-stemma-camera.yaml`
 To build and flash the firmware, you will need to use the ESPHome command-line tool or dashboard, following standard ESPHome procedures.
 

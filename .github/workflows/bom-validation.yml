@@ -8,6 +8,11 @@ on:
   push:
     branches:
       - main
+    paths:
+      - BOM_CONSOLIDATED.csv
+      - purchasing/**
+      - .github/scripts/**
+      - .github/workflows/bom-validation.yml
   workflow_dispatch:
     inputs:
       check_availability:
@@ -220,10 +225,10 @@ jobs:
         with:
           name: bom-validation-${{ github.run_number }}
           path: |
-            validation_results.json
+            purchasing/validation_results.json
             pricing_report.md
             availability_report.md
-            pricing_backup/ # Contains the 5 most recent BOM pricing backups
+            pricing_backup/
             purchasing/
           retention-days: 30
           if-no-files-found: warn

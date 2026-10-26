@@ -10,6 +10,8 @@ on:
       - '**.py'
       - '**.yaml'
       - '**.yml'
+      - 3d_models/**
+      - prek.toml
       - pyproject.toml
       - uv.lock
 
@@ -17,6 +19,9 @@ on:
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
+
+permissions:
+  contents: read
 
 jobs:
   lint:

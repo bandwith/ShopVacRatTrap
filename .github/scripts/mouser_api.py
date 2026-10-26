@@ -13,15 +13,16 @@ API Key required from: https://www.mouser.com/api-hub/
 Rate Limits: 1000 requests/hour, 10 requests/second
 """
 
-import os
 import json
+import logging
+import os
 import time
-import requests
-import pandas as pd
 from dataclasses import dataclass
 from datetime import datetime
-import logging
 from pathlib import Path
+
+import pandas as pd
+import requests
 
 # Load environment variables from .env file if it exists (for local development)
 try:
@@ -177,9 +178,7 @@ class MouserAPIClient:
 
         # Check hourly limit
         if self.hourly_request_count >= self.REQUESTS_PER_HOUR:
-            raise MouserRateLimitError(
-                f"Hourly request limit ({self.REQUESTS_PER_HOUR}) exceeded"
-            )
+            raise MouserRateLimitError(f"Hourly request limit ({self.REQUESTS_PER_HOUR}) exceeded")
 
         # Check per-second limit
         self.request_times = [t for t in self.request_times if current_time - t < 1.0]
@@ -219,9 +218,7 @@ class MouserAPIClient:
 
             # Check for API-level errors
             if "Errors" in data and data["Errors"]:
-                error_msg = "; ".join(
-                    [err.get("Message", "") for err in data["Errors"]]
-                )
+                error_msg = "; ".join([err.get("Message", "") for err in data["Errors"]])
                 if "quota" in error_msg.lower() or "limit" in error_msg.lower():
                     raise MouserQuotaExceededError(f"API quota error: {error_msg}")
                 else:
@@ -229,14 +226,12 @@ class MouserAPIClient:
 
             return data
 
-        except requests.exceptions.Timeout:
-            raise MouserAPIError("Request timeout")
-        except requests.exceptions.ConnectionError:
-            raise MouserAPIError("Connection error")
+        except requests.exceptions.Timeout as err:
+            raise MouserAPIError("Request timeout") from err
+        except requests.exceptions.ConnectionError as err:
+            raise MouserAPIError("Connection error") from err
 
-    def search_part_number(
-        self, part_number: str, manufacturer: str = None
-    ) -> list[MouserPart]:
+    def search_part_number(self, part_number: str, manufacturer: str = None) -> list[MouserPart]:
         """Search for exact part number match"""
         # Mouser API requires POST with JSON payload
         payload = {
@@ -249,9 +244,7 @@ class MouserAPIClient:
         logger.info(f"🔍 Searching Mouser for part: {part_number}")
 
         try:
-            data = self._make_request(
-                self.MOUSER_SEARCH_ENDPOINT, payload
-            )  # Updated usage
+            data = self._make_request(self.MOUSER_SEARCH_ENDPOINT, payload)  # Updated usage
 
             # Check for results in Mouser API response format
             if "SearchResults" not in data or not data["SearchResults"].get("Parts"):
@@ -263,8 +256,7 @@ class MouserAPIClient:
                 # Filter by manufacturer if specified
                 if (
                     manufacturer
-                    and manufacturer.lower()
-                    not in (part_data.get("Manufacturer") or "").lower()
+                    and manufacturer.lower() not in (part_data.get("Manufacturer") or "").lower()
                 ):
                     continue
 
@@ -350,9 +342,7 @@ class MouserAPIClient:
         ]
         if not applicable_breaks:
             # Use minimum quantity if requested quantity is too low
-            min_break = min(
-                part.price_breaks, key=lambda x: x.quantity
-            )  # Access quantity directly
+            min_break = min(part.price_breaks, key=lambda x: x.quantity)  # Access quantity directly
             return {
                 "quantity": min_break.quantity,
                 "unit_price": min_break.price,
@@ -361,9 +351,7 @@ class MouserAPIClient:
                 "note": f"Minimum order quantity: {min_break.quantity}",
             }
 
-        best_break = max(
-            applicable_breaks, key=lambda x: x.quantity
-        )  # Access quantity directly
+        best_break = max(applicable_breaks, key=lambda x: x.quantity)  # Access quantity directly
         return {
             "quantity": quantity,
             "unit_price": best_break.price,
@@ -379,9 +367,7 @@ class MouserAPIClient:
             parsed_price_breaks.append(
                 PriceBreak(
                     quantity=int(price_break.get("Quantity", 0)),
-                    price=float(
-                        price_break.get("Price", "0").replace("$", "").replace(",", "")
-                    ),
+                    price=float(price_break.get("Price", "0").replace("$", "").replace(",", "")),
                     currency=price_break.get("Currency", "USD"),
                 )
             )
@@ -402,9 +388,7 @@ class MouserBOMValidator:
         self.client = MouserAPIClient(api_key)
         self.results = []
 
-    def validate_bom_file(
-        self, bom_file: str, quantity_column: str = "Quantity"
-    ) -> dict:
+    def validate_bom_file(self, bom_file: str, quantity_column: str = "Quantity") -> dict:
         """Validate entire BOM file"""
         logger.info(f"📋 Validating BOM file: {bom_file}")
 
@@ -415,9 +399,7 @@ class MouserBOMValidator:
             elif bom_file.endswith(".xlsx"):
                 df = pd.read_excel(bom_file)
             else:
-                raise MouserBOMValidationError(
-                    "Unsupported file format. Use CSV or Excel."
-                )
+                raise MouserBOMValidationError("Unsupported file format. Use CSV or Excel.")
 
             required_columns = [
                 MouserBOMColumns.MANUFACTURER,
@@ -425,9 +407,7 @@ class MouserBOMValidator:
             ]
             missing_columns = [col for col in required_columns if col not in df.columns]
             if missing_columns:
-                raise MouserBOMValidationError(
-                    f"Missing required columns: {missing_columns}"
-                )
+                raise MouserBOMValidationError(f"Missing required columns: {missing_columns}")
 
             # Validate each component
             validation_results = {
@@ -476,9 +456,7 @@ class MouserBOMValidator:
 
                     else:
                         # Try keyword search as fallback
-                        keyword_parts = self.client.search_keyword(
-                            mpn, manufacturer, max_results=3
-                        )
+                        keyword_parts = self.client.search_keyword(mpn, manufacturer, max_results=3)
 
                         component_result = {
                             "index": index,
@@ -512,13 +490,10 @@ class MouserBOMValidator:
 
             # Generate summary
             success_rate = (
-                validation_results["found_components"]
-                / validation_results["total_components"]
+                validation_results["found_components"] / validation_results["total_components"]
             ) * 100
             logger.info(f"✅ Validation complete: {success_rate:.1f}% success rate")
-            logger.info(
-                f"💰 Total estimated cost: ${validation_results['total_cost']:.2f}"
-            )
+            logger.info(f"💰 Total estimated cost: ${validation_results['total_cost']:.2f}")
 
             return validation_results
 
@@ -552,9 +527,7 @@ class MouserBOMValidator:
 
         logger.info(f"💾 Results saved to {output_file}")
 
-    def validate_single_component(
-        self, mpn: str, manufacturer: str, quantity: int
-    ) -> dict:
+    def validate_single_component(self, mpn: str, manufacturer: str, quantity: int) -> dict:
         """Validates a single component against the Mouser API."""
         component_result = {
             "mpn": mpn,
@@ -596,9 +569,7 @@ class MouserBOMValidator:
                 )
             else:
                 # Try keyword search as fallback
-                keyword_parts = self.client.search_keyword(
-                    mpn, manufacturer, max_results=3
-                )
+                keyword_parts = self.client.search_keyword(mpn, manufacturer, max_results=3)
                 if keyword_parts:
                     component_result["error"] = (
                         "Part not found by exact MPN, but keyword matches found."
@@ -629,18 +600,10 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser(description="Validate BOM using Mouser API")
-    parser.add_argument(
-        "--bom-files", nargs="+", required=True, help="BOM files to validate"
-    )
-    parser.add_argument(
-        "--api-key", help="Mouser API key (or set MOUSER_API_KEY env var)"
-    )
-    parser.add_argument(
-        "--output-dir", default=".", help="Output directory for results"
-    )
-    parser.add_argument(
-        "--quantity-column", default="Quantity", help="Quantity column name"
-    )
+    parser.add_argument("--bom-files", nargs="+", required=True, help="BOM files to validate")
+    parser.add_argument("--api-key", help="Mouser API key (or set MOUSER_API_KEY env var)")
+    parser.add_argument("--output-dir", default=".", help="Output directory for results")
+    parser.add_argument("--quantity-column", default="Quantity", help="Quantity column name")
 
     args = parser.parse_args()
 

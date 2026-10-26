@@ -62,3 +62,6 @@ Thumbs.db
 
 # Kiro IDE/session state (keep only intentionally-tracked config like mcp.json)
 .kiro/settings/lsp.json
+
+# Agent scratch/task state
+.agents/

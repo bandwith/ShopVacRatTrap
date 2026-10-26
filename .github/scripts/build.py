@@ -1,7 +1,7 @@
+import argparse
+import json
 import os
 import subprocess
-import json
-import argparse
 
 # Constants
 MODELS_DIR = "3d_models"
@@ -29,30 +29,40 @@ def _iterate_model_files(extension: str):
 
 
 def get_changed_scad_files():
-    """Get a list of changed SCAD files (excluding module-only library files)."""
-    cmd = "git diff --name-only --diff-filter=AMR HEAD^ HEAD"
-    result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
-    changed_files = result.stdout.strip().split("\n")
-    scad_files = [
-        f
-        for f in changed_files
-        if f.endswith(SCAD_EXTENSION)
-        and f.startswith(f"{MODELS_DIR}/")
-        # Skip module-only library files: editing trap_modules.scad/helpers.scad
-        # should rebuild the parts that include them, not render the library
-        # itself (which has no top-level geometry and errors as "empty").
-        and not _is_module_only(f)
+    """Get buildable SCAD files changed in HEAD whose STL was not also updated in HEAD."""
+    cmd = ["git", "diff", "--name-only", "--diff-filter=AMR", "HEAD^", "HEAD"]
+    result = subprocess.run(cmd, capture_output=True, text=True, check=False)
+    changed_files = {f.strip() for f in result.stdout.strip().splitlines() if f.strip()}
+    changed_scad = [
+        f for f in changed_files if f.endswith(SCAD_EXTENSION) and f.startswith(f"{MODELS_DIR}/")
     ]
-    return scad_files
+    if not changed_scad:
+        return []
+
+    # If a shared library file (trap_modules.scad / helpers.scad) changed,
+    # all buildable SCAD files depend on it.
+    if any(_is_module_only(f) for f in changed_scad):
+        candidates = sorted(get_all_scad_files())
+    else:
+        candidates = sorted(f for f in changed_scad if not _is_module_only(f))
+
+    # Skip rebuilding SCAD files whose corresponding STL file was already
+    # updated in the same commit and exists on disk.
+    return [
+        scad_path
+        for scad_path in candidates
+        if scad_path.replace(SCAD_EXTENSION, STL_EXTENSION) not in changed_files
+        or not os.path.exists(scad_path.replace(SCAD_EXTENSION, STL_EXTENSION))
+    ]
 
 
 def get_all_scad_files():
-    """Get a list of all SCAD files (excluding module-only library files)."""
+    """Get a sorted list of all SCAD files (excluding module-only library files)."""
     scad_files = []
     for file_path in _iterate_model_files(SCAD_EXTENSION):
         if not _is_module_only(file_path):
             scad_files.append(file_path)
-    return scad_files
+    return sorted(scad_files)
 
 
 def get_missing_stl_files():
@@ -109,20 +119,14 @@ def build_stl_files(scad_files):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="STL Generator Helper")
-    parser.add_argument(
-        "--get-changed-files", action="store_true", help="Get changed SCAD files"
-    )
-    parser.add_argument(
-        "--get-all-files", action="store_true", help="Get all SCAD files"
-    )
+    parser.add_argument("--get-changed-files", action="store_true", help="Get changed SCAD files")
+    parser.add_argument("--get-all-files", action="store_true", help="Get all SCAD files")
     parser.add_argument(
         "--get-missing-files",
         action="store_true",
         help="Get SCAD files with missing STL files",
     )
-    parser.add_argument(
-        "--generate-report", action="store_true", help="Generate build report"
-    )
+    parser.add_argument("--generate-report", action="store_true", help="Generate build report")
     parser.add_argument(
         "--build",
         nargs="*",
