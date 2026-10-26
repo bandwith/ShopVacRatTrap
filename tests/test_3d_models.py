@@ -209,12 +209,49 @@ def test_library_files_have_no_top_level_renders() -> None:
         )
 
 
+def _transform_point(
+    pt: tuple[float, float, float],
+    rx_deg: float = 0.0,
+    ry_deg: float = 0.0,
+    rz_deg: float = 0.0,
+    tx: float = 0.0,
+    ty: float = 0.0,
+    tz: float = 0.0,
+) -> tuple[float, float, float]:
+    """Apply OpenSCAD's rotate([rx, ry, rz]) followed by translate([tx, ty, tz])."""
+    x, y, z = pt
+    if rx_deg:
+        r = math.radians(rx_deg)
+        y, z = y * math.cos(r) - z * math.sin(r), y * math.sin(r) + z * math.cos(r)
+    if ry_deg:
+        r = math.radians(ry_deg)
+        x, z = x * math.cos(r) + z * math.sin(r), -x * math.sin(r) + z * math.cos(r)
+    if rz_deg:
+        r = math.radians(rz_deg)
+        x, y = x * math.cos(r) - y * math.sin(r), x * math.sin(r) + y * math.cos(r)
+    return (x + tx, y + ty, z + tz)
+
+
+def _transformed_bbox(
+    stl_name: str,
+    transform_fn,
+) -> tuple[tuple[float, float, float], tuple[float, float, float]]:
+    """Compute world-space (min_xyz, max_xyz) of a printable STL under a rigid transform."""
+    tris = _parse_stl(MODELS_DIR / f"{stl_name}.stl")
+    pts = [transform_fn(v) for tri in tris for v in tri]
+    xs = [p[0] for p in pts]
+    ys = [p[1] for p in pts]
+    zs = [p[2] for p in pts]
+    return (min(xs), min(ys), min(zs)), (max(xs), max(ys), max(zs))
+
+
 def test_assembly_horizontal_layout_and_mating_interfaces() -> None:
-    """assembly.scad must place all 7 parts horizontally along +X on the Z>=0 ground plane."""
+    """All 8 printable STL files must assemble into the horizontal rat trap on Z=0."""
     asm_scad = (MODELS_DIR / "assembly.scad").read_text(encoding="utf-8")
     for mod_name in (
         "placed_ramp_entrance",
         "placed_body_front",
+        "placed_bait_station",
         "placed_bait_cap",
         "placed_body_rear",
         "placed_vacuum_adapter",
@@ -227,12 +264,73 @@ def test_assembly_horizontal_layout_and_mating_interfaces() -> None:
     trap_mods = (MODELS_DIR / "trap_modules.scad").read_text(encoding="utf-8")
     flange_od_match = re.search(r"flange_od\s*=\s*(\d+(?:\.\d+)?)\s*;", trap_mods)
     assert flange_od_match and float(flange_od_match.group(1)) == 130.0
-    assert "control_box_bolt_pattern()" in (MODELS_DIR / "vacuum_adapter_universal.scad").read_text(
-        encoding="utf-8"
+
+    # Transform all 8 printable STL files directly from their build-plate orientation (z>=0)
+    # into the assembly coordinate frame and verify flush mating & Z=0 ground contact.
+    def tube_place(x_off: float):
+        return lambda p: _transform_point(p, rx_deg=90, rz_deg=90, tx=x_off, tz=65.0)
+
+    ramp_min, ramp_max = _transformed_bbox("trap_ramp_entrance", tube_place(0.0))
+    front_min, front_max = _transformed_bbox("trap_body_front", tube_place(155.0))
+    bait_min, bait_max = _transformed_bbox("bait_station", tube_place(300.0))
+    rear_min, rear_max = _transformed_bbox("trap_body_rear", tube_place(400.0))
+    adap_min, adap_max = _transformed_bbox("vacuum_adapter_universal", tube_place(545.0))
+
+    box_min, box_max = _transformed_bbox(
+        "control_box_exit_mount",
+        lambda p: _transform_point(
+            (p[0] - 64.0, p[1], p[2]), rz_deg=180, tx=585.0, ty=-65.0, tz=0.0
+        ),
     )
-    assert "control_box_bolt_pattern()" in (MODELS_DIR / "control_box_exit_mount.scad").read_text(
-        encoding="utf-8"
+    lid_min, lid_max = _transformed_bbox(
+        "control_box_lid",
+        lambda p: _transform_point(
+            _transform_point(p, rx_deg=180, tx=-64.0, ty=108.0),
+            rz_deg=180,
+            tx=585.0,
+            ty=-65.0,
+            tz=73.0,
+        ),
     )
+    cap_min, cap_max = _transformed_bbox(
+        "bait_cap",
+        lambda p: _transform_point(
+            _transform_point(p, rz_deg=66.0),
+            rx_deg=90.0,
+            tx=355.0,
+            ty=71.2,
+            tz=65.0,
+        ),
+    )
+
+    # 1. All 5 tube sections + upright control box rest flat on the Z=0 ground plane
+    for name, bmin in (
+        ("trap_ramp_entrance", ramp_min),
+        ("trap_body_front", front_min),
+        ("bait_station", bait_min),
+        ("trap_body_rear", rear_min),
+        ("vacuum_adapter_universal", adap_min),
+        ("control_box_exit_mount", box_min),
+    ):
+        assert abs(bmin[2]) < 1e-2, f"{name} in assembly does not rest on Z=0 (z_min={bmin[2]})"
+
+    # 2. Each tube section's male lip (9.5mm = lip_length - 0.5mm clearance) seats inside
+    #    the next section's 10mm female socket while flanges clamp flush at 155/300/400/545mm.
+    assert abs(ramp_max[0] - (155.0 + 9.5)) < 0.2 and abs(front_min[0] - 155.0) < 0.2
+    assert abs(front_max[0] - (300.0 + 9.5)) < 0.2 and abs(bait_min[0] - 300.0) < 0.2
+    assert abs(bait_max[0] - (400.0 + 9.5)) < 0.2 and abs(rear_min[0] - 400.0) < 0.2
+    assert abs(rear_max[0] - (545.0 + 9.5)) < 0.2 and abs(adap_min[0] - 545.0) < 0.2
+
+    # 3. Upright control box mates flush with vacuum adapter bracket at Y = -65.0mm
+    #    and control box lid seats into top of control box at Z = 66..73mm
+    assert abs(adap_min[1] - (-65.0)) < 0.2 and abs(box_max[1] - (-65.0)) < 0.2
+    assert abs(box_max[2] - 69.0) < 0.2
+    assert abs(lid_min[2] - 66.0) < 0.2 and abs(lid_max[2] - 73.0) < 0.2
+
+    # 4. Bait cap engages bait_station's side bayonet port at X=355mm, Z=65mm
+    assert abs(0.5 * (cap_min[0] + cap_max[0]) - 355.0) < 1.0
+    assert abs(0.5 * (cap_min[2] + cap_max[2]) - 65.0) < 1.0
+    assert cap_min[1] < bait_max[1] < cap_max[1]
 
     asm_stl = MODELS_DIR / "assembly.stl"
     assert asm_stl.exists(), "Missing assembly.stl"
@@ -242,8 +340,8 @@ def test_assembly_horizontal_layout_and_mating_interfaces() -> None:
     x_span = max(xs) - min(xs)
     z_min = min(zs)
     assert abs(z_min) < 1e-3, f"Assembled rat trap should rest on ground plane z=0 (got {z_min})"
-    assert x_span > 550.0, (
-        f"Assembled rat trap should extend horizontally along +X (>550mm, got {x_span:.1f}mm)"
+    assert x_span > 650.0, (
+        f"Assembled 8-part rat trap should extend horizontally along +X (>650mm, got {x_span:.1f}mm)"
     )
 
 
@@ -285,3 +383,55 @@ def test_build_script_skips_already_updated_stls(monkeypatch: pytest.MonkeyPatch
     changed = build_script.get_changed_scad_files()
     assert "3d_models/bait_cap.scad" in changed
     assert "3d_models/trap_modules.scad" not in changed
+
+
+def test_component_allowances_and_rodent_resistance() -> None:
+    """Verify electronic component variation allowances, tool-free access, and rodent resistance."""
+    trap_mods = (MODELS_DIR / "trap_modules.scad").read_text(encoding="utf-8")
+    ctrl_box = (MODELS_DIR / "control_box_exit_mount.scad").read_text(encoding="utf-8")
+
+    def get_num(text: str, name: str) -> float:
+        match = re.search(rf"\b{name}\s*=\s*(\d+(?:\.\d+)?)\s*;", text)
+        assert match, f"Parameter {name} not found"
+        return float(match.group(1))
+
+    # 1. FDM variation tolerance & component mounting allowances
+    tol = get_num(trap_mods, "print_tolerance")
+    assert 0.2 <= tol <= 0.4, f"Expected print_tolerance in 0.2..0.4mm, got {tol}"
+
+    assert get_num(trap_mods, "stemma_qt_board_width") == 17.78
+    assert get_num(trap_mods, "stemma_qt_board_length") == 25.4
+    assert 2.65 <= get_num(trap_mods, "stemma_qt_hole_diameter") <= 2.85  # M2.5 clearance
+
+    assert get_num(trap_mods, "esp32_board_width") == 22.9
+    assert get_num(trap_mods, "esp32_board_length") == 50.8
+    assert get_num(trap_mods, "esp32_hole_spacing_x") == 20.32
+    assert get_num(trap_mods, "esp32_hole_spacing_y") == 48.26
+    assert 2.65 <= get_num(trap_mods, "esp32_hole_diameter") <= 2.85
+
+    assert get_num(trap_mods, "pir_dome_clearance") >= get_num(trap_mods, "pir_dome_diameter") + 1.5
+    assert get_num(trap_mods, "camera_lens_clearance") >= 14.0
+    assert get_num(trap_mods, "cable_channel_id") >= 8.0  # Clears ~6mm JST-SH connectors
+
+    # 2. Rodent-resistance structural wall & spigot invariants
+    wall_t = get_num(trap_mods, "wall_thickness")
+    flange_t = get_num(trap_mods, "flange_thickness")
+    box_wall = get_num(ctrl_box, "box_wall")
+    lip_len = get_num(trap_mods, "lip_length")
+    assert wall_t >= 3.0, f"Tube wall ({wall_t}mm) must be >= 3.0mm for rodent resistance"
+    assert flange_t >= 5.0, f"Flange thickness ({flange_t}mm) must be >= 5.0mm"
+    assert box_wall >= 4.0, f"Control box wall ({box_wall}mm) must be >= 4.0mm"
+    assert lip_len >= 10.0, f"Telescoping spigot ({lip_len}mm) must shield internal joint seam"
+
+    # 3. Tool-free servicing: bayonet twist-lock & thumbscrew/wing-nut flange clearance
+    assert get_num(trap_mods, "bayonet_tab_count") >= 3
+    assert get_num(trap_mods, "bayonet_rotation") >= 25
+    flange_od = get_num(trap_mods, "flange_od")
+    tube_od = get_num(trap_mods, "tube_od")
+    bolt_inset = get_num(trap_mods, "bolt_hole_inset")
+    bolt_radius = flange_od / 2.0 - bolt_inset
+    radial_finger_clearance = bolt_radius - tube_od / 2.0
+    assert radial_finger_clearance >= 7.5, (
+        f"Insufficient radial clearance ({radial_finger_clearance:.2f}mm) for M4 wing nuts/thumbscrews"
+    )
+    assert "module sensor_mounting_plate()" in ctrl_box
