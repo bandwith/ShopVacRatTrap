@@ -42,12 +42,14 @@ inline float accel_magnitude(float ax, float ay, float az) {
 //   ir_present         - IR presence sensor (STHS34PF80) state.
 //   ax, ay, az         - accelerometer axes, m/s^2.
 //   vibration_threshold- accel magnitude above which vibration counts, m/s^2.
+//   apds_detected      - APDS9960 short-range proximity confirmation (5th signal).
 //
 // Each independent signal contributes at most one to the score.
 inline int rodent_detection_score(bool camera_detected, float distance_mm,
                                    float near_mm, float far_mm, bool ir_present,
                                    float ax, float ay, float az,
-                                   float vibration_threshold) {
+                                   float vibration_threshold,
+                                   bool apds_detected = false) {
   int score = 0;
 
   // 1. Camera AI (placeholder until a real classifier is wired up).
@@ -62,7 +64,8 @@ inline int rodent_detection_score(bool camera_detected, float distance_mm,
   // 4. Vibration pattern (accelerometer magnitude over threshold).
   if (accel_magnitude(ax, ay, az) > vibration_threshold) score++;
 
-  // 5. Reserved for environmental/fault corroboration (not yet counted).
+  // 5. APDS9960 short-range proximity confirmation.
+  if (apds_detected) score++;
 
   return score;
 }
@@ -72,10 +75,11 @@ inline bool is_rodent_detected(bool camera_detected, float distance_mm,
                                float near_mm, float far_mm, bool ir_present,
                                float ax, float ay, float az,
                                float vibration_threshold,
-                               int quorum = kDefaultDetectionQuorum) {
+                               int quorum = kDefaultDetectionQuorum,
+                               bool apds_detected = false) {
   return rodent_detection_score(camera_detected, distance_mm, near_mm, far_mm,
-                                ir_present, ax, ay, az, vibration_threshold) >=
-         quorum;
+                                ir_present, ax, ay, az, vibration_threshold,
+                                apds_detected) >= quorum;
 }
 
 }  // namespace rat_trap

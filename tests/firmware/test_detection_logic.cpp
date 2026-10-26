@@ -1,8 +1,7 @@
 // Host-side unit tests for the Detection module (no ESPHome needed).
 //
 // Build & run:
-//   g++ -std=c++17 -I esphome/packages \
-//       tests/firmware/test_detection_logic.cpp -o /tmp/test_detection && /tmp/test_detection
+//   g++ -std=c++17 -Wall -Wextra -Werror -I esphome/packages tests/firmware/test_detection_logic.cpp -o /tmp/test_detection && /tmp/test_detection
 //
 // The point of this test is that the 4-of-5 rule, which used to be an
 // untestable YAML lambda string, now has a real test surface.
@@ -59,6 +58,15 @@ int main() {
   // Lower quorum makes detection easier.
   CHECK(is_rodent_detected(false, 150, 50, 500, true, 0, 0, 0, 12.0f,
                            /*quorum=*/2));
+
+  // 5th signal (APDS9960 proximity) allows all 4 hardware sensors to reach
+  // default quorum of 4 even while camera_detected is a placeholder (false).
+  CHECK(rodent_detection_score(false, 150, 50, 500, true, 0, 0, 20, 12.0f,
+                               /*apds_detected=*/true) == 4);
+  CHECK(is_rodent_detected(false, 150, 50, 500, true, 0, 0, 20, 12.0f,
+                           kDefaultDetectionQuorum, /*apds_detected=*/true));
+  CHECK(rodent_detection_score(true, 150, 50, 500, true, 0, 0, 20, 12.0f,
+                               /*apds_detected=*/true) == 5);
 
   if (failures == 0) {
     std::cout << "All detection_logic tests passed.\n";

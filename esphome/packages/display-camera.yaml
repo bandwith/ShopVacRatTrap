@@ -15,6 +15,7 @@ font:
 
 display:
   - platform: ssd1306_i2c
+    i2c_id: bus_a
     model: SSD1306 128x64
     address: 0x3C
     update_interval: 1s

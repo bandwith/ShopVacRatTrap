@@ -124,13 +124,8 @@ button:
           }
           // Check IR Presence Sensor (STHS34PF80)
           if (!id(ir_presence).has_state()) {
-             // Binary sensors might not have 'state' in the same way if not updated,
-             // but has_state() checks if it has received at least one value.
-             // STHS34PF80 is polling, so it should have a state.
-             // If it fails to init, it might not publish.
-             // Let's assume if it's missing, it's an issue.
-             // Actually, binary_sensor doesn't always have has_state() exposed in lambda easily?
-             // It does: boolean has_state() const
+            system_ok = false;
+            diagnostic_results += "STHS34PF80 IR presence sensor not responding. ";
           }
 
           if (!id(env_temperature).has_state()) {
