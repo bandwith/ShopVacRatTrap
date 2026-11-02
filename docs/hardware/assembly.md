@@ -127,6 +127,7 @@ The system features **integrated cable channels** to protect wires from rodents.
 1.  **Install ESPHome**: `pip install esphome`
 2.  **Connect**: Plug ESP32 into computer via USB.
 3.  **Flash**:
+<a id="camera-variant"></a>
     ```bash
     # For Standard Version
     esphome run esphome/rat-trap.yaml
@@ -146,6 +147,7 @@ The system features **integrated cable channels** to protect wires from rodents.
 
 ---
 
+<a id="maintenance"></a>
 ## 7. Maintenance
 
 To ensure reliable operation and safety:

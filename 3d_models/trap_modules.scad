@@ -70,7 +70,7 @@ oring_groove_width = 3;             // For 2.5mm cross-section O-ring
 oring_groove_depth = 1.5;           // Depth of O-ring channel
 
 // ============================================================
-// BOM COMPONENT DIMENSIONS - STEMMA QT Sensors (Adafruit Standard)
+// BOM COMPONENT DIMENSIONS - STEMMA QT Sensors (VL53L4CX, STHS34PF80, APDS9960, LSM6DSOX)
 // ============================================================
 stemma_qt_board_width = 17.78;      // 0.7" PCB width
 stemma_qt_board_length = 25.4;      // 1.0" PCB length
@@ -79,18 +79,14 @@ stemma_qt_hole_diameter = 2.7;      // M2.5 clearance hole
 stemma_qt_hole_spacing_x = 12.7;   // Mounting hole X spacing
 stemma_qt_hole_spacing_y = 20.3;   // Mounting hole Y spacing
 
-// ============================================================
-// BOM COMPONENT DIMENSIONS - PIR Motion Sensor (Adafruit 4871)
-// ============================================================
-pir_board_width = 24;               // PCB width (mm)
-pir_board_length = 32;              // PCB length (mm)
-pir_hole_diameter = 3.2;            // M3 clearance hole
-pir_hole_spacing = 28;             // Distance between mounting holes
-pir_dome_diameter = 12;            // PIR dome/lens diameter
-pir_dome_clearance = 14;           // Clearance hole for dome
+// Legacy PIR aliases (deprecated in favor of STHS34PF80)
+pir_board_width = 24;
+pir_board_length = 32;
+pir_dome_diameter = 12;
+pir_dome_clearance = 14;
 
 // ============================================================
-// BOM COMPONENT DIMENSIONS - Camera (Adafruit 5945 OV5640)
+// BOM COMPONENT DIMENSIONS - Camera (Adafruit 5946 OV5640 / Seeed 101021112)
 // ============================================================
 camera_board_size = 32;             // Square PCB (32x32mm)
 camera_hole_diameter = 2.7;         // M2.5 clearance hole
@@ -100,37 +96,87 @@ camera_lens_clearance = 14;         // M12 lens mount clearance hole
 // ============================================================
 // BOM COMPONENT DIMENSIONS - OLED Display (Adafruit 326, 128x64)
 // ============================================================
-oled_board_width = 27;              // Display PCB width
-oled_board_height = 27.5;           // Display PCB height
+oled_board_width = 27.0;            // Display PCB width (mm)
+oled_board_height = 27.5;           // Display PCB height (mm)
 oled_hole_diameter = 2.7;           // M2.5 clearance
-oled_active_width = 23;             // Visible display area width
-oled_active_height = 12;            // Visible display area height
+oled_active_width = 21.7;           // Visible active display area width (mm)
+oled_active_height = 10.9;          // Visible active display area height (mm)
+oled_cutout_width = 23.0;           // Panel viewing window cutout width (mm)
+oled_cutout_height = 12.0;          // Panel viewing window cutout height (mm)
 
 // ============================================================
-// BOM COMPONENT DIMENSIONS - ESP32 Feather
+// BOM COMPONENT DIMENSIONS - ESP32 Feather (Adafruit 5323)
 // ============================================================
-esp32_board_width = 22.9;           // PCB width
-esp32_board_length = 50.8;          // PCB length
+esp32_board_width = 22.9;           // PCB width (mm)
+esp32_board_length = 50.8;          // PCB length (mm)
 esp32_hole_diameter = 2.7;          // M2.5 clearance
 esp32_hole_spacing_x = 20.32;      // Mounting hole X spacing
 esp32_hole_spacing_y = 48.26;      // Mounting hole Y spacing
 
 // ============================================================
-// BOM COMPONENT DIMENSIONS - SSR (Panasonic AQA411VL)
+// BOM COMPONENT DIMENSIONS - SSR (Panasonic AQA411VL) & Heat Pad
 // ============================================================
-ssr_width = 25.5;                   // SSR module width
-ssr_length = 58;                    // SSR module length
-ssr_height = 40;                    // SSR module height
+ssr_length = 58.0;                  // Base length (mounting axis, mm)
+ssr_width = 43.0;                   // Base width (mm)
+ssr_height = 25.5;                  // Height off chassis (mm)
+ssr_hole_spacing = 47.5;            // Mounting holes center-to-center (mm)
+ssr_hole_diameter = 4.5;            // M4 clearance hole (mm)
+ssr_heat_pad_thickness = 1.65;      // Crydom HSP-7 thermal pad thickness (mm)
 
 // ============================================================
-// BOM COMPONENT DIMENSIONS - Hammond Enclosure (PN-1334-C)
+// BOM COMPONENT DIMENSIONS - Power Supply (Mean Well LRS-35-5)
 // ============================================================
-hammond_ext_length = 200;           // External length
-hammond_ext_width = 120;            // External width
-hammond_ext_height = 75;            // External height
-hammond_int_length = 192;           // Internal length
-hammond_int_width = 112;            // Internal width
-hammond_int_height = 69;            // Internal height
+psu_length = 99.0;                  // Chassis length (mm)
+psu_width = 82.0;                   // Chassis width (mm)
+psu_height = 30.0;                  // Chassis height (mm)
+psu_mount_spacing_x = 86.0;         // Chassis mounting hole spacing X (mm)
+psu_mount_spacing_y = 70.0;         // Chassis mounting hole spacing Y (mm)
+psu_mount_hole_dia = 3.5;           // M3 mounting hole clearance (mm)
+
+// ============================================================
+// BOM COMPONENT DIMENSIONS - Operator Controls & Power Sockets
+// ============================================================
+arcade_button_cutout_dia = 30.0;    // Adafruit 471 (30mm translucent arcade button)
+arcade_button_bezel_dia = 33.0;     // Bezel outer flange diameter (mm)
+arcade_button_depth = 35.0;         // Required depth behind panel (mm)
+
+estop_cutout_dia = 16.0;            // Schneider XB6ETN521P (16mm E-Stop switch)
+estop_head_dia = 32.0;              // Mushroom head diameter (mm)
+estop_depth = 55.0;                 // Depth behind panel (mm)
+
+c14_inlet_cutout_w = 27.5;          // Schurter DF11 C14 inlet cutout width (mm)
+c14_inlet_cutout_h = 19.8;          // Schurter DF11 C14 inlet cutout height (mm)
+c14_inlet_screw_spacing = 40.0;     // M3 screw hole spacing (mm)
+
+c13_outlet_cutout_w = 24.8;         // Schurter 6600.3100 C13 outlet cutout width (mm)
+c13_outlet_cutout_h = 32.5;         // Schurter 6600.3100 C13 outlet cutout height (mm)
+
+terminal_block_w = 10.0;            // GCT TBC05-02-1-G-G terminal block width (mm)
+terminal_block_l = 15.0;            // Terminal block length (mm)
+terminal_block_h = 12.0;            // Terminal block height (mm)
+
+// ============================================================
+// CONTROL BOX ENCLOSURE DIMENSIONS (Single Source of Truth)
+// ============================================================
+ctrl_box_wall = 4;                  // Box wall thickness (mm)
+ctrl_box_int_length = 120;          // Internal cavity length (X, mm)
+ctrl_box_int_width = 100;           // Internal cavity width (Y, mm)
+ctrl_box_int_height = 65;           // Internal cavity height (Z, mm)
+ctrl_box_outer_length = ctrl_box_int_length + 2*ctrl_box_wall; // 128mm
+ctrl_box_outer_width = ctrl_box_int_width + 2*ctrl_box_wall;   // 108mm
+ctrl_box_outer_height = ctrl_box_int_height + ctrl_box_wall;   // 69mm
+ctrl_box_lid_thickness = 4;         // Lid plate thickness (mm)
+ctrl_box_lid_post_diameter = 8;     // Corner screw post diameter (mm)
+ctrl_box_lid_post_inset = 6;        // Inset from inner wall to post center (mm)
+ctrl_box_lid_screw_diameter = 3.2;  // M3 tap/insert clearance
+
+// Legacy Hammond aliases
+hammond_ext_length = 200;
+hammond_ext_width = 120;
+hammond_ext_height = 75;
+hammond_int_length = 192;
+hammond_int_width = 112;
+hammond_int_height = 69;
 
 // ============================================================
 // CONTROL BOX <-> VACUUM ADAPTER MOUNTING INTERFACE

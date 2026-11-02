@@ -4,36 +4,43 @@
 
 # Component Sourcing Guide - ShopVac Rat Trap
 
+<a id="automated-bom-management"></a>
+
 ## Adafruit Components
 | Qty | Part Number | Description | Price | Link |
 |-----|------------|-------------|-------|------|
-| 1 | 5323 | ESP32-S3 Feather with 8MB Flash No PSRAM... | $13.00 | [Buy](https://www.adafruit.com/product/5323) |
-| 1 | 2830 | Feather Stacking Headers - 12-pin and 16... | $1.25 | [Buy](https://www.adafruit.com/product/2830) |
-| 1 | 3317 | VL53L0X Time of Flight Distance Sensor -... | $14.95 | [Buy](https://www.adafruit.com/product/3317) |
-| 1 | 326 | Monochrome 0.96" 128x64 OLED Display - S... | $14.95 | [Buy](https://www.adafruit.com/product/326) |
-| 1 | 2652 | BME280 Temperature Humidity Pressure Sen... | $14.95 | [Buy](https://www.adafruit.com/product/2652) |
-| 1 | 5625 | STEMMA QT / Qwiic 5-Port Hub... | $7.50 | [Buy](https://www.adafruit.com/product/5625) |
-| 1 | 3595 | APDS9960 Proximity Light RGB Gesture Sen... | $7.95 | [Buy](https://www.adafruit.com/product/3595) |
-| 1 | 4871 | PIR (motion) sensor (HC-SR501) - STEMMA ... | $5.95 | [Buy](https://www.adafruit.com/product/4871) |
-| 1 | 4401 | STEMMA QT / Qwiic JST SH 4-pin Cable - 5... | $1.95 | [Buy](https://www.adafruit.com/product/4401) |
-| 1 | 4399 | STEMMA QT / Qwiic JST SH 4-pin Cable - 5... | $0.75 | [Buy](https://www.adafruit.com/product/4399) |
-| 2 | 4397 | STEMMA QT / Qwiic JST SH 4-pin Cable - 1... | $0.95 | [Buy](https://www.adafruit.com/product/4397) |
-| 1 | 368 | Large Arcade Button 60mm - Red... | $4.95 | [Buy](https://www.adafruit.com/product/368) |
-| 1 | 4090 | Terminal Block Kit - 2.54mm pitch... | $9.95 | [Buy](https://www.adafruit.com/product/4090) |
-| 1 | 1877 | Silicone Cover Stranded-Core Wire - 2m 2... | $2.95 | [Buy](https://www.adafruit.com/product/1877) |
-| 1 | 1881 | Silicone Cover Stranded-Core Wire - 2m 2... | $2.95 | [Buy](https://www.adafruit.com/product/1881) |
-| 1 | 113991054 | Seeed Studio XIAO ESP32S3 Sense (with camera + mic) | $13.99 | [Buy](https://www.seeedstudio.com/XIAO-ESP32S3-Sense-p-5639.html) |
-| 1 | 5639 | High-Power IR LED - STEMMA JST PH... | $3.95 | [Buy](https://www.adafruit.com/product/5639) |
-| 1 | 1833 | Micro SD Card 8GB Class 10... | $9.95 | [Buy](https://www.adafruit.com/product/1833) |
-| 1 | 3893 | STEMMA JST PH 4-pin Cable - 200mm Long... | $1.25 | [Buy](https://www.adafruit.com/product/3893) |
+| 1 | 5323 | ESP32-S3 Feather with 8MB Flash No PSRAM | $17.50 | [Buy](https://www.adafruit.com/product/5323) |
+| 1 | 2830 | Feather Stacking Headers - 12-pin and 16-pin | $1.25 | [Buy](https://www.adafruit.com/product/2830) |
+| 1 | 5946 | OV5640 5MP Camera 120° Autofocus (DVP Variant) | $19.95 | [Buy](https://www.adafruit.com/product/5946) |
+| 1 | 5639 | High-Power IR LED - STEMMA JST PH 2mm | $3.95 | [Buy](https://www.adafruit.com/product/5639) |
+| 1 | 5425 | VL53L4CX Time of Flight Distance Sensor - STEMMA QT | $14.95 | [Buy](https://www.adafruit.com/product/5425) |
+| 1 | 6426 | STHS34PF80 IR Temperature & Presence Sensor - STEMMA QT | $14.95 | [Buy](https://www.adafruit.com/product/6426) |
+| 1 | 3595 | APDS9960 Proximity, Light, RGB, and Gesture Sensor - STEMMA QT | $7.50 | [Buy](https://www.adafruit.com/product/3595) |
+| 1 | 4438 | LSM6DSOX 6-DoF Accelerometer & Gyroscope - STEMMA QT | $11.95 | [Buy](https://www.adafruit.com/product/4438) |
+| 1 | 3421 | I2S MEMS Microphone Breakout - SPH0645LM4H | $6.95 | [Buy](https://www.adafruit.com/product/3421) |
+| 1 | 2652 | BME280 Temperature Humidity Pressure Sensor - STEMMA QT | $14.95 | [Buy](https://www.adafruit.com/product/2652) |
+| 1 | 326 | Monochrome 0.96" 128x64 OLED Display - STEMMA QT | $17.50 | [Buy](https://www.adafruit.com/product/326) |
+| 1 | 5625 | STEMMA QT / Qwiic 5-Port Hub | $2.50 | [Buy](https://www.adafruit.com/product/5625) |
+| 3 | 4210 | STEMMA QT / Qwiic JST SH 4-pin Cable - 100mm Long | $0.95 | [Buy](https://www.adafruit.com/product/4210) |
+| 1 | 3893 | STEMMA JST PH 2mm 3-Pin to Male Header Cable - 200mm | $1.25 | [Buy](https://www.adafruit.com/product/3893) |
+| 1 | 471 | Arcade Button - 30mm Translucent Red | $5.95 | [Buy](https://www.adafruit.com/product/471) |
+| 1 | 1877 | Silicone Cover Stranded-Core Wire - 2m 26AWG Red | $0.95 | [Buy](https://www.adafruit.com/product/1877) |
+| 1 | 1881 | Silicone Cover Stranded-Core Wire - 2m 26AWG Black | $0.95 | [Buy](https://www.adafruit.com/product/1881) |
+| 1 | 1833 | Micro SD Card 8GB Class 10 | $1.95 | [Buy](https://www.adafruit.com/product/1833) |
 
-
-## Mouser Components
+## Mouser & Distributor Sourced Components
 | Qty | Part Number | Description | Price | Link |
 |-----|------------|-------------|-------|------|
-| 1 | LRS-35-5 | Switching Power Supply 5V 7A Chassis Mou... | $18.95 | [Buy](https://www.mouser.com/ProductDetail/709-LRS35-5) |
-| 1 | 4300.0030 | IEC C14 Inlet with Switch... | $8.25 | [Buy](https://www.mouser.com/ProductDetail/693-4300.0030) |
-| 1 | 5320-W | NEMA 5-15R Outlet White... | $3.95 | [Buy](https://www.mouser.com/ProductDetail/546-5320-W) |
+| 1 | 101021112 | Seeed Studio Grove Vision AI Module V2 (Mouser 713-101021112) | $19.99 | [Buy](https://www.mouser.com/ProductDetail/713-101021112) |
+| 1 | LRS-35-5 | Mean Well 5V 7A Chassis Mount Switching Power Supply | $12.20 | [Buy](https://www.mouser.com/ProductDetail/709-LRS35-5) |
+| 1 | AQA411VL | Panasonic 25A Solid State Relay (Mouser 769-AQA411VL) | $21.76 | [Buy](https://www.mouser.com/ProductDetail/769-AQA411VL) |
+| 1 | HSP-7 | Crydom Thermal Pad for SSR (Mouser 558-HSP-7) | $1.65 | [Buy](https://www.mouser.com/ProductDetail/558-HSP-7) |
+| 1 | 4N35-X007 | Vishay Optocoupler (Mouser 782-4N35-X007) | $0.79 | [Buy](https://www.mouser.com/ProductDetail/782-4N35-X007) |
+| 1 | XB6ETN521P | Schneider Electric 16mm Red E-Stop Switch | $18.83 | [Buy](https://www.mouser.com/ProductDetail/996-XB6ETN521P) |
+| 1 | TBC05-02-1-G-G | GCT 2.54mm Pitch PCB Terminal Block | $0.79 | [Buy](https://www.mouser.com/ProductDetail/640-TBC05-02-1-G-G) |
+| 1 | PCS020-EE0502KS | Bourns 20A Split Core Current Transformer | $4.34 | [Buy](https://www.mouser.com/ProductDetail/652-PCS020-EE0502KS) |
+| 1 | DF11.2078.0010.01 | Schurter IEC C14 Inlet with Integrated Circuit Breaker & Switch | $44.44 | [Buy](https://www.mouser.com/ProductDetail/693-DF112078001001) |
+| 1 | 6600.3100 | Schurter Panel Mount IEC C13 Outlet | $2.22 | [Buy](https://www.mouser.com/ProductDetail/693-6600.3100) |
 
 ## 🚀 Quick Purchase Options
 
@@ -63,41 +70,53 @@
 
 ---
 
-## Components Previously Not Found in Nexar - Updated Sources
+## Components and Hardware Options
 
-### 1. STEMMA QT Camera System
-**Primary**: OV5640 5MP Camera (DVP interface)
-**Adafruit 5946** (120° autofocus): $19.95 - <https://www.adafruit.com/product/5946>
-**Features**: 5MP OV5640 sensor, autofocus, DVP parallel interface (not I2C)
-**Note**: Replaces the previously-listed Adafruit 5945 (72° lens), which went out
-of stock at Mouser (485-5945). 5946 uses the identical OV5640 sensor and DVP
-pinout, so it is a drop-in with **no firmware change**. Other in-stock lenses
-in the same PiCowbell family (5947 160°, 5948 120° low-distortion, 5949 w/ reset
-+ STEMMA QT) are also compatible.
-**Alternative**: OV2640 DVP module (e.g. ArduCam) - cheaper/2MP, but sourcing is
-inconsistent and may need pin/driver tweaks.
-**Caveat**: Despite the STEMMA-QT framing of the camera build, the camera is
-wired as a parallel DVP device in `rat-trap.yaml`, not on the I2C STEMMA QT bus.
+### 1. Camera & Vision Intelligence Options
 
-**High-Power IR LED System**:
-**Adafruit 5639**: $3.95 - <https://www.adafruit.com/product/5639>
-**Features**: 10+ meter range, STEMMA JST PH connector, thermal protection
-**Alternative**: Generic IR LEDs ($1-3) - lower range, requires soldering
+The system supports two distinct hardware vision architectures to balance simplicity, compute load, and data-logging depth:
 
-### 2. Time-of-Flight Sensor
-**Primary**: VL53L0X ToF Sensor Module
-**Adafruit 3317**: $7.95 - <https://www.adafruit.com/product/3317>
-**SparkFun SEN-14722**: $9.95 - <https://www.sparkfun.com/products/14722>
-**Alternative**: Generic VL53L0X modules on Amazon ($3-5)
-**Note**: 4m range sufficient for rat detection, cost-optimized professional sensor
+#### Option A: Direct DVP Image Capture (High-Resolution Visual Confirmation)
+* **Part**: Adafruit 5946 (120° autofocus) - [Adafruit 5946](https://www.adafruit.com/product/5946) / Mouser 485-5946 ($19.95)
+* **Features**: 5MP OV5640 sensor, autofocus, 8-bit DVP parallel interface directly to ESP32-S3 PSRAM (`rat-trap.yaml`).
+* **High-Power IR LED System**: Adafruit 5639 ($3.95) provides pulsed night-vision illumination.
+* **Role**: High-resolution evidence capture dispatched directly to Home Assistant via MQTT/API.
 
-### 2. Environmental Sensor
-**Primary**: BME280 Temperature/Humidity/Pressure Sensor - STEMMA QT
-**Adafruit 2652**: $14.95 - <https://www.adafruit.com/product/2652>
-**Note**: Replaces the previously-listed Adafruit 4816, which went out of stock
-at Mouser (485-4816). 2652 is the **same Bosch BME280 chip** on a STEMMA QT
-board at the same I2C address (0x77) — a true zero-solder, no-firmware-change
-drop-in.
+#### Option B: Edge-AI Vision & Multi-Modal Data Logger (On-Device ML & Acoustic Logging)
+* **Part**: Seeed Studio 101021112 (Grove Vision AI Module V2) - [Mouser 713-101021112](https://www.mouser.com/ProductDetail/713-101021112) ($19.99)
+* **Features**: Himax WiseEye2 HX6538 processor (dual Arm Cortex-M55 cores + Arm Ethos-U55 NPU).
+* **Onboard Telemetry & Logging**:
+  * **Onboard Digital PDM Microphone**: Continuous acoustic rodent vocalization and squeak detection without taxing the host MCU.
+  * **Onboard MicroSD Card Slot**: Stores local high-resolution event logs, raw images, and audio captures offline for remote or barn deployments.
+  * **UART Telemetry Stream**: Connects to ESP32-S3 pins `GPIO16`/`GPIO17` (`rat-trap-stemma-camera.yaml` + `packages/camera.yaml`) transmitting real-time bounding boxes, rodent classifications, and confidence scores.
+
+---
+
+### 2. Time-of-Flight Sensor (Ranging Confirmation)
+* **Primary**: VL53L4CX Time-of-Flight Distance Sensor - STEMMA QT
+* **Adafruit 5425**: $14.95 - [Adafruit 5425](https://www.adafruit.com/product/5425) / Mouser 485-5425
+* **Features**: Multi-target detection up to 6 meters, target distance filtering, and mm-accurate ranging inside the trap tube.
+
+---
+
+### 3. Thermal Presence & Motion Sensor
+* **Primary**: STHS34PF80 IR Temperature & Presence Sensor - STEMMA QT
+* **Adafruit 6426**: $14.95 - [Adafruit 6426](https://www.adafruit.com/product/6426) / Mouser 485-6426
+* **Features**: High-sensitivity optical thermal thermopile detecting living rodent body heat and motion even in total darkness.
+
+---
+
+### 4. 6-DoF Vibration & Tamper Sensor
+* **Primary**: LSM6DSOX 6-DoF Accelerometer and Gyroscope - STEMMA QT
+* **Adafruit 4438**: $11.95 - [Adafruit 4438](https://www.adafruit.com/product/4438) / Mouser 485-4438
+* **Features**: High-precision 6-axis inertial measurement unit detecting mechanical disturbance, gnawing, and rodent impact against the trap entrance.
+
+---
+
+### 5. Acoustic Detection & Environmental Telemetry
+* **Acoustic Sensor**: Adafruit 3421 (SPH0645LM4H I2S MEMS Microphone) - $6.95 - [Adafruit 3421](https://www.adafruit.com/product/3421) / Mouser 485-3421
+* **Environmental Sensor**: Adafruit 2652 (BME280 Temperature/Humidity/Pressure) - $14.95 - [Adafruit 2652](https://www.adafruit.com/product/2652) / Mouser 485-2652
+* **Optical Proximity**: Adafruit 3595 (APDS9960 Proximity, Light, Gesture) - $7.50 - [Adafruit 3595](https://www.adafruit.com/product/3595) / Mouser 485-3595
 **STEMMA QT upgrade alternatives** (keep zero-solder; need a one-line ESPHome
 platform change):
 - **BME680/BME688** (Adafruit 3660 / 5046) — adds VOC gas sensing (`bme680`).
@@ -130,21 +149,27 @@ the above satisfy the project goal.
 **Alternative**: CR Magnetics CR5220-20 - $32
 **⚠️ SAFETY CRITICAL**: Verify 600V insulation rating
 
-### 6. NEMA Outlet
-**Primary**: Kycon KPJX-5262-BK (NEMA 5-15R, Black)
-**Mouser 163-KPJX-5262-BK**: $3.20
-**Digi-Key 163-KPJX-5262-BK-ND**: $3.35
-**Alternative**: Schurter 4301.1405 - $4.50
-**Alternative**: Hubbell HBL5262 - $5.25
-**Note**: Panel-mount version for control box integration
+### 6. AC Inlets & Outlets
+**AC Inlet (Primary)**: Schurter DF11.2078.0010.01 (IEC C14 with integrated TA45 circuit breaker & switch)
+**Mouser 693-DF112078001001**: $44.44 - <https://www.mouser.com/ProductDetail/693-DF112078001001>
+**Features**: Integrated rocker switch, overload thermal circuit breaker, IEC 60320 C14 standard.
 
-### 7. Fuses
-**Primary**: Littelfuse 0218012.MXP (12A, 250V, Fast-blow)
-**Mouser 576-0218012.MXP**: $1.95
-**Digi-Key F2073-ND**: $2.10
-**Alternative**: Bel Fuse 5ST 12-R - $1.85
-**Alternative**: Cooper Bussman GMA-12A - $1.50
-**⚠️ SAFETY CRITICAL**: UL/CE listed for safety compliance
+**AC Outlet (Primary)**: Schurter 6600.3100 (IEC C13 Panel Mount Outlet)
+**Mouser 693-6600.3100**: $2.22 - <https://www.mouser.com/ProductDetail/693-6600.3100>
+**Features**: Snap-in/screw panel mount, 15A rating, mates with standard vacuum C14 plugs or C13/C14 appliance cords.
+
+### 7. Controls & Terminal Blocks
+**Arcade Button (Primary)**: Adafruit 471 (30mm Translucent Red Arcade Button)
+**Mouser 485-471 / Adafruit 471**: $5.95 - <https://www.adafruit.com/product/471>
+**Dimensions**: 30mm mounting hole diameter (replacing legacy 60mm button).
+
+**Emergency Stop Switch (Primary)**: Schneider Electric XB6ETN521P (16mm Red E-Stop)
+**Mouser 996-XB6ETN521P**: $18.83 - <https://www.mouser.com/ProductDetail/996-XB6ETN521P>
+**Features**: Push-lock, turn-reset industrial safety rated switch.
+
+**PCB Terminal Block (Primary)**: GCT TBC05-02-1-G-G (2.54mm Pitch)
+**Mouser 640-TBC05-02-1-G-G**: $0.79 - <https://www.mouser.com/ProductDetail/640-TBC05-02-1-G-G>
+**Features**: 2-position screw terminal block for robust signal interconnects.
 
 ### 9. STEMMA QT Cables & Accessories
 **Primary**: STEMMA QT Cable - 100mm
