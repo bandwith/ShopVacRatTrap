@@ -34,23 +34,23 @@ from pathlib import Path
 
 PRIMARY_DISTRIBUTOR = "Mouser"
 
-# ESPHome driver (top-level key or ``platform:`` value) -> manufacturer part
-# numbers in the BOM that satisfy it. Any one MPN being present is enough.
-HARDWARE_DRIVERS: dict[str, frozenset[str]] = {
-    "esp32": frozenset({"5323"}),  # Adafruit ESP32-S3 Feather
-    "psram": frozenset({"5323"}),
-    "deep_sleep": frozenset({"5323"}),
-    "apds9960": frozenset({"3595"}),
-    "vl53l4cx": frozenset({"5425"}),
-    "sths34pf80": frozenset({"6426"}),
-    "lsm6ds": frozenset({"4438"}),
-    "bme280_i2c": frozenset({"2652"}),
-    "ssd1306_i2c": frozenset({"326"}),
-    "esp32_camera": frozenset({"5946"}),
-    "ledc": frozenset({"5639"}),  # IR illuminator PWM
-    "monochromatic": frozenset({"5639"}),
+# ESPHome driver (top-level key or ``platform:`` value) -> (manufacturer,
+# manufacturer part number) tuples in the BOM that satisfy it. Any one pair
+# being present is enough.
+HARDWARE_DRIVERS: dict[str, frozenset[tuple[str, str]]] = {
+    "esp32": frozenset({("Adafruit", "5323")}),  # Adafruit ESP32-S3 Feather
+    "deep_sleep": frozenset({("Adafruit", "5323")}),
+    "apds9960": frozenset({("Adafruit", "3595")}),
+    "vl53l4cx": frozenset({("Adafruit", "5425")}),
+    "sths34pf80": frozenset({("Adafruit", "6426")}),
+    "lsm6ds": frozenset({("Adafruit", "4438")}),
+    "bme280_i2c": frozenset({("Adafruit", "2652")}),
+    "ssd1306_i2c": frozenset({("Adafruit", "326")}),
+    "esp32_camera": frozenset({("Adafruit", "5946")}),
+    "ledc": frozenset({("Adafruit", "5639")}),  # IR illuminator PWM
+    "monochromatic": frozenset({("Adafruit", "5639")}),
     # Grove Vision AI V2 over UART (camera variant).
-    "uart": frozenset({"101021112"}),
+    "uart": frozenset({("Seeed Studio", "101021112")}),
 }
 
 # Drivers/keys with no part to order: ESPHome core, logical sensors, buses
@@ -84,6 +84,7 @@ SOFTWARE_DRIVERS: frozenset[str] = frozenset(
         "display",
         "motion",  # container for the lsm6ds hub and its derived entities
         "rodent_classifier",  # on-device placeholder, no hardware
+        "psram",  # MCU integrated feature, no separate part to order
         # platforms
         "template",
         "gpio",  # pin binding; physical parts are covered by the pin audit
@@ -155,19 +156,21 @@ def _waive(check: str, subject: str, message: str) -> Finding:
 def audit(bom_rows: list[dict[str, str]], esphome_dir: Path) -> list[Finding]:
     """Return every orderability finding for this BOM against this firmware."""
     findings: list[Finding] = []
-    mpns = {row.get("Manufacturer Part Number", "") for row in bom_rows}
+    bom_parts = {
+        (row.get("Manufacturer", ""), row.get("Manufacturer Part Number", "")) for row in bom_rows
+    }
 
     for driver, files in sorted(firmware_drivers(esphome_dir).items()):
         where = ", ".join(sorted(files))
         if driver in HARDWARE_DRIVERS:
             wanted = HARDWARE_DRIVERS[driver]
-            if not wanted & mpns:
-                need = ", ".join(sorted(wanted)) or "no part chosen"
+            if not wanted & bom_parts:
+                need = ", ".join(f"{mfr} {mpn}" for mfr, mpn in sorted(wanted)) or "no part chosen"
                 findings.append(
                     _waive(
                         "firmware-coverage",
                         driver,
-                        f"used in {where} but no BOM row provides it (expected MPN: {need})",
+                        f"used in {where} but no BOM row provides it (expected: {need})",
                     )
                 )
         elif driver not in SOFTWARE_DRIVERS:
@@ -181,6 +184,7 @@ def audit(bom_rows: list[dict[str, str]], esphome_dir: Path) -> list[Finding]:
 
     for row in bom_rows:
         ref = row.get("Reference Designator") or row.get("Manufacturer Part Number", "?")
+        mpn = row.get("Manufacturer Part Number", "")
         dist = row.get("Distributor", "")
         sku = row.get("Distributor Part Number", "")
         if dist != PRIMARY_DISTRIBUTOR:
@@ -197,6 +201,17 @@ def audit(bom_rows: list[dict[str, str]], esphome_dir: Path) -> list[Finding]:
             findings.append(
                 _waive("sku-format", ref, f"{dist} SKU {sku!r} doesn't match {pattern.pattern}")
             )
+        elif dist == "Mouser" and sku:
+            norm_mpn = re.sub(r"[^A-Za-z0-9]", "", mpn).lower()
+            norm_suffix = re.sub(r"[^A-Za-z0-9]", "", sku.partition("-")[2]).lower()
+            if not norm_mpn or norm_mpn not in norm_suffix:
+                findings.append(
+                    _waive(
+                        "sku-format",
+                        ref,
+                        f"Mouser SKU {sku!r} does not embed normalized MPN {mpn!r}",
+                    )
+                )
     return findings
 
 
