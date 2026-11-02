@@ -1,0 +1,79 @@
+{
+  "schema_version": "1.0",
+  "build_volume_mm": {
+    "x": 220.0,
+    "y": 220.0,
+    "z": 250.0
+  },
+  "library_files": [
+    "helpers.scad",
+    "trap_modules.scad"
+  ],
+  "assembly_file": "assembly.scad",
+  "parts": [
+    {
+      "name": "bait_cap",
+      "scad_file": "3d_models/bait_cap.scad",
+      "stl_file": "3d_models/bait_cap.stl",
+      "quantity": 1,
+      "description": "Twist-lock bait cap with 3-tab bayonet lock",
+      "assembly_module": "placed_bait_cap"
+    },
+    {
+      "name": "bait_station",
+      "scad_file": "3d_models/bait_station.scad",
+      "stl_file": "3d_models/bait_station.stl",
+      "quantity": 1,
+      "description": "Removable baiting section with bayonet lock port",
+      "assembly_module": "placed_bait_station"
+    },
+    {
+      "name": "control_box_exit_mount",
+      "scad_file": "3d_models/control_box_exit_mount.scad",
+      "stl_file": "3d_models/control_box_exit_mount.stl",
+      "quantity": 1,
+      "description": "Electronics enclosure base with adapter mounting bracket",
+      "assembly_module": "placed_control_box"
+    },
+    {
+      "name": "control_box_lid",
+      "scad_file": "3d_models/control_box_lid.scad",
+      "stl_file": "3d_models/control_box_lid.stl",
+      "quantity": 1,
+      "description": "Snap-fit / screw-mounted enclosure lid with OLED and button cutouts",
+      "assembly_module": "placed_control_box_lid"
+    },
+    {
+      "name": "trap_body_front",
+      "scad_file": "3d_models/trap_body_front.scad",
+      "stl_file": "3d_models/trap_body_front.stl",
+      "quantity": 1,
+      "description": "Front body tube section with sensor mounts",
+      "assembly_module": "placed_body_front"
+    },
+    {
+      "name": "trap_body_rear",
+      "scad_file": "3d_models/trap_body_rear.scad",
+      "stl_file": "3d_models/trap_body_rear.stl",
+      "quantity": 1,
+      "description": "Rear body tube section with vacuum chamber transition",
+      "assembly_module": "placed_body_rear"
+    },
+    {
+      "name": "trap_ramp_entrance",
+      "scad_file": "3d_models/trap_ramp_entrance.scad",
+      "stl_file": "3d_models/trap_ramp_entrance.stl",
+      "quantity": 1,
+      "description": "4-inch horizontal entry ramp with anti-backout teeth",
+      "assembly_module": "placed_ramp_entrance"
+    },
+    {
+      "name": "vacuum_adapter_universal",
+      "scad_file": "3d_models/vacuum_adapter_universal.scad",
+      "stl_file": "3d_models/vacuum_adapter_universal.stl",
+      "quantity": 1,
+      "description": "Universal stepped vacuum hose adapter and control box mount",
+      "assembly_module": "placed_vacuum_adapter"
+    }
+  ]
+}
