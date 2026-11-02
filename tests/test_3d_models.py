@@ -445,3 +445,54 @@ def test_component_allowances_and_rodent_resistance() -> None:
         f"Insufficient radial clearance ({radial_finger_clearance:.2f}mm) for M4 wing nuts/thumbscrews"
     )
     assert "module sensor_mounting_plate()" in ctrl_box
+
+
+def test_authoritative_dimensions_consistency() -> None:
+    """Dimensional definitions in component-dimensions.md and trap_modules.scad must be aligned."""
+    doc_text = (REPO_ROOT / "docs" / "hardware" / "component-dimensions.md").read_text(
+        encoding="utf-8"
+    )
+    trap_mods = (MODELS_DIR / "trap_modules.scad").read_text(encoding="utf-8")
+
+    def get_num(text: str, name: str) -> float:
+        match = re.search(rf"\b{name}\s*=\s*(\d+(?:\.\d+)?)\s*;", text)
+        assert match, f"Parameter {name} not found"
+        return float(match.group(1))
+
+    # SSR dimensions: 58.0mm (L) x 43.0mm (W) x 25.5mm (H)
+    assert "58.0mm (L) × 43.0mm (W) × 25.5mm (H)" in doc_text
+    assert get_num(trap_mods, "ssr_length") == 58.0
+    assert get_num(trap_mods, "ssr_width") == 43.0
+    assert get_num(trap_mods, "ssr_height") == 25.5
+    assert get_num(trap_mods, "ssr_hole_spacing") == 47.5
+
+    # Power supply dimensions: 99.0mm (L) x 82.0mm (W) x 30.0mm (H)
+    assert "99.0mm (L) × 82.0mm (W) × 30.0mm (H)" in doc_text
+    assert get_num(trap_mods, "psu_length") == 99.0
+    assert get_num(trap_mods, "psu_width") == 82.0
+    assert get_num(trap_mods, "psu_height") == 30.0
+
+    # Controls & Sockets
+    assert get_num(trap_mods, "arcade_button_cutout_dia") == 30.0
+    assert get_num(trap_mods, "estop_cutout_dia") == 16.0
+    assert get_num(trap_mods, "c14_inlet_cutout_w") == 27.5
+    assert get_num(trap_mods, "c14_inlet_cutout_h") == 19.8
+    assert get_num(trap_mods, "c13_outlet_cutout_w") == 24.8
+    assert get_num(trap_mods, "c13_outlet_cutout_h") == 32.5
+
+
+def test_control_box_layout_and_cutout_features() -> None:
+    """Control box models must define explicit cutouts and clearances for all internal BOM components."""
+    ctrl_box = (MODELS_DIR / "control_box_exit_mount.scad").read_text(encoding="utf-8")
+    ctrl_lid = (MODELS_DIR / "control_box_lid.scad").read_text(encoding="utf-8")
+
+    # Box cutouts
+    assert "c14_inlet_cutout_h" in ctrl_box
+    assert "c13_outlet_cutout_h" in ctrl_box
+    assert "psu_mount_spacing_x" in ctrl_box
+    assert "ssr_heat_pad_thickness" in ctrl_box
+
+    # Lid cutouts
+    assert "arcade_button_cutout_dia" in ctrl_lid
+    assert "estop_cutout_dia" in ctrl_lid
+    assert "oled_cutout_width" in ctrl_lid
