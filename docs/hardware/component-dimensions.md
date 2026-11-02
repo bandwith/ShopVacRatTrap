@@ -5,29 +5,41 @@
 ### Power & Control
 
 #### Panasonic AQA411VL Solid State Relay
-- **Dimensions:** 40mm (W) × 58mm (L) × 25.5mm (H)
-- **Mounting:** Panel mount with screw terminals
+- **Dimensions:** 58.0mm (L) × 43.0mm (W) × 25.5mm (H)
+- **Mounting:** Panel mount with 2× M4 clearance holes, 47.5mm spacing
 - **Control:** 4-32V DC (3.3V compatible)
 - **Load:** 25A @ 75-250V AC
 - **Features:** Built-in LED, zero-cross switching, 4000V isolation
-- **Heatsink:** Crydom HSP-7 thermal pad required
-- **3D Model Impact:** Must accommodate in enclosure with thermal clearance
+- **Heatsink:** Crydom HSP-7 thermal pad required (1.65mm thickness allowance)
+- **3D Model Impact:** Must accommodate in enclosure with thermal clearance and M4 mounting bosses
 
 #### Mean Well LRS-35-5 Power Supply
-- **Dimensions:** 99mm (L) × 82mm (W) × 30mm (H)
-- **Mounting:** Chassis mount, 4× M4 screw holes
+- **Dimensions:** 99.0mm (L) × 82.0mm (W) × 30.0mm (H)
+- **Mounting:** Chassis mount, 4× M3 screw holes (86.0mm × 70.0mm spacing)
 - **Output:** 5V DC, 7A
 - **Input:** 100-240V AC universal
-- **3D Model Impact:** Must fit in Hammond enclosure with ventilation
+- **3D Model Impact:** Must fit in enclosure cavity with ventilation clearance
 
 #### Schneider XB6ETN521P Emergency Stop
-- **Panel Cutout:** 16mm diameter
-- **Mushroom Head:** 32mm diameter
-- **Panel Thickness:** 0.5-6mm
-- **Behind Panel Depth:** ~55mm
-- **Minimum Clearance:** 41mm
+- **Panel Cutout:** 16.0mm diameter
+- **Mushroom Head:** 32.0mm diameter
+- **Panel Thickness:** 0.5-6.0mm
+- **Behind Panel Depth:** ~55.0mm
+- **Minimum Clearance:** 41.0mm
 - **Contacts:** 2NC + 2NO
-- **3D Model Impact:** 16mm hole in control box front panel
+- **3D Model Impact:** 16mm cutout hole in control box lid/panel
+
+#### Schurter DF11.2078.0010.01 IEC C14 Inlet & Switch
+- **Panel Cutout:** 27.5mm (W) × 19.8mm (H)
+- **Flange Mounting:** 2× M3 screw holes, 40.0mm spacing
+- **Features:** Integrated rocker switch and thermal circuit breaker
+- **3D Model Impact:** Power inlet cutout on left wall of enclosure
+
+#### Schurter 6600.3100 IEC C13 AC Outlet
+- **Panel Cutout:** 24.8mm (W) × 32.5mm (H)
+- **Mounting:** Snap-in panel mount
+- **Rating:** 15A @ 250V AC
+- **3D Model Impact:** Vacuum output power socket cutout on right wall of enclosure
 
 ### Enclosure
 
@@ -50,32 +62,38 @@
 - **STEMMA QT:** Built-in connector on board
 - **3D Model Impact:** Precise mounting plate needed
 
-#### Adafruit VL53L0X ToF Sensor (3317)
+#### Adafruit VL53L4CX ToF Sensor (5425)
 - **PCB:** 17.78mm × 25.4mm (STEMMA QT standard 0.7" × 1.0")
-- **Mounting Holes:** 4× holes, M2.5 compatible
+- **Mounting Holes:** 4× holes, M2.5 compatible (12.7mm × 20.3mm spacing)
 - **STEMMA QT:** Side-mounted JST SH connector
 - **Sensor Height:** ~3mm above PCB
-- **Range:** 0.05-1.2m
+- **Range:** 0.05-6.0m
 - **3D Model Impact:** Standard STEMMA QT mount
 
 #### Adafruit APDS9960 Proximity/Gesture (3595)
 - **PCB:** 17.78mm × 25.4mm (STEMMA QT standard)
-- **Mounting Holes:** 4× holes, M2.5 compatible
+- **Mounting Holes:** 4× holes, M2.5 compatible (12.7mm × 20.3mm spacing)
 - **STEMMA QT:** Side-mounted
 - **Sensor Window:** Top-facing, needs clear view
 - **3D Model Impact:** Top-down orientation required
 
-#### Adafruit PIR Motion Sensor (4871)
-- **PCB:** ~32mm × 24mm
-- **PIR Dome:** 10mm diameter hemisphere
-- **Mounting:** 2× M3 holes, 28mm spacing
-- **STEMMA:** 3-pin JST connector
-- **Detection Range:** 120° cone, 3-7m
-- **3D Model Impact:** Dome needs clearance, forward-facing
+#### STHS34PF80 IR Temperature & Presence Sensor (6426)
+- **PCB:** 17.78mm × 25.4mm (STEMMA QT standard)
+- **Mounting Holes:** 4× holes, M2.5 compatible (12.7mm × 20.3mm spacing)
+- **STEMMA QT:** Side-mounted JST SH
+- **Detection:** High-sensitivity optical thermal motion/presence
+- **3D Model Impact:** Standard STEMMA QT mount, forward-facing
+
+#### Adafruit LSM6DSOX 6-DoF Accelerometer (4438)
+- **PCB:** 17.78mm × 25.4mm (STEMMA QT standard)
+- **Mounting Holes:** 4× holes, M2.5 compatible (12.7mm × 20.3mm spacing)
+- **STEMMA QT:** Side-mounted
+- **3D Model Impact:** Rigid chassis mounting for vibration detection
 
 #### Adafruit OLED Display 128×64 (326)
-- **PCB:** 27mm × 27.5mm
-- **Display Area:** 21.7mm × 10.9mm (visible)
+- **PCB:** 27.0mm × 27.5mm
+- **Display Area:** 21.7mm × 10.9mm (visible active area)
+- **Panel Window Cutout:** 23.0mm × 12.0mm
 - **STEMMA QT:** Bottom-mounted
 - **Mounting Holes:** 2× M2.5, 4mm from edges
 - **Thickness:** ~7mm total
@@ -88,15 +106,20 @@
 - **Sensor:** Top surface, needs airflow
 - **3D Model Impact:** Standard mount with ventilation
 
-### Camera System (Optional)
+### Camera & Audio Systems (Optional)
 
-#### Adafruit OV5640 Camera (5946)
+#### Adafruit OV5640 Camera (5946 - Option A)
 - **PCB:** 32mm × 32mm
 - **Lens:** 8mm diameter, M12 mount
-- **STEMMA QT:** Side-mounted
 - **Mounting Holes:** 4× M2.5 in corners, 28mm spacing
 - **Focal Distance:** Adjustable via lens rotation
 - **3D Model Impact:** 32mm square mount with lens clearance
+
+#### Seeed Studio Grove Vision AI Module V2 (101021112 - Option B)
+- **PCB:** 40mm × 40mm
+- **Features:** Dual Cortex-M55 + Ethos-U55 NPU, onboard PDM microphone, MicroSD card slot
+- **Mounting Holes:** 4× M2.5 in corners
+- **3D Model Impact:** Enclosure mounting with MicroSD access
 
 #### Adafruit High-Power IR LED (5639)
 - **PCB:** Small breakout
@@ -107,13 +130,12 @@
 
 ### User Interface
 
-#### Adafruit Large Arcade Button (368)
-- **Button Diameter:** 60mm
-- **Panel Cutout:** 24mm diameter
-- **Mounting Depth:** ~40mm behind panel
-- **Snap-in:** No screws required
-- **Switch:** SPST momentary
-- **3D Model Impact:** 24mm hole in control box panel
+#### Adafruit Arcade Button (471)
+- **Button Cutout Diameter:** 30.0mm (standard arcade button hole)
+- **Bezel Outer Diameter:** 33.0mm
+- **Mounting Depth:** ~35.0mm behind panel
+- **Switch:** SPST momentary with built-in LED
+- **3D Model Impact:** 30mm hole in control box lid panel
 
 ### Cables
 

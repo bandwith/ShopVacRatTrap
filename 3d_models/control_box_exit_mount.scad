@@ -8,15 +8,15 @@ include <trap_modules.scad>
 
 // ========== CORE PARAMETERS ==========
 
-box_wall = 4;                       // Box wall thickness (mm)
-internal_length = 120;              // Internal cavity length (X)
-internal_width = 100;               // Internal cavity width (Y)
-internal_height = 65;               // Internal cavity height (Z)
+box_wall = 4;                       // Box wall thickness (mm, matches ctrl_box_wall)
+internal_length = 120;              // Internal cavity length (X, matches ctrl_box_int_length)
+internal_width = 100;               // Internal cavity width (Y, matches ctrl_box_int_width)
+internal_height = 65;               // Internal cavity height (Z, matches ctrl_box_int_height)
 
 // Derived outer dimensions
-outer_length = internal_length + 2*box_wall; // 128mm
-outer_width = internal_width + 2*box_wall;   // 108mm
-outer_height = internal_height + box_wall;   // 69mm (open top, closed by lid)
+outer_length = ctrl_box_outer_length; // 128mm
+outer_width = ctrl_box_outer_width;   // 108mm
+outer_height = ctrl_box_outer_height; // 69mm (open top, closed by lid)
 
 // Sensor window (rear face, Y=0 side - faces vacuum adapter bracket)
 window_width = sensor_window_width; // 44mm
@@ -25,9 +25,9 @@ gasket_recess_depth = 2;            // Depth of gasket groove ledge (mm)
 gasket_recess_margin = 2.5;         // Extra margin around window for gasket (mm)
 
 // Lid screw posts
-lid_post_diameter = 8;              // OD of screw post (mm)
+lid_post_diameter = ctrl_box_lid_post_diameter; // 8mm
 lid_screw_diameter = 3;             // M3 tap/insert hole in post (mm)
-lid_post_inset = 6;                 // Distance from inner wall to post center (mm)
+lid_post_inset = ctrl_box_lid_post_inset; // 6mm
 
 // Cable gland holes (PG7 = 12.5mm)
 cable_gland_diameter = 12.5;        // PG7 gland clearance
@@ -69,6 +69,23 @@ module control_box_exit_mount() {
         translate([outer_length - 24, outer_width + 1, 22])
             rotate([90, 0, 0])
                 cylinder(d=cable_gland_diameter, h=box_wall + 2);
+
+        // --- IEC C14 INLET CUTOUT (X=0 left wall, Schurter DF11) ---
+        translate([-1, outer_width/2, 32]) {
+            rotate([0, 90, 0]) {
+                cube([c14_inlet_cutout_h, c14_inlet_cutout_w, box_wall + 4], center=true);
+                for (dy = [-c14_inlet_screw_spacing/2, c14_inlet_screw_spacing/2]) {
+                    translate([0, dy, 0])
+                        cylinder(d=3.5, h=box_wall + 4, center=true);
+                }
+            }
+        }
+
+        // --- IEC C13 OUTLET CUTOUT (X=outer_length right wall, Schurter 6600.3100) ---
+        translate([outer_length + 1, outer_width/2, 32]) {
+            rotate([0, -90, 0])
+                cube([c13_outlet_cutout_h, c13_outlet_cutout_w, box_wall + 4], center=true);
+        }
     }
 
     // --- LID SCREW POSTS (4x inside corners, fused into walls and floor) ---
@@ -110,15 +127,32 @@ module control_box_exit_mount() {
             }
         }
 
-        // SSR mount posts (Panasonic AQA411VL, positioned at X_int=64..112 inside 120mm cavity)
+        // SSR mount posts (Panasonic AQA411VL, 47.5mm spacing + HSP-7 thermal pad elevation)
         translate([64, 50, -1]) {
-            for (dx = [0, ssr_length - 10]) {
+            // Thermal pad relief platform (+1.65mm)
+            translate([-4, -ssr_width/2, 0])
+                cube([ssr_hole_spacing + 8, ssr_width, ssr_heat_pad_thickness + 1]);
+            for (dx = [0, ssr_hole_spacing]) {
                 translate([dx, 0, 0])
                     difference() {
-                        cylinder(d=6.5, h=6);
+                        cylinder(d=7.0, h=7.65);
                         translate([0, 0, 0.5])
-                            cylinder(d=3.2, h=6);
+                            cylinder(d=ssr_hole_diameter, h=8);
                     }
+            }
+        }
+
+        // Mean Well LRS-35-5 Power Supply mounting posts (86mm x 70mm chassis spacing)
+        translate([17, 15, -1]) {
+            for (dx = [0, psu_mount_spacing_x]) {
+                for (dy = [0, psu_mount_spacing_y]) {
+                    translate([dx, dy, 0])
+                        difference() {
+                            cylinder(d=6.0, h=5);
+                            translate([0, 0, 0.5])
+                                cylinder(d=psu_mount_hole_dia, h=5.5);
+                        }
+                }
             }
         }
 

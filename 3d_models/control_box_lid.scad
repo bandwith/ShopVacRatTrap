@@ -9,26 +9,25 @@ include <trap_modules.scad>
 
 // ========== CORE PARAMETERS ==========
 
-// Must match control_box_exit_mount.scad dimensions
-box_wall = 4;
-internal_length = 120;
-internal_width = 100;
-internal_height = 65;
+box_wall = 4;                       // Box wall thickness (mm, matches ctrl_box_wall)
+internal_length = 120;              // Internal cavity length (X, matches ctrl_box_int_length)
+internal_width = 100;               // Internal cavity width (Y, matches ctrl_box_int_width)
+internal_height = 65;               // Internal cavity height (Z, matches ctrl_box_int_height)
 
 // Lid dimensions
-lid_thickness = 4;                  // Main plate thickness (z = 0..4mm)
+lid_thickness = ctrl_box_lid_thickness;
 lip_depth = 3;                      // Internal registration lip height (z = 4..7mm)
 lip_width = 2.4;                    // Registration lip wall thickness (mm)
 lip_clearance = print_tolerance;    // Clearance inside box cavity (0.3mm)
 
-// Derived outer dimensions (must match box)
-outer_length = internal_length + 2*box_wall; // 128mm
-outer_width = internal_width + 2*box_wall;   // 108mm
+// Derived outer dimensions (matches enclosure)
+outer_length = ctrl_box_outer_length; // 128mm
+outer_width = ctrl_box_outer_width;   // 108mm
 
-// Lid mounting (must match screw post positions in control_box_exit_mount.scad)
-lid_post_diameter = 8;
-lid_post_inset = 6;                 // Same as box
-screw_clearance = 3.5;              // M3 clearance hole
+// Lid mounting (matches screw posts in control_box_exit_mount.scad)
+lid_post_diameter = ctrl_box_lid_post_diameter;
+lid_post_inset = ctrl_box_lid_post_inset;
+screw_clearance = ctrl_box_lid_screw_diameter;
 countersink_diameter = 6.5;         // M3 countersink OD
 countersink_depth = 1.8;            // Depth of 45-deg countersink
 
@@ -86,16 +85,24 @@ module control_box_lid() {
             }
         }
 
-        // --- OLED DISPLAY CUTOUT (centered on lid) ---
-        translate([outer_length/2, outer_width/2, 0]) {
+        // --- OLED DISPLAY CUTOUT ---
+        translate([outer_length/2, outer_width/2 + 20, 0]) {
             // Viewing window (active display area through full thickness)
-            translate([-oled_active_width/2, -oled_active_height/2, -1])
-                cube([oled_active_width, oled_active_height, lid_thickness + 2]);
+            translate([-oled_cutout_width/2, -oled_cutout_height/2, -1])
+                cube([oled_cutout_width, oled_cutout_height, lid_thickness + lip_depth + 2]);
 
-            // PCB recess on inside face (z = 2..4mm, faces +Z so zero overhang)
+            // PCB recess on inside face (faces +Z, zero overhang)
             translate([-oled_board_width/2, -oled_board_height/2, lid_thickness - 2])
-                cube([oled_board_width, oled_board_height, 3]);
+                cube([oled_board_width, oled_board_height, lip_depth + 3]);
         }
+
+        // --- ARCADE BUTTON CUTOUT (Adafruit 471, 30mm diameter) ---
+        translate([outer_length/2 - 28, outer_width/2 - 16, -1])
+            cylinder(d=arcade_button_cutout_dia, h=lid_thickness + lip_depth + 3);
+
+        // --- EMERGENCY STOP SWITCH CUTOUT (Schneider XB6ETN521P, 16mm diameter) ---
+        translate([outer_length/2 + 28, outer_width/2 - 16, -1])
+            cylinder(d=estop_cutout_dia, h=lid_thickness + lip_depth + 3);
     }
 }
 
