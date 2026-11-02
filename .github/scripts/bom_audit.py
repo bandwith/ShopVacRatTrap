@@ -49,8 +49,8 @@ HARDWARE_DRIVERS: dict[str, frozenset[str]] = {
     "esp32_camera": frozenset({"5946"}),
     "ledc": frozenset({"5639"}),  # IR illuminator PWM
     "monochromatic": frozenset({"5639"}),
-    # Grove Vision AI V2 over UART (camera variant). No MPN chosen yet.
-    "uart": frozenset(),
+    # Grove Vision AI V2 over UART (camera variant).
+    "uart": frozenset({"101021112"}),
 }
 
 # Drivers/keys with no part to order: ESPHome core, logical sensors, buses
@@ -98,12 +98,7 @@ SOFTWARE_DRIVERS: frozenset[str] = frozenset(
 )
 
 # Gaps that are tracked by a ticket. Key: (check, subject). Value: reason.
-KNOWN_GAPS: dict[tuple[str, str], str] = {
-    ("firmware-coverage", "uart"): (
-        "Grove Vision AI V2 camera variant has no BOM line; "
-        "pending camera-variant hardware decision"
-    ),
-}
+KNOWN_GAPS: dict[tuple[str, str], str] = {}
 
 SKU_PATTERNS: dict[str, re.Pattern[str]] = {
     "Mouser": re.compile(r"^\d{2,3}-\S+$"),

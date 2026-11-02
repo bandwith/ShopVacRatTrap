@@ -100,6 +100,12 @@ def test_known_gaps_are_still_real():
     assert not stale, f"remove resolved waivers from KNOWN_GAPS: {sorted(stale)}"
 
 
+def test_repository_bom_has_zero_waived_gaps():
+    """All hardware options and drivers have 100% orderable BOM lines with zero waivers."""
+    waived = [str(f) for f in _repo_findings() if f.waived]
+    assert not waived, f"expected zero waived gaps, found: {waived}"
+
+
 def test_cli_exit_code(tmp_path, capsys):
     bom = tmp_path / "bom.csv"
     bom.write_text(HEADER, encoding="utf-8")
