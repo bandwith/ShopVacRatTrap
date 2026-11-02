@@ -7,14 +7,14 @@ This project implements a modern IoT-based rodent control system using advanced 
 
 ## Key Features
 
-- **Hybrid Detection System**: APDS9960 (primary) + VL53L0X (secondary) + PIR (tertiary) for maximum reliability
-- **5MP Camera System**: OV5640 STEMMA QT camera with autofocus and enhanced resolution
+- **Hybrid Detection System**: APDS9960 (optical proximity) + VL53L4CX (ToF distance) + STHS34PF80 (IR body heat/presence) + LSM6DSOX (6-DoF vibration/tamper) + Vision AI with 4-of-5 confirmation logic for maximum reliability
+- **Vision & Telemetry Options**: Direct 5MP OV5640 autofocus snapshot capture or Grove Vision AI V2 on-device Edge-AI NPU with MicroSD telemetry logging and acoustic monitoring
 - **High-Power Night Vision**: 10+ meter range IR illumination via STEMMA JST PH module
 - **Complete STEMMA Ecosystem**: Zero-solder assembly with plug-and-play modularity
 - **Integrated Status Display**: 128x64 OLED with comprehensive system monitoring
-- **Enhanced Processing**: ESP32-S3 Feather with 8MB Flash for advanced image processing
+- **Enhanced Processing**: ESP32-S3 Feather with 8MB Flash for advanced image processing and sensor fusion
 - **Modular Architecture**: All sensors connected via STEMMA QT/JST for easy maintenance, with ESPHome configuration split into modular packages for improved readability and reusability.
-- **Professional Controls**: Large arcade button emergency disable with visual feedback
+- **Professional Controls**: 30mm arcade button emergency disable with visual feedback and industrial E-stop
 - **Safety Compliant**: NEC/IEC electrical standards with 15A circuit protection
 - **WiFi Connectivity**: ESPHome integration with Home Assistant automation
 - **Global Support**: 120V/230V configurations for worldwide deployment
@@ -42,83 +42,78 @@ The authors and contributors of this project provide this design "as is" without
 
 The reliability of the trap hinges on its multi-stage detection logic, which is designed to be both highly sensitive to rodents and resilient to false positives. The system operates entirely offline, meaning a WiFi connection is not required for the core detection and trapping functionality.
 
-The detection process unfolds in a sequence as a rodent enters the trap:
+The detection process unfolds in a multi-modal sequence as a rodent enters the trap:
 
-1.  **Stage 1: Primary Detection (Proximity)**
-    *   **Sensor**: APDS9960 Proximity/Gesture Sensor
+1.  **Stage 1: Primary Detection (Optical Proximity)**
+    *   **Sensor**: APDS9960 Proximity/Gesture Sensor (`3595`)
     *   **Location**: Positioned at the top of the trap tube, looking down.
-    *   **Function**: This is the first line of detection. The APDS9960 emits infrared light and measures the reflection. When a rodent passes underneath, the reflected light intensity increases sharply, triggering the first detection flag. This sensor is highly effective for detecting the presence of a nearby object without being fooled by minor environmental changes.
+    *   **Function**: Emits infrared light and measures reflection. As a rodent enters, reflection rises sharply, triggering the optical entry flag.
 
-2.  **Stage 2: Secondary Confirmation (Distance)**
-    *   **Sensor**: VL53L0X Time-of-Flight (ToF) Sensor
-    *   **Location**: Positioned at the bottom of the trap tube, looking up.
-    *   **Function**: If the primary sensor is triggered, the system queries the ToF sensor. This sensor measures the exact distance to the object above it. A valid reading (e.g., a distance corresponding to the height of a rodent) confirms that a physical object is inside the tube, rather than just a shadow or a change in light. This provides a crucial secondary confirmation.
+2.  **Stage 2: Secondary Confirmation (Distance Ranging)**
+    *   **Sensor**: VL53L4CX Time-of-Flight (ToF) Distance Sensor (`5425`)
+    *   **Location**: Positioned inside the entrance tube looking inward.
+    *   **Function**: Measures precise distance to target in millimeters (within the configurable 50-500mm bounds) to verify a physical target is inside.
 
-### 2. Intelligent Hybrid Detection
-- **Multi-Sensor Logic**: Uses a "2 of 3" confirmation system (PIR Motion + VL53L0X Distance + APDS9960 Proximity) to eliminate false triggers. See **[Sensor Logic](../hardware/sensor-logic.md)** for detailed placement diagrams and logic explanation.
-- **Visual Classification**: A **Seeed Studio XIAO ESP32S3 Sense** (all-in-one camera module with 8MB PSRAM) runs TinyML models to classify rodents by species and size in real-time.
-- **Chew-Resistant Design**: All 3D printed components feature reinforced **4mm thick walls** to withstand rodent teeth and ensure long-term durability.
-- **Safety First**: Integrated emergency stop, current monitoring, and isolation protocols.
+3.  **Stage 3: Tertiary Confirmation (Thermal Body Heat)**
+    *   **Sensor**: STHS34PF80 IR Temperature & Presence Sensor (`6426`)
+    *   **Location**: Positioned on the entrance / body junction.
+    *   **Function**: Detects live infrared thermal signatures and optical blackbody motion.
 
-3.  **Stage 3: Tertiary Backup (Motion)**
-    *   **Location**: Positioned on the side of the trap tube.
-    *   **Function**: The PIR sensor detects the infrared radiation (heat) emitted by a moving animal. It serves as a robust backup and a third data point. Its wide field of view ensures that any movement within the trap zone is detected.
+4.  **Stage 4: Quaternary Confirmation (Mechanical Vibration & Tampering)**
+    *   **Sensor**: LSM6DSOX 6-DoF Accelerometer (`4438`)
+    *   **Location**: Rigidly coupled to the entrance/chassis.
+    *   **Function**: Flags acceleration transients above the threshold (e.g. >12.0 m/s²) caused by rodent movement, scurrying, or impact.
 
-4.  **Trigger Logic: 2 of 3 Confirmation**
-    *   The vacuum is only activated when **at least two of the three** detection systems are triggered simultaneously. This "2 of 3" logic is the key to preventing false positives. A single sensor anomaly (e.g., a flash of light fooling the proximity sensor, or a warm draft affecting the PIR) will not trigger the trap. This redundancy ensures that the system is confident that a rodent is inside before activation.
+5.  **Stage 5: Vision Intelligence & Data Logging**
+    *   **Option A (Direct DVP Snapshot)**: Adafruit 5946 OV5640 5MP camera captures high-resolution photo with high-power IR LED illumination.
+    *   **Option B (Edge-AI Telemetry & MicroSD Logger)**: Seeed Grove Vision AI Module V2 (`101021112`) runs on-device TinyML inference, streams bounding box/confidence data via UART, logs telemetry to MicroSD, and captures acoustic vocalizations via onboard PDM mic.
 
-5.  **Evidence Capture (Camera Variant)**
-    *   **Sensor**: OV5640 5MP Camera
-        *   **Function**: If the camera variant is used, a high-resolution image is captured the moment the trap is triggered. This image is then sent to Home Assistant for logging and notification, providing visual confirmation of the capture.
-
-This layered, multi-sensor approach ensures that the trap is both effective and reliable, minimizing the chances of false alarms while maximizing the probability of a successful capture.
+### Trigger Logic: Multi-Sensor Confirmation (4-of-5 Quorum)
+The vacuum trigger logic (`is_rodent_detected` in `detection_logic.h`) evaluates signals from all active sensors. The trap only triggers when the configurable quorum (default 4-of-5 signals) is satisfied simultaneously within the validation window, virtually eliminating false activations.
 
 ## Hardware Configurations
 
 ### **Standard Configuration** (ESP32-S3 Feather) - `rat-trap.yaml`
 
-> **Note:** The ESPHome configuration for this variant is now modularized using packages in the `../../../esphome/packages/` directory for improved maintainability and readability.
-
 **Electronics Enclosure** (Commercially available, user-supplied):
-- ESP32-S3 Feather controller
-- OLED display (128x64)
-- Large arcade button
-- Emergency stop switch
-- Power supply, SSR, and terminal blocks
+- ESP32-S3 Feather controller (`5323`)
+- OLED display (128x64, `326`)
+- 30mm arcade button (`471`)
+- Emergency stop switch (`XB6ETN521P`)
+- Mean Well LRS-35-5 power supply, Panasonic AQA411VL SSR, Schurter DF11 inlet, and Schurter 6600.3100 outlet
 
 **Trap Assembly**:
-- `trap_entrance` with integrated APDS9960 and VL53L0X sensors
-- `trap_body_main` with integrated PIR sensor
+- `trap_entrance` with integrated APDS9960 (`3595`) and VL53L4CX (`5425`) sensors
+- `trap_body_main` with integrated STHS34PF80 (`6426`) and LSM6DSOX (`4438`) sensors
 - `trap_funnel_adapter` to connect to a shop vacuum
 - `bait_station` (removable)
 
-### **STEMMA QT Camera System** (ESP32-S3 + OV5640) - `rat-trap-stemma-camera.yaml`
-**Electronics Enclosure** (Same as standard, with additional components):
-- All standard components
-- OV5640 5MP Camera
-- High-Power IR LED
+### **Camera & Advanced Telemetry Systems**
 
-**Trap Assembly** (Enhanced with camera and IR):
-- `trap_entrance` with integrated APDS9960, VL53L0X, and OV5640 camera
-- `trap_body_main` with integrated PIR sensor and high-power IR LED
-- `trap_funnel_adapter` to connect to a shop vacuum
-- `bait_station` (removable)
+#### Option A: Direct Snapshot Camera (OV5640) - `rat-trap.yaml`
+- Adafruit 5946 OV5640 5MP camera breakout wired via DVP parallel bus
+- Adafruit 5639 high-power IR LED for night illumination
+
+#### Option B: Edge-AI Vision & MicroSD Logger - `rat-trap-stemma-camera.yaml`
+- Seeed Studio Grove Vision AI Module V2 (`101021112`) with dual Cortex-M55 + Ethos-U55 NPU
+- Onboard digital microphone for rodent acoustic squeak detection
+- MicroSD card slot for offline event, photo, and audio telemetry logging
+- UART telemetry connection (`GPIO16`/`GPIO17`) streaming classification results to ESP32
 
 ## Detection Strategy - Enhanced Hybrid System
 
 ### **Multi-Modal Sensor Confirmation (Fully Offline Operation)**
-**Standard Configuration:**
-- **Primary**: APDS9960 proximity/gesture detection (offline)
-- **Secondary**: VL53L0X ToF distance confirmation
-- **Tertiary**: PIR motion sensor backup
-- **Logic**: 2 of 3 sensors required for trigger
+**Standard Configuration (4-of-5 Confirmation):**
+- **Optical Proximity**: APDS9960 proximity & gesture sensor
+- **Distance Ranging**: VL53L4CX Time-of-Flight sensor (50-500mm window)
+- **Thermal Signature**: STHS34PF80 IR temperature & motion/presence sensor
+- **Vibration & Tamper**: LSM6DSOX 6-DoF accelerometer
+- **Vision Confirmation**: Camera AI confirmation (OV5640 or Grove Vision AI)
+- **Logic**: Configurable quorum (default 4 of 5 signals) required for trigger
 
-**Camera Configuration:**
-- **Primary**: APDS9960 proximity/gesture detection (offline)
-- **Secondary**: VL53L0X ToF distance confirmation
-- **Tertiary**: PIR motion sensor backup
-- **Evidence**: OV5640 camera captures photo for Home Assistant logging
-- **Logic**: 2 of 3 detection sensors required for trigger
+**Vision & Evidence Capture Configurations:**
+- **Option A (OV5640 DVP)**: Direct 5MP high-resolution photo dispatched via ESPHome / Home Assistant
+- **Option B (Grove Vision AI V2)**: Continuous on-device Edge-AI classification, bounding boxes, acoustic rodent squeak detection, and local MicroSD offline event logging
 
 **Benefits of Enhanced Hybrid Approach:**
 - ✅ **Fully offline operation** - No WiFi required for detection logic
@@ -162,8 +157,9 @@ This layered, multi-sensor approach ensures that the trap is both effective and 
 [TRAP ASSEMBLY (3D Printed, Snap-Fit)]
 [trap_entrance] ← [trap_body_main] ← [trap_funnel_adapter]
     ├─ [APDS9960]
-    ├─ [VL53L0X]
-    └─ [PIR Sensor]
+    ├─ [VL53L4CX ToF]
+    ├─ [STHS34PF80 IR]
+    └─ [LSM6DSOX IMU]
 ```
 
 ### **STEMMA QT Power Management (Optimized)**
@@ -172,18 +168,20 @@ This layered, multi-sensor approach ensures that the trap is both effective and 
 ESP32-S3 Built-in 3.3V Regulator (600mA capacity):
 ├─ OLED Display: 25mA peak (Control Box - STEMMA QT)
 ├─ ESP32-S3 Core: 70mA WiFi active
-└─ INLET SENSOR ASSEMBLY (via 500mm STEMMA QT cable):
-   ├─ APDS9960 Proximity: 15mA active
-   ├─ VL53L0X ToF Sensor: 30mA peak
-   ├─ PIR Motion Sensor: 5mA active
+└─ INLET SENSOR ASSEMBLY (via STEMMA QT bus):
+   ├─ APDS9960 Proximity: 5mA active
+   ├─ VL53L4CX ToF Sensor: 30mA peak
+   ├─ STHS34PF80 IR Sensor: 1.5mA active
+   ├─ LSM6DSOX 6-DoF IMU: 0.55mA active
    ├─ BME280 Environmental: 3.6mA active
    ├─ STEMMA QT Hub: 5mA
-   └─ [Camera Variant]:
-      ├─ OV5640 Camera: 100mA capture, 20mA idle
-      └─ High-Power IR LED: 200mA pulsed
+   └─ [Vision Options]:
+      ├─ Option A: OV5640 Camera (100mA capture) + IR LED (200mA pulsed)
+      └─ Option B: Grove Vision AI V2 (powered independently via 5V rail)
 
-Total Load Standard: 149mA (75% headroom) ✅ EXCELLENT
-Total Load Camera: 379mA peak capture (37% headroom) ✅ APPROVED
+Total Load Standard: ~140mA (76% headroom) ✅ EXCELLENT
+Total Load Option A: ~440mA peak capture (26% headroom) ✅ APPROVED
+Total Load Option B: ~140mA on 3.3V bus (NPU runs on 5V rail) ✅ APPROVED
 ```
 
 ### **Safety Features (Code Compliant)**
@@ -297,7 +295,7 @@ The project includes automated purchase links and bulk upload files for streamli
 
 ### **Maintenance Schedule**
 
-- **Monthly**: Clean VL53L0X sensor lens, inspect all visible connections
+- **Monthly**: Clean VL53L4CX sensor lens, inspect all visible connections
 - **Quarterly**: Test emergency disable switch, verify all button functions
 - **Annually**: Professional electrical inspection, fuse replacement, firmware updates
 
