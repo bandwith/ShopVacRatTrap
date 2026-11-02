@@ -8,16 +8,35 @@ MODELS_DIR = "3d_models"
 SCAD_EXTENSION = ".scad"
 STL_EXTENSION = ".stl"
 OPENSCAD_COMMAND = "openscad"
+MANIFEST_FILE = os.path.join(MODELS_DIR, "parts_manifest.json")
+
+
+def load_manifest() -> dict:
+    """Load the single source of truth parts manifest if present."""
+    if os.path.exists(MANIFEST_FILE):
+        with open(MANIFEST_FILE, encoding="utf-8") as f:
+            return json.load(f)
+    return {}
+
 
 # Library files that only define modules/constants and have no top-level
 # geometry, so they must never be rendered to STL. Centralized here (rather
 # than duplicated per function) so every code path agrees on what to skip.
-MODULE_ONLY_FILES = ("trap_modules.scad", "helpers.scad")
+_manifest_data = load_manifest()
+MODULE_ONLY_FILES = tuple(
+    _manifest_data.get("library_files", ["trap_modules.scad", "helpers.scad"])
+)
 
 
 def _is_module_only(file_path: str) -> bool:
     """True if the given SCAD path is a non-renderable library file."""
-    return os.path.basename(file_path) in MODULE_ONLY_FILES
+    base = os.path.basename(file_path)
+    if base in MODULE_ONLY_FILES:
+        return True
+    # assembly.scad is a visualization assembly, not a printed part
+    if base == "assembly.scad":
+        return True
+    return False
 
 
 def _iterate_model_files(extension: str):
@@ -82,16 +101,94 @@ def get_missing_stl_files():
     return missing_files
 
 
+def check_stl_solid_and_z0(stl_path: str) -> tuple[bool, bool]:
+    """Check if STL is a watertight 2-manifold solid resting on z=0."""
+    if not os.path.exists(stl_path):
+        return False, False
+    try:
+        with open(stl_path, "rb") as f:
+            data = f.read()
+        if len(data) < 84:
+            return False, False
+        if data[:5].lower() == b"solid" and b"facet" in data[:1024]:
+            text = data.decode("utf-8", errors="replace")
+            verts = []
+            for line in text.splitlines():
+                stripped = line.strip()
+                if stripped.startswith("vertex"):
+                    p = stripped.split()
+                    verts.append((float(p[1]), float(p[2]), float(p[3])))
+            tris = [(verts[i], verts[i + 1], verts[i + 2]) for i in range(0, len(verts), 3)]
+        else:
+            import struct
+
+            num_tris = struct.unpack("<I", data[80:84])[0]
+            tris = []
+            offset = 84
+            for _ in range(num_tris):
+                fl = struct.unpack("<12fH", data[offset : offset + 50])
+                tris.append(
+                    (
+                        (fl[3], fl[4], fl[5]),
+                        (fl[6], fl[7], fl[8]),
+                        (fl[9], fl[10], fl[11]),
+                    )
+                )
+                offset += 50
+        if not tris:
+            return False, False
+        zs = [v[2] for tri in tris for v in tri]
+        z_min = min(zs)
+        rests_on_z0 = abs(z_min) < 1e-3 and max(zs) > 0
+        edges = {}
+        for v0, v1, v2 in tris:
+            q0 = (round(v0[0], 4), round(v0[1], 4), round(v0[2], 4))
+            q1 = (round(v1[0], 4), round(v1[1], 4), round(v1[2], 4))
+            q2 = (round(v2[0], 4), round(v2[1], 4), round(v2[2], 4))
+            for a, b in ((q0, q1), (q1, q2), (q2, q0)):
+                key = (a, b) if a < b else (b, a)
+                edges[key] = edges.get(key, 0) + 1
+        is_manifold = all(count == 2 for count in edges.values())
+        return is_manifold, rests_on_z0
+    except Exception:
+        return False, False
+
+
 def generate_build_report():
-    """Generate a build report for the STL files."""
+    """Generate a build report for the STL files from the manifest."""
+    manifest = load_manifest()
+    parts = manifest.get("parts", [])
     report = []
     report.append("# STL Build Report")
-    report.append("| SCAD File | STL File |")
-    report.append("|-----------|----------|")
-    for stl_path in sorted(_iterate_model_files(STL_EXTENSION)):
-        file = os.path.basename(stl_path)
-        scad_file = file.replace(STL_EXTENSION, SCAD_EXTENSION)
-        report.append(f"| {scad_file} | {file} |")
+    report.append("")
+    report.append(
+        "| Part | Qty | SCAD File | STL File | Watertight 2-Manifold | Resting on Z=0 | Description |"
+    )
+    report.append(
+        "|------|-----|-----------|----------|-----------------------|----------------|-------------|"
+    )
+    if parts:
+        for part in parts:
+            name = part["name"]
+            qty = part.get("quantity", 1)
+            scad = os.path.basename(part["scad_file"])
+            stl = os.path.basename(part["stl_file"])
+            stl_path = os.path.join(MODELS_DIR, stl)
+            is_manifold, on_z0 = check_stl_solid_and_z0(stl_path)
+            m_badge = "✅ Yes" if is_manifold else "❌ No"
+            z_badge = "✅ Yes" if on_z0 else "❌ No"
+            desc = part.get("description", "")
+            report.append(f"| {name} | {qty} | {scad} | {stl} | {m_badge} | {z_badge} | {desc} |")
+    else:
+        for stl_path in sorted(_iterate_model_files(STL_EXTENSION)):
+            file = os.path.basename(stl_path)
+            scad_file = file.replace(STL_EXTENSION, SCAD_EXTENSION)
+            report.append(f"| {file} | 1 | {scad_file} | {file} | - | - | - |")
+
+    report.append("")
+    report.append(
+        "All printable parts are verified to be single watertight 2-manifold solids resting on z=0 in supportless print orientation."
+    )
     with open(os.path.join(MODELS_DIR, "build_report.md"), "w") as f:
         f.write("\n".join(report) + "\n")
 

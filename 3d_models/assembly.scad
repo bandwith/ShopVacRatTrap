@@ -10,6 +10,7 @@ use <helpers.scad>
 use <trap_ramp_entrance.scad>
 use <trap_body_front.scad>
 use <bait_station.scad>
+use <bait_cap.scad>
 use <trap_body_rear.scad>
 use <vacuum_adapter_universal.scad>
 use <control_box_exit_mount.scad>
