@@ -2,9 +2,11 @@ Mouser Part Number,Quantity,Customer Part Number,Description
 485-5323,1,U1,ESP32-S3 Feather with 8MB Flash No PSRAM
 485-2830,1,CONN1,Feather Stacking Headers - 12-pin and 16-pin female headers
 485-5946,1,CAM1,OV5640 5MP Camera 120-deg Autofocus - DVP (in stock; replaces 5945)
+713-101021112,1,CAM2,Grove Vision AI Module V2 - Himax HX6538 NPU (Edge AI Camera Variant)
 485-5639,1,LED1,High-Power IR LED - STEMMA JST PH 2mm
 485-5425,1,U2,VL53L4CX Time of Flight Distance Sensor - STEMMA QT
 485-6426,1,U5,STHS34PF80 IR Temperature & Presence Sensor - STEMMA QT
+485-3595,1,U8,"APDS9960 Proximity, Light, RGB, and Gesture Sensor - STEMMA QT"
 485-4438,1,U6,LSM6DSOX 6-DoF Accelerometer and Gyroscope - STEMMA QT
 485-3421,1,MIC1,I2S MEMS Microphone Breakout - SPH0645LM4H
 485-2652,1,U4,BME280 Temperature Humidity Pressure Sensor - STEMMA QT
