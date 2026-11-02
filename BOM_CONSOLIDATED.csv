@@ -2,7 +2,7 @@ Manufacturer,Manufacturer Part Number,Description,Quantity,Reference Designator,
 Adafruit,5323,ESP32-S3 Feather with 8MB Flash No PSRAM,1,U1,Mouser,485-5323,17.50,17.50
 Adafruit,2830,Feather Stacking Headers - 12-pin and 16-pin female headers,1,CONN1,Mouser,485-2830,1.25,1.25
 Adafruit,5946,OV5640 5MP Camera 120-deg Autofocus - DVP (in stock; replaces 5945),1,CAM1,Mouser,485-5946,19.95,19.95
-Seeed Studio,101021112,Grove Vision AI Module V2 - Himax HX6538 NPU (Edge AI Camera Variant),1,CAM2,Mouser,713-101021112,19.99,19.99
+Seeed Studio,101021112,Grove Vision AI Module V2 - Himax HX6538 NPU (Edge AI Camera Variant),1,CAM2,Mouser,713-101021112,15.99,15.99
 Adafruit,5639,High-Power IR LED - STEMMA JST PH 2mm,1,LED1,Mouser,485-5639,3.95,3.95
 Adafruit,5425,VL53L4CX Time of Flight Distance Sensor - STEMMA QT,1,U2,Mouser,485-5425,14.95,14.95
 Adafruit,6426,STHS34PF80 IR Temperature & Presence Sensor - STEMMA QT,1,U5,Mouser,485-6426,14.95,14.95
