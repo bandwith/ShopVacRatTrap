@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import math
 import re
 import struct
@@ -12,27 +13,18 @@ import pytest
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 MODELS_DIR = REPO_ROOT / "3d_models"
+MANIFEST_PATH = MODELS_DIR / "parts_manifest.json"
 
-PRINTABLE_PARTS = (
-    "bait_cap",
-    "bait_station",
-    "control_box_exit_mount",
-    "control_box_lid",
-    "trap_body_front",
-    "trap_body_rear",
-    "trap_ramp_entrance",
-    "vacuum_adapter_universal",
-)
+assert MANIFEST_PATH.exists(), f"Missing parts manifest: {MANIFEST_PATH}"
+MANIFEST = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
 
-LIBRARY_FILES = (
-    "helpers.scad",
-    "trap_modules.scad",
-)
+PRINTABLE_PARTS = tuple(p["name"] for p in MANIFEST["parts"])
+LIBRARY_FILES = tuple(MANIFEST.get("library_files", ("helpers.scad", "trap_modules.scad")))
 
-# Standard 220x220x250mm FDM build volume
-MAX_BED_X_MM = 220.0
-MAX_BED_Y_MM = 220.0
-MAX_BED_Z_MM = 250.0
+# Standard 220x220x250mm FDM build volume from manifest
+MAX_BED_X_MM = float(MANIFEST.get("build_volume_mm", {}).get("x", 220.0))
+MAX_BED_Y_MM = float(MANIFEST.get("build_volume_mm", {}).get("y", 220.0))
+MAX_BED_Z_MM = float(MANIFEST.get("build_volume_mm", {}).get("z", 250.0))
 
 
 def _parse_stl(
@@ -496,3 +488,40 @@ def test_control_box_layout_and_cutout_features() -> None:
     assert "arcade_button_cutout_dia" in ctrl_lid
     assert "estop_cutout_dia" in ctrl_lid
     assert "oled_cutout_width" in ctrl_lid
+
+
+def test_parts_manifest_schema_and_completeness() -> None:
+    """The parts manifest must declare all 8 printable parts with valid files and metadata."""
+    assert len(MANIFEST["parts"]) == 8
+    names = set()
+    for part in MANIFEST["parts"]:
+        name = part["name"]
+        names.add(name)
+        assert part["quantity"] >= 1
+        assert (REPO_ROOT / part["scad_file"]).exists()
+        assert (REPO_ROOT / part["stl_file"]).exists()
+        assert part["description"]
+    assert names == set(PRINTABLE_PARTS)
+
+
+def test_assembly_scad_inclusions_match_manifest() -> None:
+    """assembly.scad inclusions must correspond 1:1 with printable manifest parts."""
+    assembly_text = (MODELS_DIR / MANIFEST.get("assembly_file", "assembly.scad")).read_text(
+        encoding="utf-8"
+    )
+    for part in MANIFEST["parts"]:
+        scad_name = Path(part["scad_file"]).name
+        assert f"use <{scad_name}>" in assembly_text, f"{scad_name} not included in assembly.scad"
+        mod_name = part.get("assembly_module")
+        if mod_name:
+            assert f"module {mod_name}" in assembly_text, f"{mod_name} not defined in assembly.scad"
+
+
+def test_build_report_verifies_all_parts_manifold_and_z0() -> None:
+    """The generated build report must verify all manifest parts are manifold and on Z=0."""
+    report_text = (MODELS_DIR / "build_report.md").read_text(encoding="utf-8")
+    for part in MANIFEST["parts"]:
+        assert part["name"] in report_text
+        assert Path(part["stl_file"]).name in report_text
+    assert "❌ No" not in report_text
+    assert "✅ Yes" in report_text

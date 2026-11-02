@@ -8,15 +8,12 @@
 
 This document details the electrical design, theory of operation, and safety considerations for the ShopVac Rat Trap.
 
-> **Note on sensor naming:** the BOM tables in §2 reflect the current sensor set
-> (VL53L4CX ToF, STHS34PF80 IR presence, LSM6DSOX IMU). Some ASCII architecture
-> diagrams and power-budget blocks further down still name the older
-> VL53L0X / APDS9960 / PIR set and have not been re-drawn; use
-> [`BOM_CONSOLIDATED.csv`](https://github.com/bandwith/ShopVacRatTrap/blob/main/BOM_CONSOLIDATED.csv) and the ESPHome configs in
-> `esphome/` as the authoritative source for sensors and pin assignments.
-
 > [!NOTE]
+> All electrical schematics and BOM tables in this document reflect the active production BOM (`BOM_CONSOLIDATED.csv`) and the modular ESPHome configuration in `esphome/`.
 > For practical wiring instructions and diagrams, please refer to the **[Assembly Guide](assembly.md)**.
+
+<a id="safety-compliance"></a>
+<a id="safety-standards"></a>
 
 ### 1.1. Core Design Philosophy
 
@@ -51,19 +48,23 @@ For maximum safety and code compliance, all electronic components (both high and
 
 > **Note**: Complete vendor information and direct purchase links are available in [BOM_CONSOLIDATED.csv](https://github.com/bandwith/ShopVacRatTrap/blob/main/BOM_CONSOLIDATED.csv).
 
-### 2.1. Core Electronics
+### 2.1. Core Electronics & Sensing
 
 | Qty | Component | Part Number | Description | Vendor | Price |
 |-----|-----------|-------------|-------------|--------|-------|
 | 1 | ESP32-S3 Feather | 5323 | 8MB Flash, USB-C, STEMMA QT | Adafruit | $17.50 |
 | 1 | Feather Stacking Headers | 2830 | 12-pin and 16-pin female headers | Adafruit | $1.25 |
-| 1 | VL53L4CX ToF Sensor | 5425 | Time-of-Flight distance sensor (STEMMA QT) | Adafruit | $18.00 |
-| 1 | STHS34PF80 IR Presence | 6426 | IR temperature & presence sensor (STEMMA QT) | Adafruit | $11.95 |
-| 1 | LSM6DSOX IMU | 4438 | 6-DoF accelerometer + gyroscope (STEMMA QT) | Adafruit | $10.95 |
-| 1 | I2S MEMS Microphone | 3421 | SPH0645LM4H | Adafruit | $6.95 |
-| 1 | OLED Display 128x64 | 326 | 0.96" monochrome display | Adafruit | $17.50 |
+| 1 | VL53L4CX ToF Sensor | 5425 | Time-of-Flight distance sensor (STEMMA QT) | Adafruit | $14.95 |
+| 1 | STHS34PF80 IR Presence | 6426 | IR temperature & presence sensor (STEMMA QT) | Adafruit | $14.95 |
+| 1 | APDS9960 Proximity & Gesture | 3595 | Proximity, Light, RGB, Gesture (STEMMA QT) | Adafruit | $7.50 |
+| 1 | LSM6DSOX IMU | 4438 | 6-DoF accelerometer + gyroscope (STEMMA QT) | Adafruit | $11.95 |
+| 1 | I2S MEMS Microphone | 3421 | SPH0645LM4H acoustic detection | Adafruit | $6.95 |
 | 1 | BME280 Env. Sensor | 2652 | Temperature/Humidity/Pressure (STEMMA QT) | Adafruit | $14.95 |
+| 1 | OLED Display 128x64 | 326 | 0.96" monochrome display | Adafruit | $17.50 |
 | 1 | STEMMA QT 5-Port Hub | 5625 | 5-Port STEMMA QT/Qwiic Hub | Adafruit | $2.50 |
+| 1 | OV5640 5MP Camera (Option A) | 5946 | 120° AF DVP Camera (Direct Snapshot) | Adafruit | $19.95 |
+| 1 | Grove Vision AI V2 (Option B)| 101021112 | Edge AI NPU, Mic & MicroSD Logger (Mouser 713-101021112) | Seeed Studio | $19.99 |
+| 1 | High-Power IR LED | 5639 | STEMMA JST PH 2mm night illumination | Adafruit | $3.95 |
 
 ### 2.2. Power & Safety Components
 
@@ -93,26 +94,26 @@ For maximum safety and code compliance, all electronic components (both high and
 
 ### 3.1. System Architecture
 
-**Standard Configuration:**
+**Standard Configuration (Multi-Sensor 4-of-5 Confirmation):**
 ```
-[120V AC Input] → [IEC Inlet + Switch] → [Mean Well PSU] → [ESP32-S3]
-                                              ↓                ↓
-[Shop Vacuum] ← [SSR Output] ← [SSR Control] ← [GPIO5] ← [3.3V Regulation]
-                                                        ↓
-[STEMMA QT Bus] ← [I2C Sensors: APDS9960 + VL53L0X + BME280 + OLED]
+[120V AC Input] → [Schurter DF11 C14 Inlet] → [Mean Well PSU] → [ESP32-S3 Feather]
+                                                    ↓                ↓
+[Vacuum Outlet: C13] ← [Panasonic SSR] ← [GPIO5] ←──┘       [3.3V Built-in Bus]
+                                                                     ↓
+[STEMMA QT Hub] ← [I2C: APDS9960 + VL53L4CX + STHS34PF80 + LSM6DSOX + BME280 + OLED]
 ```
 
-**STEMMA QT Camera Enhanced Configuration:**
+**Vision & Advanced Data Logging Configurations:**
 ```
-[120V AC Input] → [IEC Inlet + Switch] → [Mean Well PSU] → [ESP32-S3 Feather]
-                                              ↓                ↓
-[Shop Vacuum] ← [SSR Output] ← [SSR Control] ← [GPIO5] ← [3.3V Built-in Regulator]
-                                                         ↓
-[STEMMA QT Bus] ← [I2C: APDS9960 + VL53L0X + BME280 + OLED] → [Hybrid Detection]
-                                                         ↓
-[Evidence Storage] ← [Dimension Capture] ← [OV5640 STEMMA Camera] ← [Auto Trigger]
-                                                         ↓
-[High-Power IR] ← [STEMMA JST PH] ← [GPIO6] ← [Night Vision Control]
+Option A: Direct Snapshot Capture (rat-trap.yaml)
+[ESP32-S3 Feather] ──[8-bit Parallel DVP]──> [Adafruit 5946 OV5640 5MP Camera]
+                   ──[GPIO21 PWM]──────────> [Adafruit 5639 High-Power IR LED]
+
+Option B: Edge-AI NPU & MicroSD Telemetry Logger (rat-trap-stemma-camera.yaml)
+[ESP32-S3 Feather] ──[UART: GPIO16/17]─────> [Seeed Grove Vision AI V2 (101021112)]
+                                             ├─ Dual Cortex-M55 + Ethos-U55 NPU
+                                             ├─ Onboard Digital PDM Microphone
+                                             └─ Onboard MicroSD Offline Event Logger
 ```
 
 ### 3.2. GPIO Pin Assignments
@@ -148,45 +149,50 @@ SSR Output → IEC C13 Outlet Line (Hot)
 Mean Well LRS-35-5 (5V/7A)
 ├─ +5V → ESP32-S3 VIN
 │        └─ Built-in 3.3V Regulator (600mA)
-│            ├─ VL53L0X (15mA)
+│            ├─ VL53L4CX ToF (16mA)
+│            ├─ STHS34PF80 IR Presence (1.5mA)
+│            ├─ LSM6DSOX IMU (0.55mA)
+│            ├─ APDS9960 Proximity (0.4mA)
+│            ├─ BME280 Environmental (3.6mA)
 │            ├─ OLED Display (15mA)
-│            ├─ BME280 (3.6mA)
-│            └─ 501mA Available
+│            └─ ~560mA Available
 └─ GND → Common Ground
 ```
 
 ### 3.4. Power Budget Analysis
 
-**STANDARD CONFIGURATION (APDS9960 + VL53L0X + PIR + BME280):**
+**STANDARD MULTI-SENSOR CONFIGURATION (4-of-5 Confirmation):**
 ```
 ESP32-S3 Core:         45-70mA WiFi active
 APDS9960 Proximity:    400µA typical, 5mA active
-VL53L0X ToF Sensor:    15mA typical, 30mA peak
-PIR Motion Sensor:     65µA quiescent, 2.3mA active
+VL53L4CX ToF Sensor:   16mA typical, 30mA peak
+STHS34PF80 IR Sensor:  1.5mA active
+LSM6DSOX 6-DoF IMU:    0.55mA active
 BME280 Env. Sensor:    1μA sleep, 3.6mA active
 OLED Display:          15mA typical, 25mA peak
-Total Load:            76-106mA typical, 135mA peak
+Total Load:            80-112mA typical, 145mA peak
 ESP32-S3 Capacity:     600mA (built-in regulator)
-Safety Margin:         465-524mA available (77-87% headroom)
+Safety Margin:         455-520mA available (76-86% headroom)
 Power Compliance:      ✅ APPROVED - Excellent headroom
 ```
 
-**CAMERA CONFIGURATION (Four-Sensor + OV5640 Camera):**
+**CAMERA / DATA LOGGING CONFIGURATIONS:**
 ```
-ESP32-S3 Core:         70mA WiFi + processing
-APDS9960 Proximity:    400µA typical, 5mA active
-OV5640 5MP Camera:     100mA capturing, 20mA idle
-PIR Motion Sensor:     65µA quiescent, 2.3mA active
-VL53L0X ToF Sensor:    15mA typical, 30mA peak
-BME280 Env. Sensor:    1μA sleep, 3.6mA active
-OLED Display:          15mA typical, 25mA peak
-High-Power IR LEDs:    200mA @ 3.3V (pulsed only)
-Camera Processing:     +50mA during image processing
-Total Typical:         225mA normal operation
-Total Peak Load:       431mA during capture with IR pulse
-ESP32-S3 Capacity:     600mA (built-in regulator)
-Safety Margin:         169mA available (28% headroom)
-Power Compliance:      ✅ APPROVED - Within ESP32-S3 limits
+Option A: OV5640 5MP DVP Camera
+ESP32-S3 Core + Sensing: 80-112mA typical
+OV5640 Camera:           100mA capturing, 20mA idle
+High-Power IR LED:       200mA @ 3.3V (pulsed during capture)
+Total Peak Load:         ~445mA during capture with IR pulse
+ESP32-S3 Capacity:       600mA (built-in regulator)
+Safety Margin:           155mA available (26% headroom)
+Power Compliance:        ✅ APPROVED
+
+Option B: Grove Vision AI V2 (Dedicated NPU & MicroSD Logger)
+ESP32-S3 Core + Sensing: 80-112mA
+Grove Vision AI V2:      Powers from 5V rail (~120mA during NPU inference)
+ESP32 3.3V Regulator:    Unloaded by camera processing (100% dedicated to sensors)
+Safety Margin:           >450mA headroom on 3.3V regulator
+Power Compliance:        ✅ APPROVED - Maximum headroom & separate 5V domain
 ```
 
 ## 4. Wiring Diagrams & Cable Management
@@ -223,28 +229,28 @@ This section provides comprehensive wiring diagrams for the ShopVac Rat Trap sys
 │  │                     │    │        (STEMMA QT)              │ │               │
 │  │   ┌─────────────────┴┐   │                                 │ │               │
 │  │   │ Built-in 3.3V   ││   │  ┌──────────┐ 100mm ┌─────────┐│ │               │
-│  │   │ Regulator       ││───┼──┤VL53L0X   ├───────┤BME280   ││ │               │
+│  │   │ Regulator       ││───┼──┤VL53L4CX  ├───────┤BME280   ││ │               │
 │  │   │ 600mA capacity  ││   │  │ToF       │       │Env.     ││ │               │
 │  │   └─────────────────┘│   │  │Sensor    │       │Sensor   ││ │               │
 │  │                     │    │  │(0x29)    │       │(0x77)   ││ │               │
 │  │  GPIO5 ──────────────┼────┼──┘          │       └─────────┘│ │               │
 │  │       │              │    │             │                 │ │               │
-│  │       │              │    │             │ 200mm           │ │               │
-│  │  GPIO13 ─────────────┼────┼─ [PIR Motion]                   │ │               │
+│  │       │              │    │             │ 100mm           │ │               │
+│  │  I2C (SDA/SCL) ──────┼────┼─ [STHS34PF80 / APDS9960]        │ │               │
 │  │       │              │    │                                 │ │               │
 │  │       │              │    │             ┌─────────┐       │ │               │
-│  │  GPIO18 ─────────────┼────┼─ [Emergency │OLED     │       │ │               │
-│  │       │              │    │    Button]  │Display  │       │ │               │
-│  │  GPIO3 (SDA) ───────┼────┼─────────────────────│(0x3C)   ││ │               │
-│  │  GPIO4 (SCL) ───────┼────┼─────────────────────│         ││ │               │
-│  │                     │    │                     └─────────┘│ │               │
+│  │  GPIO6 ──────────────┼────┼─ [Emergency │OLED     │       │ │               │
+│  │       │              │    │    30mm BTN]│Display  │       │ │               │
+│  │  GPIO3 (SDA) ───────┼────┼─────────────┤(0x3C)   ││ │               │
+│  │  GPIO4 (SCL) ───────┼────┼─────────────┤         ││ │               │
+│  │                     │    │             └─────────┘│ │               │
 │  └─────────────────────┘    └─────────────────────────────────┘ │               │
 │            │                                                    │               │
 │            │                  ┌─────────────────────────────────┘               │
 │            │                  │                                                 │
 │            │                  │  ┌─────────────────┐                           │
-│            └──[4N35]──────────┼──┤ Solid State     │                           │
-│               Optocoupler     │  │ Relay (40A)     │                           │
+│            └──[4N35]──────────┼──┤ Panasonic SSR   │                           │
+│               Optocoupler     │  │ AQA411VL (25A)  │                           │
 │                               │  │                 │                           │
 │                               │  └─────────────────┘                           │
 │                               │           │                                     │
@@ -257,10 +263,12 @@ This section provides comprehensive wiring diagrams for the ShopVac Rat Trap sys
 ```
 ESP32-S3 STEMMA QT Port (GPIO3/4)
     ↓ (100mm STEMMA QT Cable #1)
-VL53L0X ToF Sensor (I2C Address: 0x29)
+VL53L4CX ToF Distance Sensor (I2C Address: 0x29)
     ↓ (100mm STEMMA QT Cable #2)
+STHS34PF80 / APDS9960 / LSM6DSOX Multi-Sensor Group
+    ↓ (100mm STEMMA QT Cable #3)
 BME280 Environmental Sensor (I2C Address: 0x77)
-    ↓ (200mm STEMMA QT Cable #3)
+    ↓ (200mm STEMMA QT Cable #4)
 OLED Display (I2C Address: 0x3C)
 ```
 
@@ -288,15 +296,15 @@ OLED Display (I2C Address: 0x3C)
 │  │   └─────────────────┘│       │  ┌─────────────┐           │ │               │
 │  │                     │        │  │ 5-Port Hub  │           │ │               │
 │  │  GPIO5 ──────────────┼────────┼──│             │           │ │               │
-│  │       │              │        │  │ Port 1 ──── ┼ VL53L0X   │ │               │
-│  │  GPIO13 ─────────────┼────────┼──│ Port 2 ──── ┼ BME280*   │ │               │
-│  │       │              │        │  │ Port 3 ──── ┼ (Future)  │ │               │
-│  │  GPIO3 (SDA) ────────┼────────┼──│ Port 4 ──── ┼ (Camera)  │ │               │
-│  │  GPIO4 (SCL) ────────┼────────┼──│ Port 5 ──── ┼ (Future)  │ │               │
-│  │                     │  |     │  │             │           │ │               │
-│  │  ┌─────────────────┐ │  |     │  │ Upstream ── ┼ ESP32 ────┼─┼─ Single Cable │
-│  │  │ OLED Display    │ │  |     │  └─────────────┘           │ │   to Control  │
-│  │  │ (0x3C)          │ │  |     └─────────────────────────────┘ │   Box         │
+│  │       │              │        │  │ Port 1 ──── ┼ VL53L4CX  │ │               │
+│  │  GPIO6 (E-Stop) ─────┼────────┼──│ Port 2 ──── ┼ STHS34PF80│ │               │
+│  │  GPIO3 (SDA) ────────┼────────┼──│ Port 3 ──── ┼ APDS9960  │ │               │
+│  │  GPIO4 (SCL) ────────┼────────┼──│ Port 4 ──── ┼ LSM6DSOX  │ │               │
+│  │                     │        │  │ Port 5 ──── ┼ BME280    │ │               │
+│  │  ┌─────────────────┐ │        │  │             │           │ │               │
+│  │  │ OLED Display    │ │        │  │ Upstream ── ┼ ESP32 ────┼─┼─ Single Cable │
+│  │  │ (0x3C)          │ │        │  └─────────────┘           │ │   to Control  │
+│  │  └─────────────────┘ │        └─────────────────────────────┘ │   Box         │
 │  │  └─────────────────┘ │  |                                    │               │
 │  │                     │  |     * BME280 can be in either        │               │
 │  │  ┌─────────────────┐ │  |       location based on needs       │               │
