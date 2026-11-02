@@ -46,6 +46,12 @@ def test_hardware_driver_without_bom_row_fails(tmp_path):
     assert ("firmware-coverage", "apds9960") in _unwaived(findings)
 
 
+def test_hardware_driver_wrong_manufacturer_fails(tmp_path):
+    fake_row = "GenericCo,3595,APDS9960,1,U8,Mouser,485-3595,7.50,7.50"
+    findings = audit(_bom(tmp_path, fake_row), _firmware(tmp_path, APDS_FIRMWARE))
+    assert ("firmware-coverage", "apds9960") in _unwaived(findings)
+
+
 def test_unknown_driver_must_be_classified(tmp_path):
     esphome = _firmware(tmp_path, "sensor:\n  - platform: shiny_new_sensor\n")
     assert ("unclassified-driver", "shiny_new_sensor") in _unwaived(audit([], esphome))
@@ -63,6 +69,12 @@ def test_software_drivers_need_no_part(tmp_path):
 def test_unprefixed_mouser_sku_fails(tmp_path, sku):
     rows = _bom(tmp_path, f"Vishay,4N35-X007,Opto,1,U7,Mouser,{sku},0.79,0.79")
     assert ("sku-format", "U7") in _unwaived(audit(rows, _firmware(tmp_path, "")))
+
+
+def test_mouser_sku_mpn_mismatch_fails(tmp_path):
+    rows = _bom(tmp_path, "Vishay,4N35-X007,Opto,1,U7,Mouser,485-3595,0.79,0.79")
+    findings = _unwaived(audit(rows, _firmware(tmp_path, "")))
+    assert ("sku-format", "U7") in findings
 
 
 def test_off_primary_distributor_fails(tmp_path):
@@ -112,3 +124,10 @@ def test_cli_exit_code(tmp_path, capsys):
     esphome = _firmware(tmp_path, APDS_FIRMWARE)
     assert main(["--bom", str(bom), "--esphome", str(esphome)]) == 1
     assert "firmware-coverage: apds9960" in capsys.readouterr().out
+
+
+def test_cli_exit_code_clean_input(tmp_path):
+    bom = tmp_path / "bom.csv"
+    bom.write_text(HEADER + APDS_ROW + "\n", encoding="utf-8")
+    esphome = _firmware(tmp_path, APDS_FIRMWARE)
+    assert main(["--bom", str(bom), "--esphome", str(esphome)]) == 0
