@@ -2,9 +2,9 @@
   "total_components": 28,
   "found_components": 28,
   "changed_components": 1,
-  "total_change_percent": -1.4555511080382812,
+  "total_change_percent": -0.12185665226542008,
   "changes_detected": true,
-  "significant_changes": true,
+  "significant_changes": false,
   "unavailable_components": 2,
   "low_stock_components": 0,
   "critical_availability": true
