@@ -1,5 +1,5 @@
 # Component Purchase Guide
-*Generated on 2026-11-02 16:49:26
+*Generated on 2026-11-09 19:24:15
 
 ## 📊 Validation Summary
 **Total Components:** 28
@@ -31,7 +31,7 @@
 | 1 | 471 | Arcade Button - 30mm Translucent Red... | $5.95 | [Buy](https://www.mouser.com/ProductDetail/485-471) |
 | 1 | TBC05-02-1-G-G | 2.54mm Pitch PCB Terminal Block... | $0.79 | [Buy](https://www.mouser.com/ProductDetail/640-TBC05-02-1-G-G) |
 | 1 | LRS-35-5 | Switching Power Supply 5V 7A Chassis Mou... | $12.20 | [Buy](https://www.mouser.com/ProductDetail/709-LRS35-5) |
-| 1 | PCS020-EE0502KS | 20A Split Core Current Transformer... | $4.34 | [Buy](https://www.mouser.com/ProductDetail/652-PCS020-EE0502KS) |
+| 1 | PCS020-EE0502KS | 20A Split Core Current Transformer... | $4.01 | [Buy](https://www.mouser.com/ProductDetail/652-PCS020-EE0502KS) |
 | 1 | DF11.2078.0010.01 | IEC C14 Inlet with Integrated CB (TA45) ... | $44.44 | [Buy](https://www.mouser.com/ProductDetail/693-DF112078001001) |
 | 1 | 6600.3100 | Panel Mount IEC C13 Outlet... | $2.22 | [Buy](https://www.mouser.com/ProductDetail/693-6600.3100) |
 | 1 | 1877 | Silicone Cover Stranded-Core Wire - 2m 2... | $0.95 | [Buy](https://www.mouser.com/ProductDetail/485-1877) |
